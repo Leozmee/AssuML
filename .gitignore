@@ -28,3 +28,12 @@ Thumbs.db
 # Project specific
 *.log
 .env
+
+# AssuML — modèles ML et données volumineuses
+*.pkl
+*.parquet
+data/big_data/
+ml_models/saved_models/
+
+# Données préparées (optionnel — peut être commité car non sensible)
+# data/processed/
