@@ -10,6 +10,7 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - Fichiers CSV locaux (`data/small_data/insurance.csv` → `data/processed/features.csv`) (002-exploration-feature-engineering)
 - Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn (003-regression-model)
 - fichiers CSV (entrée) + fichier `.pkl` (sortie sérialisée) — pas de base de données dans cette feature (003-regression-model)
+- fichiers CSV (entrée) + `.pkl` (sortie) + `metadata.json` (traçabilité) — pas de BDD dans cette feature (004-classification-risk)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend**: Streamlit 1.32+, Plotly Express
@@ -103,10 +104,10 @@ docker compose up --build
 - Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
+- 004-classification-risk: Added Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn
 - 003-regression-model: Added Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn
 - 002-exploration-feature-engineering: Added Python 3.11 + Pandas 2.0+, NumPy, Matplotlib, Seaborn, Plotly Express,
 
-- 2026-04-07 — 001-assuml-souscription-ia: Initialisation complète du projet
   (stack Python, architecture 3 couches, 7 tables PostgreSQL, 2 modèles ML,
   Big Data DuckDB, ETL 3 sources, CI/CD GitHub Actions, monitoring Prometheus)
 
