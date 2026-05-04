@@ -11,6 +11,12 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn (003-regression-model)
 - fichiers CSV (entrée) + fichier `.pkl` (sortie sérialisée) — pas de base de données dans cette feature (003-regression-model)
 - fichiers CSV (entrée) + `.pkl` (sortie) + `metadata.json` (traçabilité) — pas de BDD dans cette feature (004-classification-risk)
+- Python 3.11 + SQLAlchemy 2.0+, psycopg2-binary, python-dotenv, pandas (005-postgres-db-setup)
+- PostgreSQL 15+ local (Homebrew) — base `assuml_db`, user `assuml_user` (005-postgres-db-setup)
+- Python 3.11 + requests 2.31+, beautifulsoup4 4.12+, sqlalchemy 2.0+ (déjà installé), pandas 2.0+, python-dotenv (déjà installé) (006-etl-pipeline)
+- PostgreSQL 15+ local (`assuml_db`) + fichiers JSON locaux (`data/external/`) (006-etl-pipeline)
+- Python 3.11 + FastAPI 0.110+, Pydantic v2, SQLAlchemy ORM 2.0+, Uvicorn, psycopg2-binary, python-dotenv (007-fastapi-rest-api)
+- PostgreSQL 15+ local (`assuml_db`) — accès via SQLAlchemy ORM (`database/models.py`, `database/crud.py`) (007-fastapi-rest-api)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend**: Streamlit 1.32+, Plotly Express
@@ -104,9 +110,9 @@ docker compose up --build
 - Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
-- 004-classification-risk: Added Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn
-- 003-regression-model: Added Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn
-- 002-exploration-feature-engineering: Added Python 3.11 + Pandas 2.0+, NumPy, Matplotlib, Seaborn, Plotly Express,
+- 007-fastapi-rest-api: Added Python 3.11 + FastAPI 0.110+, Pydantic v2, SQLAlchemy ORM 2.0+, Uvicorn, psycopg2-binary, python-dotenv
+- 006-etl-pipeline: Added Python 3.11 + requests 2.31+, beautifulsoup4 4.12+, sqlalchemy 2.0+ (déjà installé), pandas 2.0+, python-dotenv (déjà installé)
+- 005-postgres-db-setup: Added Python 3.11 + SQLAlchemy 2.0+, psycopg2-binary, python-dotenv, pandas
 
   (stack Python, architecture 3 couches, 7 tables PostgreSQL, 2 modèles ML,
   Big Data DuckDB, ETL 3 sources, CI/CD GitHub Actions, monitoring Prometheus)
