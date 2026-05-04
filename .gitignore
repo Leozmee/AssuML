@@ -33,4 +33,7 @@ Thumbs.db
 ml_models/saved_models/*.pkl
 data/big_data/
 
+# Backups ETL (données externes brutes — non versionnées)
+data/external/
+
 .claude/
