@@ -1,10 +1,15 @@
 # AssuML Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-07
+Auto-generated from all feature plans. Last updated: 2026-05-04
+
+## Contexte du projet
+Vérifier le dossier `specs/` à la racine du projet et lire les fichiers correspondant à la branche git active.
 
 ## Active Technologies
 - Python 3.11 + Pandas 2.0+, NumPy, Matplotlib, Seaborn, Plotly Express, (002-exploration-feature-engineering)
 - Fichiers CSV locaux (`data/small_data/insurance.csv` → `data/processed/features.csv`) (002-exploration-feature-engineering)
+- Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn (003-regression-model)
+- fichiers CSV (entrée) + fichier `.pkl` (sortie sérialisée) — pas de base de données dans cette feature (003-regression-model)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend**: Streamlit 1.32+, Plotly Express
@@ -98,6 +103,7 @@ docker compose up --build
 - Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
+- 003-regression-model: Added Python 3.11 + scikit-learn 1.4+, pandas 2.0+, numpy, joblib, matplotlib, seaborn
 - 002-exploration-feature-engineering: Added Python 3.11 + Pandas 2.0+, NumPy, Matplotlib, Seaborn, Plotly Express,
 
 - 2026-04-07 — 001-assuml-souscription-ia: Initialisation complète du projet

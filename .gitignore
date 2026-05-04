@@ -29,11 +29,8 @@ Thumbs.db
 *.log
 .env
 
-# AssuML — modèles ML et données volumineuses
-*.pkl
-*.parquet
+# ML models (binaires non commités — constitution Principe IV)
+ml_models/saved_models/*.pkl
 data/big_data/
-ml_models/saved_models/
 
-# Données préparées (optionnel — peut être commité car non sensible)
-# data/processed/
+.claude/

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "date_entrainement": "2026-05-04",
+  "algorithme": "GradientBoostingRegressor",
+  "hyperparametres": {
+    "n_estimators": 200,
+    "max_depth": 4,
+    "min_samples_split": 2,
+    "min_samples_leaf": 1
+  },
+  "metriques_test": {
+    "r2": 0.8533,
+    "mae": 2666.63,
+    "rmse": 4771.56
+  },
+  "metriques_cv": {
+    "r2_mean": 0.8315,
+    "r2_std": 0.0429
+  },
+  "features": [
+    "age",
+    "imc",
+    "enfants",
+    "sexe",
+    "fumeur",
+    "region_northwest",
+    "region_southeast",
+    "region_southwest"
+  ],
+  "target": "charges",
+  "split": "80/20",
+  "random_state": 42
+}
