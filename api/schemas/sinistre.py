@@ -6,7 +6,7 @@ SinistreRead   : données retournées par l'API.
 SinistreUpdate : mise à jour du statut de traitement.
 """
 
-from datetime import date, datetime
+from datetime import date
 from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -36,7 +36,6 @@ class SinistreRead(BaseModel):
     type_sinistre: str
     statut_sinistre: str
     description: Optional[str] = None
-    date_declaration: datetime
 
 
 class SinistreUpdate(BaseModel):

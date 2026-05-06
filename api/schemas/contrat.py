@@ -9,7 +9,7 @@ ContratUpdate : mise à jour du statut d'un contrat.
 from datetime import date, datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ContratCreate(BaseModel):
@@ -20,6 +20,12 @@ class ContratCreate(BaseModel):
     date_debut: date = Field(..., description="Date de début du contrat")
     type_couverture: Literal["basique", "standard", "premium", "famille"]
     date_fin: Optional[date] = None
+
+    @model_validator(mode="after")
+    def valider_dates(self) -> "ContratCreate":
+        if self.date_fin is not None and self.date_fin <= self.date_debut:
+            raise ValueError("date_fin doit être strictement postérieure à date_debut")
+        return self
 
 
 class ContratRead(BaseModel):
