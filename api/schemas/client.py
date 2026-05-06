@@ -22,7 +22,9 @@ class ClientCreate(BaseModel):
     imc: float = Field(..., ge=10.0, le=80.0, description="Indice de masse corporelle")
     enfants: int = Field(..., ge=0, le=10, description="Nombre d'enfants à charge")
     fumeur: bool = Field(..., description="Statut fumeur")
-    region_id: int = Field(..., description="Identifiant de la région (1–4)")
+    region_id: int = Field(
+        ..., ge=1, le=4, description="Identifiant de la région (1–4)"
+    )
     email: Optional[str] = Field(None, max_length=255)
     telephone: Optional[str] = Field(None, max_length=20)
 
@@ -53,6 +55,6 @@ class ClientUpdate(BaseModel):
     imc: Optional[float] = Field(None, ge=10.0, le=80.0)
     enfants: Optional[int] = Field(None, ge=0, le=10)
     fumeur: Optional[bool] = None
-    region_id: Optional[int] = None
+    region_id: Optional[int] = Field(None, ge=1, le=4)
     email: Optional[str] = Field(None, max_length=255)
     telephone: Optional[str] = Field(None, max_length=20)
