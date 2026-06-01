@@ -1,8 +1,8 @@
 """
 Module 3 — Gestion CRUD.
 
-Tableau paginé des clients avec actions par ligne (Voir / Modifier / Supprimer /
-+Contrat / +Sinistre) selon les règles métier. Sous-sections Contrats et Sinistres.
+Tableau paginé des clients avec actions par ligne via popups @st.dialog.
+Sous-sections Contrats et Sinistres dans des expanders.
 """
 
 import streamlit as st
@@ -21,42 +21,6 @@ st.title("👥 Gestion des clients")
 
 REGIONS_ID_TO_STR = {1: "Northeast", 2: "Northwest", 3: "Southeast", 4: "Southwest"}
 PAGE_SIZE = 20
-
-
-# ── Initialisation session state ───────────────────────────────────────────────
-
-def _init_state():
-    defaults = {
-        "client_action": None,
-        "selected_client": None,
-        "selected_contrat_id": None,
-        "crud_page": 0,
-        "crud_refresh": 0,
-    }
-    for k, v in defaults.items():
-        if k not in st.session_state:
-            st.session_state[k] = v
-
-
-_init_state()
-
-
-# ── Chargement données avec cache ──────────────────────────────────────────────
-
-@st.cache_data(ttl=30, show_spinner=False)
-def charger_clients(_refresh: int):
-    return api.get_all_clients()
-
-
-@st.cache_data(ttl=30, show_spinner=False)
-def charger_contrats(_refresh: int):
-    return api.get_all_contrats()
-
-
-def invalider_cache():
-    st.session_state.crud_refresh += 1
-    st.cache_data.clear()
-
 
 # ── HTML badges inline ────────────────────────────────────────────────────────
 
@@ -78,7 +42,123 @@ def _badge_sinistre_bloque(statut: str) -> str:
     )
 
 
-# ── Chargement ─────────────────────────────────────────────────────────────────
+def invalider_cache():
+    st.cache_data.clear()
+
+
+# ── Dialogs (popups modaux) ────────────────────────────────────────────────────
+
+@st.dialog("Nouveau client", width="large")
+def dialog_nouveau_client():
+    payload = form_nouveau_client(key_prefix="dlg_new")
+    if payload is not None:
+        data, err = api.create_client(payload)
+        if err:
+            st.error(f"Erreur création : {err}")
+        else:
+            st.success(f"Client créé — ID {data['client_id']}")
+            invalider_cache()
+            st.rerun()
+
+
+@st.dialog("Détails client")
+def dialog_voir_client(client: dict, contrat):
+    col1, col2 = st.columns(2)
+    col1.write(f"**Âge** : {client['age']}")
+    col1.write(f"**Sexe** : {client['sexe'].capitalize()}")
+    col1.write(f"**IMC** : {client['imc']:.1f}")
+    col1.write(f"**Enfants** : {client['enfants']}")
+    col2.write(f"**Fumeur** : {'Oui' if client['fumeur'] else 'Non'}")
+    col2.write(
+        f"**Région** : {REGIONS_ID_TO_STR.get(client['region_id'], '?')}"
+    )
+    col2.write(f"**Email** : {client.get('email') or '—'}")
+    col2.write(f"**Téléphone** : {client.get('telephone') or '—'}")
+    statut_c = contrat["statut"] if contrat else None
+    st.markdown(
+        f"**Contrat** : {badge_statut_contrat(statut_c)}",
+        unsafe_allow_html=True,
+    )
+
+
+@st.dialog("Modifier client", width="large")
+def dialog_modifier_client(client: dict):
+    kp = f"dlg_edit_{client['client_id']}"
+    payload = form_modifier_client(client, key_prefix=kp)
+    if payload is not None:
+        data, err = api.update_client(client["client_id"], payload)
+        if err:
+            st.error(f"Erreur modification : {err}")
+        else:
+            st.success("Client mis à jour.")
+            invalider_cache()
+            st.rerun()
+
+
+@st.dialog("Supprimer le client")
+def dialog_supprimer_client(client: dict):
+    st.warning(
+        f"Désactiver définitivement le client **#{client['client_id']}** "
+        f"(soft delete — données conservées en base) ?",
+        icon="⚠️",
+    )
+    col1, col2 = st.columns(2)
+    if col1.button("Confirmer", type="primary", use_container_width=True):
+        data, err = api.delete_client(client["client_id"])
+        if err:
+            st.error(f"Erreur : {err}")
+        else:
+            st.success(f"Client #{client['client_id']} désactivé.")
+            invalider_cache()
+            st.rerun()
+    if col2.button("Annuler", use_container_width=True):
+        st.rerun()
+
+
+@st.dialog("Nouveau contrat", width="large")
+def dialog_nouveau_contrat(client_id: int):
+    payload = form_nouveau_contrat(client_id, key_prefix=f"dlg_contrat_{client_id}")
+    if payload is not None:
+        data, err = api.create_contrat(payload)
+        if err:
+            st.error(f"Erreur création contrat : {err}")
+        else:
+            st.success(f"Contrat créé — ID {data['contrat_id']}")
+            invalider_cache()
+            st.rerun()
+
+
+@st.dialog("Déclarer un sinistre", width="large")
+def dialog_nouveau_sinistre(contrat_id: int):
+    payload = form_nouveau_sinistre(
+        contrat_id, key_prefix=f"dlg_sinistre_{contrat_id}"
+    )
+    if payload is not None:
+        data, err = api.create_sinistre(payload)
+        if err:
+            st.error(f"Erreur déclaration sinistre : {err}")
+        else:
+            st.success(f"Sinistre déclaré — ID {data['sinistre_id']}")
+            invalider_cache()
+            st.rerun()
+
+
+# ── Chargement données avec cache ──────────────────────────────────────────────
+
+@st.cache_data(ttl=30, show_spinner=False)
+def charger_clients(_refresh: int):
+    return api.get_all_clients()
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def charger_contrats(_refresh: int):
+    return api.get_all_contrats()
+
+
+if "crud_refresh" not in st.session_state:
+    st.session_state.crud_refresh = 0
+if "crud_page" not in st.session_state:
+    st.session_state.crud_page = 0
 
 with st.spinner("Chargement des clients..."):
     clients, err_clients = charger_clients(st.session_state.crud_refresh)
@@ -90,7 +170,6 @@ if err_clients:
 
 contrats = contrats or []
 
-# Index contrats par client_id (dernier contrat actif ou premier trouvé)
 contrats_by_client = {}
 for c in contrats:
     cid = c["client_id"]
@@ -109,8 +188,7 @@ with col_search:
     )
 with col_btn:
     if st.button("+ Nouveau client", use_container_width=True, type="primary"):
-        st.session_state.client_action = "nouveau"
-        st.session_state.selected_client = None
+        dialog_nouveau_client()
 
 # ── Filtrage ───────────────────────────────────────────────────────────────────
 
@@ -125,12 +203,11 @@ if recherche:
         or q in c["sexe"].lower()
     ]
 
-# Pagination
 total = len(clients_filtres)
 nb_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
 page = min(st.session_state.crud_page, nb_pages - 1)
 
-st.caption(f"{total} client(s) trouvé(s) — page {page + 1}/{nb_pages}")
+st.caption(f"{total} client(s) — page {page + 1}/{nb_pages}")
 
 clients_page = clients_filtres[page * PAGE_SIZE: (page + 1) * PAGE_SIZE]
 
@@ -160,34 +237,24 @@ for client in clients_page:
     row[5].write(REGIONS_ID_TO_STR.get(client["region_id"], "?"))
     row[6].markdown(badge_statut_contrat(statut_contrat), unsafe_allow_html=True)
 
-    # Colonnes d'actions
     with row[7]:
         a1, a2, a3, a4, a5 = st.columns(5)
 
-        # Voir
-        if a1.button("Voir", key=f"voir_{cid}", help="Détails"):
-            st.session_state.selected_client = client
-            st.session_state.client_action = "voir"
+        if a1.button("Voir", key=f"voir_{cid}"):
+            dialog_voir_client(client, contrat)
 
-        # Modifier
-        if a2.button("Éditer", key=f"edit_{cid}", help="Modifier"):
-            st.session_state.selected_client = client
-            st.session_state.client_action = "modifier"
+        if a2.button("Éditer", key=f"edit_{cid}"):
+            dialog_modifier_client(client)
 
-        # Supprimer
-        if a3.button("Suppr.", key=f"del_{cid}", help="Supprimer"):
-            st.session_state.selected_client = client
-            st.session_state.client_action = "supprimer"
+        if a3.button("Suppr.", key=f"del_{cid}"):
+            dialog_supprimer_client(client)
 
-        # +Contrat — désactivé si contrat déjà existant
         if contrat is not None:
             a4.markdown(_BADGE_CONTRAT_EXISTANT, unsafe_allow_html=True)
         else:
             if a4.button("📄+", key=f"contrat_{cid}", help="Nouveau contrat"):
-                st.session_state.selected_client = client
-                st.session_state.client_action = "contrat"
+                dialog_nouveau_contrat(cid)
 
-        # +Sinistre — règles métier
         if contrat is None:
             a5.markdown(_BADGE_SINISTRE_IMPOSSIBLE, unsafe_allow_html=True)
         elif statut_contrat != "actif":
@@ -196,9 +263,7 @@ for client in clients_page:
             )
         else:
             if a5.button("⚠️+", key=f"sinistre_{cid}", help="Déclarer un sinistre"):
-                st.session_state.selected_client = client
-                st.session_state.selected_contrat_id = contrat["contrat_id"]
-                st.session_state.client_action = "sinistre"
+                dialog_nouveau_sinistre(contrat["contrat_id"])
 
 # ── Navigation pages ─────────────────────────────────────────────────────────
 
@@ -213,137 +278,6 @@ if nav_r.button("Suivant →", disabled=(page >= nb_pages - 1)):
     st.session_state.crud_page = page + 1
     st.rerun()
 
-# ── Panneau d'action ──────────────────────────────────────────────────────────
-
-action = st.session_state.get("client_action")
-selected = st.session_state.get("selected_client")
-
-if action:
-    st.divider()
-
-    # ── Nouveau client ────────────────────────────────────────────────────────
-    if action == "nouveau":
-        st.subheader("Nouveau client")
-        payload = form_nouveau_client(key_prefix="new_main")
-        if payload is not None:
-            data, err = api.create_client(payload)
-            if err:
-                st.error(f"Erreur création : {err}")
-            else:
-                st.success(f"Client créé — ID {data['client_id']}")
-                invalider_cache()
-                st.session_state.client_action = None
-                st.rerun()
-        if st.button("Annuler", key="cancel_new"):
-            st.session_state.client_action = None
-            st.rerun()
-
-    # ── Voir client ────────────────────────────────────────────────────────────
-    elif action == "voir" and selected:
-        st.subheader(f"Client #{selected['client_id']}")
-        col1, col2 = st.columns(2)
-        col1.write(f"**Âge** : {selected['age']}")
-        col1.write(f"**Sexe** : {selected['sexe'].capitalize()}")
-        col1.write(f"**IMC** : {selected['imc']:.1f}")
-        col1.write(f"**Enfants** : {selected['enfants']}")
-        col2.write(f"**Fumeur** : {'Oui' if selected['fumeur'] else 'Non'}")
-        col2.write(f"**Région** : {REGIONS_ID_TO_STR.get(selected['region_id'], '?')}")
-        col2.write(f"**Email** : {selected.get('email') or '—'}")
-        col2.write(f"**Téléphone** : {selected.get('telephone') or '—'}")
-        contrat_client = contrats_by_client.get(selected["client_id"])
-        statut_c = contrat_client["statut"] if contrat_client else None
-        st.markdown(
-            f"**Contrat** : {badge_statut_contrat(statut_c)}",
-            unsafe_allow_html=True,
-        )
-        if st.button("Fermer", key="close_voir"):
-            st.session_state.client_action = None
-            st.rerun()
-
-    # ── Modifier client ────────────────────────────────────────────────────────
-    elif action == "modifier" and selected:
-        st.subheader(f"Modifier client #{selected['client_id']}")
-        kp = f"edit_{selected['client_id']}"
-        payload = form_modifier_client(selected, key_prefix=kp)
-        if payload is not None:
-            data, err = api.update_client(selected["client_id"], payload)
-            if err:
-                st.error(f"Erreur modification : {err}")
-            else:
-                st.success("Client mis à jour.")
-                invalider_cache()
-                st.session_state.client_action = None
-                st.rerun()
-        if st.button("Annuler", key="cancel_edit"):
-            st.session_state.client_action = None
-            st.rerun()
-
-    # ── Supprimer client ──────────────────────────────────────────────────────
-    elif action == "supprimer" and selected:
-        st.subheader(f"Supprimer client #{selected['client_id']}")
-        st.warning(
-            f"Cette action désactivera définitivement le client "
-            f"**#{selected['client_id']}** (soft delete). "
-            f"Le client ne pourra plus être récupéré via l'API.",
-            icon="⚠️",
-        )
-        col_confirm, col_cancel = st.columns(2)
-        if col_confirm.button(
-            "Confirmer la suppression", type="primary", key="confirm_del"
-        ):
-            data, err = api.delete_client(selected["client_id"])
-            if err:
-                st.error(f"Erreur suppression : {err}")
-            else:
-                st.success(f"Client #{selected['client_id']} désactivé.")
-                invalider_cache()
-                st.session_state.client_action = None
-                st.session_state.selected_client = None
-                st.rerun()
-        if col_cancel.button("Annuler", key="cancel_del"):
-            st.session_state.client_action = None
-            st.rerun()
-
-    # ── Nouveau contrat ────────────────────────────────────────────────────────
-    elif action == "contrat" and selected:
-        st.subheader(f"Nouveau contrat pour client #{selected['client_id']}")
-        kp = f"contrat_{selected['client_id']}"
-        payload = form_nouveau_contrat(selected["client_id"], key_prefix=kp)
-        if payload is not None:
-            data, err = api.create_contrat(payload)
-            if err:
-                st.error(f"Erreur création contrat : {err}")
-            else:
-                st.success(f"Contrat créé — ID {data['contrat_id']}")
-                invalider_cache()
-                st.session_state.client_action = None
-                st.rerun()
-        if st.button("Annuler", key="cancel_contrat"):
-            st.session_state.client_action = None
-            st.rerun()
-
-    # ── Nouveau sinistre ──────────────────────────────────────────────────────
-    elif action == "sinistre" and selected:
-        contrat_id = st.session_state.get("selected_contrat_id")
-        st.subheader(f"Déclarer un sinistre — Contrat #{contrat_id}")
-        if contrat_id:
-            kp = f"sinistre_{contrat_id}"
-            payload = form_nouveau_sinistre(contrat_id, key_prefix=kp)
-            if payload is not None:
-                data, err = api.create_sinistre(payload)
-                if err:
-                    st.error(f"Erreur déclaration sinistre : {err}")
-                else:
-                    st.success(f"Sinistre déclaré — ID {data['sinistre_id']}")
-                    invalider_cache()
-                    st.session_state.client_action = None
-                    st.rerun()
-        if st.button("Annuler", key="cancel_sinistre"):
-            st.session_state.client_action = None
-            st.rerun()
-
-# ── Séparateur ────────────────────────────────────────────────────────────────
-
 st.divider()
 
 # ── Sous-section Contrats ─────────────────────────────────────────────────────
@@ -355,6 +289,7 @@ with st.expander("📋 Tous les contrats", expanded=False):
         st.info("Aucun contrat enregistré.")
     else:
         from components.tables import df_contrats as make_df_contrats
+
         df = make_df_contrats(contrats)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
@@ -392,6 +327,7 @@ with st.expander("⚠️ Tous les sinistres", expanded=False):
         st.info("Aucun sinistre enregistré.")
     else:
         from components.tables import df_sinistres as make_df_sinistres
+
         df = make_df_sinistres(sinistres)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
@@ -411,7 +347,9 @@ with st.expander("⚠️ Tous les sinistres", expanded=False):
             st.write("")
             st.write("")
             if st.button("Modifier", key="btn_mod_sinistre"):
-                data, err = api.update_sinistre_statut(sinistre_id_mod, statut_sinistre)
+                data, err = api.update_sinistre_statut(
+                    sinistre_id_mod, statut_sinistre
+                )
                 if err:
                     st.error(f"Erreur : {err}")
                 else:
