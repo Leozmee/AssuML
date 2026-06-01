@@ -1,6 +1,6 @@
 # AssuML Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-04
+Auto-generated from all feature plans. Last updated: 2026-06-01
 
 ## Contexte du projet
 Vérifier le dossier `specs/` à la racine du projet et lire les fichiers correspondant à la branche git active.
@@ -17,6 +17,8 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - PostgreSQL 15+ local (`assuml_db`) + fichiers JSON locaux (`data/external/`) (006-etl-pipeline)
 - Python 3.11 + FastAPI 0.110+, Pydantic v2, SQLAlchemy ORM 2.0+, Uvicorn, psycopg2-binary, python-dotenv (007-fastapi-rest-api)
 - PostgreSQL 15+ local (`assuml_db`) — accès via SQLAlchemy ORM (`database/models.py`, `database/crud.py`) (007-fastapi-rest-api)
+- Python 3.11 + NumPy, Pandas 2.0+, PyArrow, DuckDB, Plotly Express, Streamlit 1.32+ (009-bigdata-duckdb-parquet)
+- Parquet (lecture seule) — PAS de PostgreSQL pour cette feature (009-bigdata-duckdb-parquet)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend**: Streamlit 1.32+, Plotly Express
@@ -75,7 +77,7 @@ python -m data_pipeline.extract.api_extractor
 python -m data_pipeline.extract.scraper
 
 # Big Data
-python data_pipeline/generate_synthetic.py
+python big_data/generate_synthetic.py
 
 # Tests
 pytest tests/ -v
@@ -110,9 +112,9 @@ docker compose up --build
 - Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
+- 009-bigdata-duckdb-parquet: Added Python 3.11 + NumPy, Pandas 2.0+, PyArrow, DuckDB, Plotly Express, Streamlit 1.32+
 - 007-fastapi-rest-api: Added Python 3.11 + FastAPI 0.110+, Pydantic v2, SQLAlchemy ORM 2.0+, Uvicorn, psycopg2-binary, python-dotenv
 - 006-etl-pipeline: Added Python 3.11 + requests 2.31+, beautifulsoup4 4.12+, sqlalchemy 2.0+ (déjà installé), pandas 2.0+, python-dotenv (déjà installé)
-- 005-postgres-db-setup: Added Python 3.11 + SQLAlchemy 2.0+, psycopg2-binary, python-dotenv, pandas
 
   (stack Python, architecture 3 couches, 7 tables PostgreSQL, 2 modèles ML,
   Big Data DuckDB, ETL 3 sources, CI/CD GitHub Actions, monitoring Prometheus)
