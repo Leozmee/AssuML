@@ -26,4 +26,4 @@ def calculer_prime(cout_predit: float, categorie_risque: str) -> float:
     Raises:
         KeyError: Si la catégorie de risque n'est pas reconnue.
     """
-    return cout_predit * COEFFICIENTS[categorie_risque]
+    return round(cout_predit * COEFFICIENTS[categorie_risque], 2)
