@@ -8,7 +8,17 @@ import pytest
 # Ajout de la racine du projet au path pour les imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
+from ml_models.prediction.predict import CLF_PATH  # noqa: E402
 
+# classification.pkl est gitignored (jamais committé, cf. constitution Principe IV) :
+# ces tests nécessitent le modèle entraîné en local et sont ignorés si absent (ex: CI).
+requires_modele = pytest.mark.skipif(
+    not os.path.exists(CLF_PATH),
+    reason="classification.pkl absent (modèle non entraîné dans cet environnement)",
+)
+
+
+@requires_modele
 def test_predict_risk_returns_tuple():
     """predict_risk() doit retourner un tuple (str, float)."""
     from ml_models.prediction.predict import predict_risk
@@ -30,6 +40,7 @@ def test_predict_risk_returns_tuple():
     assert 0.0 <= score <= 1.0, f"Score hors [0,1] : {score}"
 
 
+@requires_modele
 def test_predict_risk_smoker_eleve_or_critique():
     """Un profil fumeur avec IMC élevé doit être classifié 'eleve' ou 'critique'."""
     from ml_models.prediction.predict import predict_risk
@@ -46,6 +57,7 @@ def test_predict_risk_smoker_eleve_or_critique():
     ), f"Score de confiance trop faible pour un profil à risque : {score}"
 
 
+@requires_modele
 def test_predict_risk_all_regions():
     """predict_risk() doit fonctionner pour les 4 régions sans erreur."""
     from ml_models.prediction.predict import predict_risk

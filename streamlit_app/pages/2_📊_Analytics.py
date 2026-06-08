@@ -26,6 +26,7 @@ st.title("📊 Analytics du portefeuille — Big Data")
 
 # ── Connexion DuckDB (singleton session) ──────────────────────────────────────
 
+
 @st.cache_resource
 def charger_analytics():
     """Instancie DuckDBAnalytics une seule fois par session Streamlit."""
@@ -45,6 +46,7 @@ if analytics is None:
 
 
 # ── Helpers de cache ──────────────────────────────────────────────────────────
+
 
 @st.cache_data(ttl=300)
 def get_stats_globales():
@@ -114,10 +116,14 @@ with st.expander("📍 Analyse par région", expanded=True):
         st.plotly_chart(fig, use_container_width=True)
     with col_t:
         st.dataframe(
-            df_region[["region", "nb", "cout_moy", "cout_med"]].rename(columns={
-                "region": "Région", "nb": "Nb clients",
-                "cout_moy": "Coût moy.", "cout_med": "Médiane",
-            }),
+            df_region[["region", "nb", "cout_moy", "cout_med"]].rename(
+                columns={
+                    "region": "Région",
+                    "nb": "Nb clients",
+                    "cout_moy": "Coût moy.",
+                    "cout_med": "Médiane",
+                }
+            ),
             use_container_width=True,
             hide_index=True,
         )
@@ -189,13 +195,15 @@ with st.expander("⚠️ Top 10 profils à risque"):
     df_top = get_top_profils()
     df_top["fumeur"] = df_top["fumeur"].map({True: "Oui", False: "Non"})
     st.dataframe(
-        df_top.rename(columns={
-            "tranche_age": "Tranche âge",
-            "categorie_imc": "Catégorie IMC",
-            "fumeur": "Fumeur",
-            "score_risque_moy": "Score risque moy.",
-            "nb": "Nb profils",
-        }),
+        df_top.rename(
+            columns={
+                "tranche_age": "Tranche âge",
+                "categorie_imc": "Catégorie IMC",
+                "fumeur": "Fumeur",
+                "score_risque_moy": "Score risque moy.",
+                "nb": "Nb profils",
+            }
+        ),
         use_container_width=True,
         hide_index=True,
     )
@@ -205,11 +213,18 @@ with st.expander("⚠️ Top 10 profils à risque"):
 with st.expander("📐 Percentiles du coût prédit"):
     perc = get_percentiles().iloc[0]
     cols = st.columns(7)
-    for col, (label, val) in zip(cols, [
-        ("P10", perc["p10"]), ("P25", perc["p25"]), ("P50", perc["p50"]),
-        ("P75", perc["p75"]), ("P90", perc["p90"]), ("P95", perc["p95"]),
-        ("P99", perc["p99"]),
-    ]):
+    for col, (label, val) in zip(
+        cols,
+        [
+            ("P10", perc["p10"]),
+            ("P25", perc["p25"]),
+            ("P50", perc["p50"]),
+            ("P75", perc["p75"]),
+            ("P90", perc["p90"]),
+            ("P95", perc["p95"]),
+            ("P99", perc["p99"]),
+        ],
+    ):
         col.metric(label, f"{val:,.0f} $")
 
 # ── Footer ────────────────────────────────────────────────────────────────────

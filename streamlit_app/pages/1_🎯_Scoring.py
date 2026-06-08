@@ -41,8 +41,10 @@ with st.form("scoring_form"):
         st.write("")
         client_id_opt = st.number_input(
             "Client ID (optionnel — persiste la prédiction)",
-            min_value=0, value=0, step=1,
-            help="Laissez à 0 pour une prédiction anonyme."
+            min_value=0,
+            value=0,
+            step=1,
+            help="Laissez à 0 pour une prédiction anonyme.",
         )
 
     col_b1, col_b2, col_b3 = st.columns(3)

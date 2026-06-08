@@ -44,10 +44,15 @@ prometheus-client>=0.19.0
 statsmodels>=0.14.0
 
 # --- Tests ---
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
-httpx>=0.27.0
+pytest==8.4.2
+pytest-asyncio==1.2.0
+httpx==0.28.1
 
 # --- Qualité du code ---
-flake8>=7.0.0
-black>=24.0.0
+# Versions figées (==) : Black/Flake8 changent parfois leurs règles de
+# formatage/lint entre versions majeures, ce qui désynchronise le hook
+# pre-commit local (utilise la version installée sur la machine) et la CI
+# (installerait sinon la dernière version disponible). Le figeage garantit
+# un résultat identique local/CI (cf. specs/010-cicd-github-actions, SC-005).
+flake8==7.3.0
+black==25.11.0

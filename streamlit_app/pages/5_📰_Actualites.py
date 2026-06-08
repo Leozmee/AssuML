@@ -100,6 +100,7 @@ else:
     st.dataframe(df, use_container_width=True, hide_index=True)
 
     import plotly.express as px
+
     if len(df) > 1:
         fig = px.scatter(
             df,
