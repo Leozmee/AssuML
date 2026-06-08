@@ -125,7 +125,7 @@ Un utilisateur peut consulter les articles d'actualité et les données météo 
 - Les modèles regression.pkl et classification.pkl sont présents dans ml_models/saved_models/ au démarrage.
 - business/scoring.py et business/risk_engine.py existent avec des interfaces stables (fonctions calculer_prime et evaluer_decision).
 - La base de données PostgreSQL est accessible avec les credentials du fichier .env.
-- Aucune authentification n'est requise pour cette version (API interne, accès local ou réseau privé).
+- L'API est protégée par une clé statique transmise dans le header `X-API-Key` (variable `API_KEY` dans `.env`). Les routers clients, contrats, sinistres, ml et stats sont protégés. Les routers articles, meteo et health sont publics (données de référence en lecture seule). Streamlit lit la même variable `API_KEY` via `os.getenv()` et la transmet automatiquement dans chaque requête via `api_client.py`.
 - Les listes retournent au maximum 100 éléments par page par défaut (paramètres skip/limit).
 - L'application Streamlit tourne sur localhost:8501 — CORS configuré pour cette origine.
 - Les schémas Pydantic pour les requêtes ML utilisent les mêmes noms de champs que ceux vus à l'entraînement des modèles.

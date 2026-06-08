@@ -1,0 +1,111 @@
+name: CI
+
+# Déclencheurs : à chaque push (toutes branches) et sur les PR vers main
+# (cf. specs/010-cicd-github-actions/research.md, décision 7)
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# Annule les exécutions obsolètes lors de pushs successifs rapprochés
+# sur la même branche (économise les minutes CI)
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1 — Qualité : Black (formatage) + Flake8 (lint)
+  # Reproduit les mêmes contrôles que le hook pre-commit local,
+  # mais en mode "vérification" uniquement (--check, pas de reformatage).
+  # ──────────────────────────────────────────────────────────────
+  qualite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Black (vérification du formatage)
+        run: black --check .
+
+      - name: Flake8 (lint)
+        run: flake8 --max-line-length=88
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2 — Tests unitaires et de contrat (sans base de données réelle)
+  # tests/unit et tests/contract utilisent SQLite in-memory / mocks.
+  # ──────────────────────────────────────────────────────────────
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Pytest (unitaires + contrats)
+        run: pytest -m "not integration" -v
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 3 — Tests d'intégration avec un vrai PostgreSQL
+  # Démarre un service container Postgres éphémère, charge le schéma
+  # (database/schema.sql contient déjà les INSERT de seed pour regions),
+  # puis exécute les tests marqués @pytest.mark.integration.
+  # ──────────────────────────────────────────────────────────────
+  tests-integration:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: assuml_user
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+          POSTGRES_DB: assuml_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Installer le client PostgreSQL
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Charger le schéma (régions incluses via les INSERT du DDL)
+        env:
+          PGPASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+        run: psql -h localhost -U assuml_user -d assuml_db -f database/schema.sql
+
+      - name: Pytest (intégration)
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: assuml_user
+          DB_PASS: ${{ secrets.CI_DB_PASSWORD }}
+          DB_NAME: assuml_db
+        run: pytest -m integration -v
