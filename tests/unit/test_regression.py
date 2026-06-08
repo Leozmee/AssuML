@@ -5,15 +5,25 @@ Constitution Principe V : toute fonctionnalité livrée doit être couverte
 par au moins un test pytest.
 """
 
+import os
+
 import pytest
 
-from ml_models.prediction.predict import predict_cost
+from ml_models.prediction.predict import MODEL_PATH, predict_cost
+
+# regression.pkl est gitignored (jamais committé, cf. constitution Principe IV) :
+# ces tests nécessitent le modèle entraîné en local et sont ignorés si absent (ex: CI).
+requires_modele = pytest.mark.skipif(
+    not os.path.exists(MODEL_PATH),
+    reason="regression.pkl absent (modèle non entraîné dans cet environnement)",
+)
 
 
 # --- Profil de référence pour les tests ---
 PROFIL_BASE = dict(age=45, sexe=1, imc=32.0, enfants=2, fumeur=0, region="southeast")
 
 
+@requires_modele
 def test_predict_cost_returns_float():
     """predict_cost() doit retourner un float positif dans une plage réaliste."""
     resultat = predict_cost(**PROFIL_BASE)
@@ -23,6 +33,7 @@ def test_predict_cost_returns_float():
     ), f"Prédiction hors plage réaliste : {resultat:.2f} USD"
 
 
+@requires_modele
 def test_predict_cost_smoker_higher():
     """Un fumeur doit avoir un coût prédit supérieur à un non-fumeur."""
     cout_non_fumeur = predict_cost(**{**PROFIL_BASE, "fumeur": 0})
@@ -32,6 +43,7 @@ def test_predict_cost_smoker_higher():
     ), f"Fumeur ({cout_fumeur:.2f}) devrait être > non-fumeur ({cout_non_fumeur:.2f})"
 
 
+@requires_modele
 def test_predict_cost_all_regions():
     """predict_cost() doit fonctionner sans erreur pour les 4 régions."""
     regions = ["northeast", "northwest", "southeast", "southwest"]

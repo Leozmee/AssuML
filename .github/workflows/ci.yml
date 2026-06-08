@@ -55,6 +55,15 @@ jobs:
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
+      # Les modèles .pkl sont gitignored (cf. constitution Principe IV) mais
+      # data/processed/features.csv est commité : on entraîne donc les deux
+      # modèles à partir de ce fichier pour que predict_cost()/predict_risk()
+      # (et le endpoint /health en intégration) disposent d'un .pkl valide.
+      - name: Entraîner les modèles ML (régression + classification)
+        run: |
+          python -m ml_models.training.train_regression
+          python -m ml_models.training.train_classification
+
       - name: Pytest (unitaires + contrats)
         run: pytest -m "not integration" -v
 
@@ -92,6 +101,13 @@ jobs:
 
       - name: Installer les dépendances
         run: pip install -r requirements.txt
+
+      # /health exige que les deux modèles soient chargés (sinon 503), et le
+      # script attend une réponse 200 avant de lancer les tests d'intégration.
+      - name: Entraîner les modèles ML (régression + classification)
+        run: |
+          python -m ml_models.training.train_regression
+          python -m ml_models.training.train_classification
 
       - name: Installer le client PostgreSQL
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
