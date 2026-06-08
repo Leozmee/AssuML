@@ -122,25 +122,37 @@ accuracy_drift = [
 ]
 mae_drift = [2666 + i * 45 + np.random.normal(0, 80) for i in range(nb_semaines)]
 
-df_drift = pd.DataFrame({
-    "Semaine": semaines,
-    "R² Régression": r2_drift,
-    "Accuracy Classification": accuracy_drift,
-    "MAE Régression ($)": mae_drift,
-})
+df_drift = pd.DataFrame(
+    {
+        "Semaine": semaines,
+        "R² Régression": r2_drift,
+        "Accuracy Classification": accuracy_drift,
+        "MAE Régression ($)": mae_drift,
+    }
+)
 
 col_d1, col_d2 = st.columns(2)
 
 with col_d1:
     fig_r2 = go.Figure()
-    fig_r2.add_trace(go.Scatter(
-        x=semaines, y=r2_drift, mode="lines+markers",
-        name="R²", line=dict(color="#4e79a7", width=2),
-    ))
-    fig_r2.add_hline(y=0.80, line_dash="dash", line_color="red",
-                     annotation_text="Seuil alerte R²=0.80")
+    fig_r2.add_trace(
+        go.Scatter(
+            x=semaines,
+            y=r2_drift,
+            mode="lines+markers",
+            name="R²",
+            line=dict(color="#4e79a7", width=2),
+        )
+    )
+    fig_r2.add_hline(
+        y=0.80,
+        line_dash="dash",
+        line_color="red",
+        annotation_text="Seuil alerte R²=0.80",
+    )
     fig_r2.update_layout(
-        title="R² Régression — Évolution", height=280,
+        title="R² Régression — Évolution",
+        height=280,
         yaxis=dict(range=[0.75, 0.90]),
         margin=dict(t=40, b=20, l=20, r=20),
     )
@@ -148,27 +160,40 @@ with col_d1:
 
 with col_d2:
     fig_acc = go.Figure()
-    fig_acc.add_trace(go.Scatter(
-        x=semaines, y=accuracy_drift, mode="lines+markers",
-        name="Accuracy", line=dict(color="#59a14f", width=2),
-    ))
-    fig_acc.add_hline(y=0.85, line_dash="dash", line_color="red",
-                      annotation_text="Seuil alerte Acc=0.85")
+    fig_acc.add_trace(
+        go.Scatter(
+            x=semaines,
+            y=accuracy_drift,
+            mode="lines+markers",
+            name="Accuracy",
+            line=dict(color="#59a14f", width=2),
+        )
+    )
+    fig_acc.add_hline(
+        y=0.85,
+        line_dash="dash",
+        line_color="red",
+        annotation_text="Seuil alerte Acc=0.85",
+    )
     fig_acc.update_layout(
-        title="Accuracy Classification — Évolution", height=280,
+        title="Accuracy Classification — Évolution",
+        height=280,
         yaxis=dict(range=[0.80, 0.93]),
         margin=dict(t=40, b=20, l=20, r=20),
     )
     st.plotly_chart(fig_acc, use_container_width=True)
 
 fig_mae = go.Figure()
-fig_mae.add_trace(go.Bar(
-    x=semaines, y=mae_drift,
-    marker_color=[
-        "#dc3545" if v > 3200 else ("#fd7e14" if v > 2800 else "#28a745")
-        for v in mae_drift
-    ],
-))
+fig_mae.add_trace(
+    go.Bar(
+        x=semaines,
+        y=mae_drift,
+        marker_color=[
+            "#dc3545" if v > 3200 else ("#fd7e14" if v > 2800 else "#28a745")
+            for v in mae_drift
+        ],
+    )
+)
 fig_mae.update_layout(
     title="MAE Régression (USD) — par semaine",
     height=250,

@@ -101,6 +101,30 @@ jobs:
           PGPASSWORD: ${{ secrets.CI_DB_PASSWORD }}
         run: psql -h localhost -U assuml_user -d assuml_db -f database/schema.sql
 
+      # Les tests tests/contract/ sont marqués @pytest.mark.integration et
+      # interrogent l'API réelle en HTTP (httpx) sur localhost:8000 — il faut
+      # donc démarrer uvicorn avant de lancer pytest -m integration.
+      - name: Démarrer l'API FastAPI en arrière-plan
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: assuml_user
+          DB_PASS: ${{ secrets.CI_DB_PASSWORD }}
+          DB_NAME: assuml_db
+          API_KEY: ${{ secrets.CI_API_KEY }}
+        run: |
+          nohup uvicorn api.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then
+              echo "API prête."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "L'API n'a pas démarré à temps — logs uvicorn :"
+          cat uvicorn.log
+          exit 1
+
       - name: Pytest (intégration)
         env:
           DB_HOST: localhost
@@ -108,4 +132,5 @@ jobs:
           DB_USER: assuml_user
           DB_PASS: ${{ secrets.CI_DB_PASSWORD }}
           DB_NAME: assuml_db
+          API_KEY: ${{ secrets.CI_API_KEY }}
         run: pytest -m integration -v

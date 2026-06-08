@@ -48,6 +48,7 @@ def invalider_cache():
 
 # ── Dialogs (popups modaux) ────────────────────────────────────────────────────
 
+
 @st.dialog("Nouveau client", width="large")
 def dialog_nouveau_client():
     payload = form_nouveau_client(key_prefix="dlg_new")
@@ -69,9 +70,7 @@ def dialog_voir_client(client: dict, contrat):
     col1.write(f"**IMC** : {client['imc']:.1f}")
     col1.write(f"**Enfants** : {client['enfants']}")
     col2.write(f"**Fumeur** : {'Oui' if client['fumeur'] else 'Non'}")
-    col2.write(
-        f"**Région** : {REGIONS_ID_TO_STR.get(client['region_id'], '?')}"
-    )
+    col2.write(f"**Région** : {REGIONS_ID_TO_STR.get(client['region_id'], '?')}")
     col2.write(f"**Email** : {client.get('email') or '—'}")
     col2.write(f"**Téléphone** : {client.get('telephone') or '—'}")
     statut_c = contrat["statut"] if contrat else None
@@ -130,9 +129,7 @@ def dialog_nouveau_contrat(client_id: int):
 
 @st.dialog("Déclarer un sinistre", width="large")
 def dialog_nouveau_sinistre(contrat_id: int):
-    payload = form_nouveau_sinistre(
-        contrat_id, key_prefix=f"dlg_sinistre_{contrat_id}"
-    )
+    payload = form_nouveau_sinistre(contrat_id, key_prefix=f"dlg_sinistre_{contrat_id}")
     if payload is not None:
         data, err = api.create_sinistre(payload)
         if err:
@@ -144,6 +141,7 @@ def dialog_nouveau_sinistre(contrat_id: int):
 
 
 # ── Chargement données avec cache ──────────────────────────────────────────────
+
 
 @st.cache_data(ttl=30, show_spinner=False)
 def charger_clients(_refresh: int):
@@ -196,7 +194,8 @@ clients_filtres = clients or []
 if recherche:
     q = recherche.lower()
     clients_filtres = [
-        c for c in clients_filtres
+        c
+        for c in clients_filtres
         if q in str(c["client_id"])
         or q in (c.get("email") or "").lower()
         or q in REGIONS_ID_TO_STR.get(c["region_id"], "").lower()
@@ -209,7 +208,7 @@ page = min(st.session_state.crud_page, nb_pages - 1)
 
 st.caption(f"{total} client(s) — page {page + 1}/{nb_pages}")
 
-clients_page = clients_filtres[page * PAGE_SIZE: (page + 1) * PAGE_SIZE]
+clients_page = clients_filtres[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]  # noqa: E203
 
 # ── En-tête du tableau ────────────────────────────────────────────────────────
 
@@ -258,9 +257,7 @@ for client in clients_page:
         if contrat is None:
             a5.markdown(_BADGE_SINISTRE_IMPOSSIBLE, unsafe_allow_html=True)
         elif statut_contrat != "actif":
-            a5.markdown(
-                _badge_sinistre_bloque(statut_contrat), unsafe_allow_html=True
-            )
+            a5.markdown(_badge_sinistre_bloque(statut_contrat), unsafe_allow_html=True)
         else:
             if a5.button("⚠️+", key=f"sinistre_{cid}", help="Déclarer un sinistre"):
                 dialog_nouveau_sinistre(contrat["contrat_id"])
@@ -347,9 +344,7 @@ with st.expander("⚠️ Tous les sinistres", expanded=False):
             st.write("")
             st.write("")
             if st.button("Modifier", key="btn_mod_sinistre"):
-                data, err = api.update_sinistre_statut(
-                    sinistre_id_mod, statut_sinistre
-                )
+                data, err = api.update_sinistre_statut(sinistre_id_mod, statut_sinistre)
                 if err:
                     st.error(f"Erreur : {err}")
                 else:
