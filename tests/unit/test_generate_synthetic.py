@@ -1,9 +1,24 @@
 """Tests unitaires pour big_data/generate_synthetic.py."""
 
+import os
+
 import pandas as pd
 import pytest
 
 CHEMIN_PARQUET = "data/big_data/insurance_big.parquet"
+
+# insurance_big.parquet est gitignored (5M lignes générées localement, jamais
+# commité) : ces tests nécessitent le fichier généré et sont ignorés si absent
+# (ex: CI), cf. constitution Principe IV.
+requires_parquet = pytest.mark.skipif(
+    not os.path.exists(CHEMIN_PARQUET),
+    reason="insurance_big.parquet absent (non généré dans cet environnement)",
+)
+
+# Applique le skip à tous les tests du module : ils dépendent tous de la
+# fixture `df`, qui charge ce même Parquet.
+pytestmark = requires_parquet
+
 COLONNES_ATTENDUES = [
     "age",
     "sexe",
