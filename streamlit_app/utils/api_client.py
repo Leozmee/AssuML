@@ -6,17 +6,27 @@ Toutes les fonctions retournent (data, error) :
   - error : message string si échec, None si succès
 """
 
+import os
+from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 BASE_URL = "http://localhost:8000/api"
 TIMEOUT = 10
 
+# Clé API lue depuis .env — transmise dans le header X-API-Key sur chaque requête
+_HEADERS = {"X-API-Key": os.getenv("API_KEY", "")}
+
 
 def _get(endpoint: str, params: dict = None) -> Tuple[Any, Optional[str]]:
     try:
-        r = requests.get(f"{BASE_URL}{endpoint}", params=params, timeout=TIMEOUT)
+        r = requests.get(
+            f"{BASE_URL}{endpoint}", params=params, headers=_HEADERS, timeout=TIMEOUT
+        )
         r.raise_for_status()
         return r.json(), None
     except requests.exceptions.ConnectionError:
@@ -33,7 +43,9 @@ def _get(endpoint: str, params: dict = None) -> Tuple[Any, Optional[str]]:
 
 def _post(endpoint: str, data: dict) -> Tuple[Any, Optional[str]]:
     try:
-        r = requests.post(f"{BASE_URL}{endpoint}", json=data, timeout=TIMEOUT)
+        r = requests.post(
+            f"{BASE_URL}{endpoint}", json=data, headers=_HEADERS, timeout=TIMEOUT
+        )
         r.raise_for_status()
         return r.json(), None
     except requests.exceptions.ConnectionError:
@@ -50,7 +62,9 @@ def _post(endpoint: str, data: dict) -> Tuple[Any, Optional[str]]:
 
 def _put(endpoint: str, data: dict) -> Tuple[Any, Optional[str]]:
     try:
-        r = requests.put(f"{BASE_URL}{endpoint}", json=data, timeout=TIMEOUT)
+        r = requests.put(
+            f"{BASE_URL}{endpoint}", json=data, headers=_HEADERS, timeout=TIMEOUT
+        )
         r.raise_for_status()
         return r.json(), None
     except requests.exceptions.ConnectionError:
@@ -67,7 +81,7 @@ def _put(endpoint: str, data: dict) -> Tuple[Any, Optional[str]]:
 
 def _delete(endpoint: str) -> Tuple[Any, Optional[str]]:
     try:
-        r = requests.delete(f"{BASE_URL}{endpoint}", timeout=TIMEOUT)
+        r = requests.delete(f"{BASE_URL}{endpoint}", headers=_HEADERS, timeout=TIMEOUT)
         r.raise_for_status()
         return r.json(), None
     except requests.exceptions.ConnectionError:

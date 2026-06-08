@@ -11,11 +11,19 @@ Configuration :
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
-from api.routers import (
+# Chargement explicite du .env depuis la racine du projet, quel que soit le
+# répertoire de travail au moment du démarrage de uvicorn.
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+from fastapi import Depends, FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+from api.dependencies import verify_api_key  # noqa: E402
+from api.routers import (  # noqa: E402
     articles,
     clients,
     contrats,
@@ -69,14 +77,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inclusion des routers
-app.include_router(clients.router, prefix="/api")
-app.include_router(contrats.router, prefix="/api")
-app.include_router(sinistres.router, prefix="/api")
+# Routers protégés — nécessitent le header X-API-Key
+_auth = [Depends(verify_api_key)]
+app.include_router(clients.router, prefix="/api", dependencies=_auth)
+app.include_router(contrats.router, prefix="/api", dependencies=_auth)
+app.include_router(sinistres.router, prefix="/api", dependencies=_auth)
+app.include_router(ml.router, prefix="/api", dependencies=_auth)
+app.include_router(stats.router, prefix="/api", dependencies=_auth)
+
+# Routers publics — données de référence en lecture seule
 app.include_router(articles.router, prefix="/api")
 app.include_router(meteo.router, prefix="/api")
-app.include_router(ml.router, prefix="/api")
-app.include_router(stats.router, prefix="/api")
 app.include_router(health.router)
 
 
