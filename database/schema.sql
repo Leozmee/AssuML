@@ -53,6 +53,12 @@ CREATE TABLE clients (
     date_suppression TIMESTAMP NULL  -- NULL = actif, valeur = supprimé logiquement
 );
 
+-- Données de seed — clients de test (client_id=1 attendu par les tests contract)
+INSERT INTO clients (region_id, age, sexe, imc, enfants, fumeur) VALUES
+    (2, 45, 'homme',  32.00, 2, false),
+    (1, 30, 'femme',  22.50, 0, false),
+    (4, 55, 'homme',  28.10, 3, true);
+
 -- ============================================================
 -- TABLE : predictions
 -- ============================================================
