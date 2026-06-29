@@ -15,23 +15,23 @@ from business.risk_engine import get_categorie_risque, get_decision  # noqa: E40
 
 
 def test_calculer_prime_faible():
-    """Prime catégorie faible = coût × 1.0 (pas de majoration)."""
-    assert calculer_prime(10_000.0, "faible") == pytest.approx(10_000.0)
+    """Prime catégorie faible = coût × 1.20."""
+    assert calculer_prime(10_000.0, "faible") == pytest.approx(12_000.0)
 
 
 def test_calculer_prime_moyen():
-    """Prime catégorie moyen = coût × 1.15."""
-    assert calculer_prime(10_000.0, "moyen") == pytest.approx(11_500.0)
+    """Prime catégorie moyen = coût × 1.35."""
+    assert calculer_prime(10_000.0, "moyen") == pytest.approx(13_500.0)
 
 
 def test_calculer_prime_eleve():
-    """Prime catégorie eleve = coût × 1.35."""
-    assert calculer_prime(10_000.0, "eleve") == pytest.approx(13_500.0)
+    """Prime catégorie eleve = coût × 1.50."""
+    assert calculer_prime(10_000.0, "eleve") == pytest.approx(15_000.0)
 
 
 def test_calculer_prime_critique():
-    """Prime catégorie critique = coût × 1.60."""
-    assert calculer_prime(10_000.0, "critique") == pytest.approx(16_000.0)
+    """Prime catégorie critique = coût × 1.80."""
+    assert calculer_prime(10_000.0, "critique") == pytest.approx(18_000.0)
 
 
 def test_calculer_prime_invalid_category():
