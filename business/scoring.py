@@ -6,10 +6,10 @@ pour obtenir la prime finale proposée à l'assuré.
 """
 
 COEFFICIENTS = {
-    "faible": 1.0,
-    "moyen": 1.15,
-    "eleve": 1.35,
-    "critique": 1.60,
+    "faible": 1.20,
+    "moyen": 1.35,
+    "eleve": 1.50,
+    "critique": 1.80,
 }
 
 

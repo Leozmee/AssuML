@@ -112,10 +112,21 @@ jobs:
       - name: Installer le client PostgreSQL
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Charger le schéma (régions incluses via les INSERT du DDL)
+      - name: Charger le schéma
         env:
           PGPASSWORD: ${{ secrets.CI_DB_PASSWORD }}
         run: psql -h localhost -U assuml_user -d assuml_db -f database/schema.sql
+
+      # Peuple la BDD avec les 1 338 clients depuis insurance.csv (commité).
+      # Remplace les 3 clients de test qui étaient dans schema.sql.
+      - name: Peupler la BDD (seed clients)
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: assuml_user
+          DB_PASS: ${{ secrets.CI_DB_PASSWORD }}
+          DB_NAME: assuml_db
+        run: python database/seed.py
 
       # Les tests tests/contract/ sont marqués @pytest.mark.integration et
       # interrogent l'API réelle en HTTP (httpx) sur localhost:8000 — il faut

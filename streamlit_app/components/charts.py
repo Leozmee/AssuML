@@ -78,7 +78,7 @@ def jauge_prime(prime: float) -> go.Figure:
         go.Indicator(
             mode="gauge+number",
             value=prime,
-            title={"text": "Prime mensuelle (USD)", "font": {"size": 14}},
+            title={"text": "Prime annuelle (USD)", "font": {"size": 14}},
             number={"prefix": "$", "valueformat": ",.0f"},
             gauge={
                 "axis": {"range": [0, 5000], "tickformat": "$,.0f"},
