@@ -1,6 +1,6 @@
 # AssuML Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-01
+Auto-generated from all feature plans. Last updated: 2026-06-13
 
 ## Contexte du projet
 Vérifier le dossier `specs/` à la racine du projet et lire les fichiers correspondant à la branche git active.
@@ -19,6 +19,8 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - PostgreSQL 15+ local (`assuml_db`) — accès via SQLAlchemy ORM (`database/models.py`, `database/crud.py`) (007-fastapi-rest-api)
 - Python 3.11 + NumPy, Pandas 2.0+, PyArrow, DuckDB, Plotly Express, Streamlit 1.32+ (009-bigdata-duckdb-parquet)
 - Parquet (lecture seule) — PAS de PostgreSQL pour cette feature (009-bigdata-duckdb-parquet)
+- Python 3.11 + SQLAlchemy 2.0+ (ORM existant), Pandas 2.0+, python-dotenv (011-seed-database)
+- PostgreSQL 15+ — tables `regions` et `clients` uniquemen (011-seed-database)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend**: Streamlit 1.32+, Plotly Express
@@ -112,12 +114,41 @@ docker compose up --build
 - Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
+- 011-seed-database: Added Python 3.11 + SQLAlchemy 2.0+ (ORM existant), Pandas 2.0+, python-dotenv
+- 011-seed-database: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 009-bigdata-duckdb-parquet: Added Python 3.11 + NumPy, Pandas 2.0+, PyArrow, DuckDB, Plotly Express, Streamlit 1.32+
-- 007-fastapi-rest-api: Added Python 3.11 + FastAPI 0.110+, Pydantic v2, SQLAlchemy ORM 2.0+, Uvicorn, psycopg2-binary, python-dotenv
-- 006-etl-pipeline: Added Python 3.11 + requests 2.31+, beautifulsoup4 4.12+, sqlalchemy 2.0+ (déjà installé), pandas 2.0+, python-dotenv (déjà installé)
 
   (stack Python, architecture 3 couches, 7 tables PostgreSQL, 2 modèles ML,
   Big Data DuckDB, ETL 3 sources, CI/CD GitHub Actions, monitoring Prometheus)
 
 <!-- MANUAL ADDITIONS START -->
+
+## Architecture seed & flux métier scoring
+
+### État initial de la base au `docker compose up`
+| Table | Contenu au démarrage |
+|---|---|
+| `regions` | 4 lignes — déjà dans `schema.sql` |
+| `clients` | 1 338 lignes — chargées par `database/seed.py` depuis `insurance.csv` |
+| `predictions` | **vide** — remplie uniquement via l'endpoint `/predict/complet` |
+| `contrats` | **vide** — créés par l'assureur via le module CRUD |
+| `sinistres` | **vide** — déclarés par l'assureur via le module CRUD |
+
+### Transformations insurance.csv → table clients
+- `sex` : `female`→`femme`, `male`→`homme`
+- `smoker` : `yes`→`True`, `no`→`False`
+- `bmi` → `imc` (renommage)
+- `children` → `enfants` (renommage)
+- `region` → lookup `region_id` dans la table `regions`
+- `charges` → **ignoré** (donnée du dataset ML, pas une prédiction produite par l'app)
+
+### Flux métier scoring (NE PAS court-circuiter)
+L'assureur ouvre Streamlit → sélectionne un client → clique "Scorer" → l'API appelle `/predict/complet` → les deux modèles ML tournent en direct → `business/scoring.py` calcule prime + décision → INSERT dans `predictions`.
+
+Ne jamais pré-remplir `predictions` depuis un script. Le jury doit voir les modèles ML travailler en live.
+
+### Source de vérité pour le seed
+Toujours utiliser `data/small_data/insurance.csv` (CSV brut).
+Ne pas utiliser `data/processed/features.csv` (format ML one-hot encodé, pas lisible en production).
+
 <!-- MANUAL ADDITIONS END -->
