@@ -5,7 +5,6 @@
 -- ============================================================
 
 -- ── Suppression dans l'ordre inverse des FK ───────────────────
-DROP TABLE IF EXISTS sinistres      CASCADE;
 DROP TABLE IF EXISTS contrats       CASCADE;
 DROP TABLE IF EXISTS predictions    CASCADE;
 DROP TABLE IF EXISTS clients        CASCADE;
@@ -47,6 +46,7 @@ CREATE TABLE clients (
     enfants          INTEGER NOT NULL DEFAULT 0
                      CHECK (enfants >= 0),
     fumeur           BOOLEAN NOT NULL DEFAULT FALSE,
+    a_un_compte      BOOLEAN NOT NULL DEFAULT FALSE,
     email            VARCHAR(255) NULL,
     telephone        VARCHAR(20)  NULL,
     date_creation    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -68,7 +68,7 @@ CREATE TABLE predictions (
     decision         VARCHAR(20)
                      CHECK (decision IN ('accepter', 'refuser', 'examiner')),
     prime            DECIMAL(10, 2),
-    version_modele   VARCHAR(20),
+    version_modele   VARCHAR(60),
     date_prediction  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -89,28 +89,6 @@ CREATE TABLE contrats (
                     CHECK (type_couverture IN ('basique', 'standard', 'premium', 'famille')),
     date_creation   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_contrats_dates CHECK (date_fin IS NULL OR date_fin > date_debut)
-);
-
--- ============================================================
--- TABLE : sinistres
--- ============================================================
-CREATE TABLE sinistres (
-    sinistre_id      SERIAL PRIMARY KEY,
-    contrat_id       INTEGER NOT NULL
-                     REFERENCES contrats(contrat_id) ON DELETE CASCADE,
-    date_sinistre    DATE NOT NULL,
-    montant_sinistre DECIMAL(10, 2) NOT NULL
-                     CHECK (montant_sinistre > 0),
-    type_sinistre    VARCHAR(50) NOT NULL
-                     CHECK (type_sinistre IN (
-                         'hospitalisation', 'consultation', 'pharmacie',
-                         'chirurgie', 'urgence', 'autre'
-                     )),
-    statut_sinistre  VARCHAR(20) NOT NULL DEFAULT 'en_cours'
-                     CHECK (statut_sinistre IN (
-                         'en_cours', 'accepte', 'refuse', 'rembourse'
-                     )),
-    description      TEXT NULL
 );
 
 -- ============================================================
@@ -152,7 +130,6 @@ CREATE TABLE articles (
 CREATE INDEX idx_clients_region_id      ON clients(region_id);
 CREATE INDEX idx_predictions_client_id  ON predictions(client_id);
 CREATE INDEX idx_contrats_client_id     ON contrats(client_id);
-CREATE INDEX idx_sinistres_contrat_id   ON sinistres(contrat_id);
 CREATE INDEX idx_meteo_region_id        ON donnees_meteo(region_id);
 
 -- Index sur les colonnes filtrées fréquemment (API + ETL)
@@ -166,9 +143,6 @@ CREATE INDEX idx_predictions_decision   ON predictions(decision);
 CREATE INDEX idx_predictions_date       ON predictions(date_prediction);
 CREATE INDEX idx_contrats_statut        ON contrats(statut);
 CREATE INDEX idx_contrats_date_debut    ON contrats(date_debut);
-CREATE INDEX idx_sinistres_date         ON sinistres(date_sinistre);
-CREATE INDEX idx_sinistres_type         ON sinistres(type_sinistre);
-CREATE INDEX idx_sinistres_statut       ON sinistres(statut_sinistre);
 CREATE INDEX idx_meteo_saison           ON donnees_meteo(saison);
 CREATE INDEX idx_articles_date_scraping ON articles(date_scraping);
 

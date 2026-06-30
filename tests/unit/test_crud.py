@@ -11,7 +11,7 @@ import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
-from database.models import Base, Client, Contrat, Prediction, Region, Sinistre
+from database.models import Base, Client, Contrat, Prediction, Region
 from database import crud
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -209,33 +209,3 @@ def test_create_contrat_retourne_contrat(db, region_id):
     assert isinstance(contrat, Contrat)
     assert contrat.contrat_id is not None
     assert contrat.prime_mensuelle == 250.0
-
-
-# ── Tests create_sinistre ──────────────────────────────────────────────────────
-
-
-def test_create_sinistre_retourne_sinistre(db, region_id):
-    """create_sinistre() doit retourner un objet Sinistre avec sinistre_id."""
-    from datetime import date
-
-    client = crud.create_client(
-        db, age=55, sexe="femme", imc=31.0, enfants=0, fumeur=True, region_id=region_id
-    )
-    contrat = crud.create_contrat(
-        db,
-        client_id=client.client_id,
-        statut="actif",
-        prime_mensuelle=400.0,
-        date_debut=date(2026, 1, 1),
-        type_couverture="premium",
-    )
-    sinistre = crud.create_sinistre(
-        db,
-        contrat_id=contrat.contrat_id,
-        date_sinistre=date(2026, 3, 15),
-        montant_sinistre=1500.0,
-        type_sinistre="consultation",
-    )
-    assert isinstance(sinistre, Sinistre)
-    assert sinistre.sinistre_id is not None
-    assert sinistre.statut_sinistre == "en_cours"

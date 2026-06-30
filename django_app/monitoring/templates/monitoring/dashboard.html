@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitoring{% endblock %}
+
+{% block body_attrs %}data-refresh-url="{% url 'monitoring:refresh' %}"{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>🔍 Monitoring système</h1>
+  <small class="text-muted">Auto-refresh toutes les 10s</small>
+</div>
+
+<!-- Santé API -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100 {% if health and health.status == 'ok' %}border-success{% else %}border-danger{% endif %}">
+      <div class="card-body text-center">
+        {% if health and health.status == 'ok' %}
+          <div class="fs-1">✅</div>
+          <div class="fw-bold text-success">API opérationnelle</div>
+        {% elif health %}
+          <div class="fs-1">⚠️</div>
+          <div class="fw-bold text-warning">API dégradée</div>
+        {% else %}
+          <div class="fs-1">❌</div>
+          <div class="fw-bold text-danger" data-refresh-key="api_status">Indisponible</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="kpi-card h-100">
+      <div class="kpi-label">Modèle régression</div>
+      <div class="kpi-value small" data-refresh-key="modele_regression">
+        {{ health.modele_regression|default:"—" }}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="kpi-card h-100">
+      <div class="kpi-label">Modèle classification</div>
+      <div class="kpi-value small" data-refresh-key="modele_classification">
+        {{ health.modele_classification|default:"—" }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-value" data-refresh-key="total_clients">{{ kpis.total_clients|default:"—" }}</div>
+      <div class="kpi-label">Clients actifs</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-value" data-refresh-key="total_predictions">{{ kpis.total_predictions|default:"—" }}</div>
+      <div class="kpi-label">Prédictions totales</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-value">{{ kpis.cout_moyen_predit|floatformat:2|default:"—" }}</div>
+      <div class="kpi-label">Coût moyen prédit</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-value">{{ kpis.taux_fumeurs|floatformat:1|default:"—" }}%</div>
+      <div class="kpi-label">Taux fumeurs</div>
+    </div>
+  </div>
+</div>
+
+<!-- Métriques ML fixes -->
+<div class="card">
+  <div class="card-header fw-semibold">Métriques ML (entraînement)</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3 text-center">
+        <div class="fw-bold fs-5 text-primary">0.783</div>
+        <div class="text-muted small">R² Régression</div>
+      </div>
+      <div class="col-md-3 text-center">
+        <div class="fw-bold fs-5 text-primary">4 812 $</div>
+        <div class="text-muted small">RMSE Régression</div>
+      </div>
+      <div class="col-md-3 text-center">
+        <div class="fw-bold fs-5 text-success">87.3%</div>
+        <div class="text-muted small">Accuracy Classification</div>
+      </div>
+      <div class="col-md-3 text-center">
+        <div class="fw-bold fs-5 text-success">0.871</div>
+        <div class="text-muted small">F1-Score Classification</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

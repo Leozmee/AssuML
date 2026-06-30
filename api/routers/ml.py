@@ -25,6 +25,14 @@ from api.schemas.prediction import (
 router = APIRouter(prefix="/predict", tags=["ml"])
 
 
+def _encoder_inputs(body: PredictRequest) -> str:
+    """Encode les inputs ML pour déduplication (stocké dans version_modele)."""
+    return (
+        f"v1|{body.age}|{body.sexe}|{body.imc:.2f}"
+        f"|{body.enfants}|{body.fumeur}|{body.region}"
+    )
+
+
 def _extraire_features(body: PredictRequest) -> dict:
     """Extrait les features du body Pydantic pour les fonctions predict_*.
 
@@ -128,6 +136,7 @@ def predict_complet(body: PredictRequest, db: Session = Depends(get_db)):
 
     # Persistance optionnelle si client_id fourni
     prediction_id = None
+    deja_existante = False
     if body.client_id is not None:
         client = crud.get_client(db, body.client_id)
         if client is None or client.date_suppression is not None:
@@ -135,17 +144,24 @@ def predict_complet(body: PredictRequest, db: Session = Depends(get_db)):
                 status_code=400,
                 detail=f"Client {body.client_id} introuvable ou inactif",
             )
-        prediction = crud.create_prediction(
-            db,
-            client_id=body.client_id,
-            cout_predit=cout,
-            score_risque=score,
-            categorie_risque=categorie,
-            decision=decision,
-            prime=prime,
-            version_modele="v1",
-        )
-        prediction_id = prediction.prediction_id
+        version = _encoder_inputs(body)
+        last = crud.get_last_prediction_by_client(db, body.client_id)
+        if last is not None and last.version_modele == version:
+            # Mêmes inputs ML — on retourne la prédiction existante sans doublon
+            prediction_id = last.prediction_id
+            deja_existante = True
+        else:
+            prediction = crud.create_prediction(
+                db,
+                client_id=body.client_id,
+                cout_predit=cout,
+                score_risque=score,
+                categorie_risque=categorie,
+                decision=decision,
+                prime=prime,
+                version_modele=version,
+            )
+            prediction_id = prediction.prediction_id
 
     return PredictCompletResponse(
         cout_predit=cout,
@@ -154,4 +170,24 @@ def predict_complet(body: PredictRequest, db: Session = Depends(get_db)):
         prime=prime,
         decision=decision,
         prediction_id=prediction_id,
+        deja_existante=deja_existante,
     )
+
+
+@router.get("/client/{client_id}", tags=["ml"])
+def predictions_par_client(client_id: int, db: Session = Depends(get_db)) -> list:
+    """Retourne toutes les prédictions d'un client, de la plus récente à l'ancienne."""
+    preds = crud.get_predictions_by_client(db, client_id)
+    return [
+        {
+            "prediction_id": p.prediction_id,
+            "cout_predit": float(p.cout_predit) if p.cout_predit else None,
+            "score_risque": float(p.score_risque) if p.score_risque else None,
+            "categorie_risque": p.categorie_risque,
+            "prime": float(p.prime) if p.prime else None,
+            "prime_mensuelle": round(float(p.prime) / 12, 2) if p.prime else None,
+            "decision": p.decision,
+            "date_prediction": p.date_prediction.isoformat(),
+        }
+        for p in reversed(preds)
+    ]

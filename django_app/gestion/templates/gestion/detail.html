@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Client #{{ client.client_id }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Client #{{ client.client_id }}</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'gestion:edit' client.client_id %}" class="btn btn-outline-primary btn-sm">Modifier</a>
+    <a href="{% url 'gestion:score' client.client_id %}" class="btn btn-primary btn-sm">🎯 Scorer</a>
+    {% if not contrats %}
+      <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm">+ Contrat</a>
+    {% endif %}
+    <a href="{% url 'gestion:delete' client.client_id %}" class="btn btn-outline-danger btn-sm">Supprimer</a>
+    <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Profil assuré -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header fw-semibold">👤 Profil assuré</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5 text-muted">Âge</dt><dd class="col-sm-7">{{ client.age }} ans</dd>
+          <dt class="col-sm-5 text-muted">Sexe</dt><dd class="col-sm-7">{{ client.sexe|capfirst }}</dd>
+          <dt class="col-sm-5 text-muted">IMC</dt><dd class="col-sm-7">{{ client.imc }}</dd>
+          <dt class="col-sm-5 text-muted">Enfants</dt><dd class="col-sm-7">{{ client.enfants }}</dd>
+          <dt class="col-sm-5 text-muted">Fumeur</dt><dd class="col-sm-7">{% if client.fumeur %}Oui{% else %}Non{% endif %}</dd>
+          <dt class="col-sm-5 text-muted">Région</dt><dd class="col-sm-7">{{ client.region_nom|default:client.region_id }}</dd>
+          <dt class="col-sm-5 text-muted">Compte user</dt><dd class="col-sm-7">{% if client.a_un_compte %}👤 Oui{% else %}—{% endif %}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contrats -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header fw-semibold">📋 Contrats</div>
+      <div class="card-body">
+        {% if contrats %}
+          {% for c in contrats %}
+          <div class="mb-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <strong>{{ c.type_couverture|capfirst }}</strong>
+              <span class="badge {% if c.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">{{ c.statut }}</span>
+              {% if predictions %}
+              <form method="post" action="{% url 'gestion:contrat_prime' c.contrat_id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                <button type="submit" class="btn btn-outline-primary btn-sm"
+                        title="Met à jour la prime depuis la dernière prédiction ML ({{ predictions.0.prime_mensuelle }} €/mois)">
+                  🔄 Mettre à jour la prime
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            <div class="text-muted small mt-1">Prime : {{ c.prime_mensuelle|floatformat:2 }} €/mois · Début : {{ c.date_debut }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-0">Aucun contrat.
+            <a href="{% url 'gestion:contrat_create' client.client_id %}" class="text-success">+ Créer</a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prédictions ML -->
+<div class="card">
+  <div class="card-header fw-semibold">🤖 Évaluations ML</div>
+  <div class="card-body">
+    {% if predictions %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Coût prédit / an</th>
+              <th>Score risque</th>
+              <th>Catégorie</th>
+              <th>Prime / an</th>
+              <th>Prime / mois</th>
+              <th>Décision</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pred in predictions %}
+            <tr>
+              <td class="text-muted small">{{ pred.date_prediction|slice:":10" }}</td>
+              <td>{{ pred.cout_predit|floatformat:2 }} €</td>
+              <td>{{ pred.score_risque|floatformat:3 }}</td>
+              <td>
+                <span class="badge
+                  {% if pred.categorie_risque == 'faible' %}bg-success
+                  {% elif pred.categorie_risque == 'moyen' %}bg-warning text-dark
+                  {% elif pred.categorie_risque == 'eleve' %}bg-orange
+                  {% else %}bg-danger{% endif %}">
+                  {{ pred.categorie_risque|capfirst }}
+                </span>
+              </td>
+              <td class="fw-semibold">{{ pred.prime|floatformat:2 }} €</td>
+              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|floatformat:2 }} €</td>
+              <td>{% include 'components/badge.html' with decision=pred.decision %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-muted small mt-2">
+        {{ predictions|length }} évaluation{{ predictions|length|pluralize }} enregistrée{{ predictions|length|pluralize }}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">Aucune évaluation. Cliquez sur <strong>🎯 Scorer</strong> pour lancer l'analyse ML.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -49,26 +49,6 @@ def df_contrats(contrats: List[dict]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def df_sinistres(sinistres: List[dict]) -> pd.DataFrame:
-    """Construit un DataFrame formaté à partir de la liste de sinistres."""
-    if not sinistres:
-        return pd.DataFrame()
-    rows = []
-    for s in sinistres:
-        rows.append(
-            {
-                "ID sinistre": s["sinistre_id"],
-                "Contrat ID": s["contrat_id"],
-                "Type": s["type_sinistre"].replace("_", " ").capitalize(),
-                "Statut": s["statut_sinistre"].replace("_", " ").capitalize(),
-                "Montant ($)": round(s["montant_sinistre"], 2),
-                "Date": s["date_sinistre"],
-                "Description": (s.get("description") or "")[:60],
-            }
-        )
-    return pd.DataFrame(rows)
-
-
 def df_articles(articles: List[dict]) -> pd.DataFrame:
     """Construit un DataFrame pour l'affichage des articles."""
     if not articles:
