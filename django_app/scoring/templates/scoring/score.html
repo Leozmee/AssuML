@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Scoring ML{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>🎯 Scoring ML</h1>
+</div>
+
+<div class="row g-4">
+  <!-- Formulaire -->
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header fw-semibold">Données assuré</div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">{{ form.age.label }}</label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="text-danger small">{{ form.age.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+              <label class="form-label">{{ form.sexe.label }}</label>
+              {{ form.sexe }}
+              {% if form.sexe.errors %}<div class="text-danger small">{{ form.sexe.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          {% include 'components/imc_calculator.html' %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">{{ form.enfants.label }}</label>
+              {{ form.enfants }}
+              {% if form.enfants.errors %}<div class="text-danger small">{{ form.enfants.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+              <label class="form-label">{{ form.region.label }}</label>
+              {{ form.region }}
+              {% if form.region.errors %}<div class="text-danger small">{{ form.region.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check">
+              {{ form.fumeur }}
+              <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-primary w-100">🎯 Calculer la prime</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultat -->
+  {% if resultat %}
+  <div class="col-md-7">
+    <div class="row g-3">
+
+      <!-- Section 1 — Estimation ML -->
+      <div class="col-12">
+        <div class="score-section">
+          <div class="text-muted small text-uppercase mb-1">Section 1 — Estimation ML (hors marge)</div>
+          <div class="row">
+            <div class="col-6">
+              <div class="kpi-value">{{ resultat.cout_predit|floatformat:2 }} €</div>
+              <div class="kpi-label">Coût annuel prédit</div>
+            </div>
+            <div class="col-6">
+              <div class="kpi-value">{{ resultat.cout_mensuel|floatformat:2 }} €</div>
+              <div class="kpi-label">Coût mensuel prédit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 — Profil de risque -->
+      <div class="col-12">
+        <div class="score-section {{ resultat.categorie_risque }}">
+          <div class="text-muted small text-uppercase mb-1">Section 2 — Profil de risque</div>
+          <div class="row align-items-center">
+            <div class="col-4">
+              <div class="fs-4 fw-bold">{{ resultat.score_risque|floatformat:3 }}</div>
+              <div class="text-muted small">Score (0–1)</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold">{{ resultat.categorie_risque|capfirst }}</div>
+              <div class="text-muted small">Catégorie</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold">×{{ resultat.coefficient_marge }}</div>
+              <div class="text-muted small">Coefficient marge</div>
+            </div>
+          </div>
+          <div id="gauge-risque" class="mt-2" style="height:120px;"></div>
+        </div>
+      </div>
+
+      <!-- Section 3 — Prime assureur -->
+      <div class="col-12">
+        <div class="score-section">
+          <div class="text-muted small text-uppercase mb-1">Section 3 — Prime assureur (avec marge)</div>
+          <div class="row">
+            <div class="col-4">
+              <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|floatformat:2 }} €</div>
+              <div class="kpi-label">Prime annuelle</div>
+            </div>
+            <div class="col-4">
+              <div class="kpi-value">{{ resultat.prime_mensuelle|floatformat:2 }} €</div>
+              <div class="kpi-label">Prime mensuelle</div>
+            </div>
+            <div class="col-4">
+              <div class="kpi-value text-warning">{{ resultat.marge_annuelle|floatformat:2 }} €</div>
+              <div class="kpi-label">Marge annuelle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4 — Décision -->
+      <div class="col-12">
+        <div class="score-section d-flex align-items-center gap-3">
+          <div class="text-muted small text-uppercase">Section 4 — Décision finale</div>
+          {% include 'components/badge.html' with decision=resultat.decision %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if resultat %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    assumlGauge("gauge-risque", {{ resultat.score_risque }}, 0, 1, "Score de risque");
+  });
+</script>
+{% endif %}
+{% endblock %}

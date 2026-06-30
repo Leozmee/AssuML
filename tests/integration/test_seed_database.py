@@ -8,7 +8,7 @@ Nécessite PostgreSQL en cours d'exécution avec les variables d'env configurée
 import pytest
 
 from database.connection import SessionLocal
-from database.models import Client, Contrat, Prediction, Region, Sinistre
+from database.models import Client, Contrat, Prediction, Region
 from database.seed import main as seed_main
 
 
@@ -88,9 +88,3 @@ def test_contrats_vide(session):
     """La table contrats doit être vide après seed."""
     count = session.query(Contrat).count()
     assert count == 0, f"contrats non vide : {count} ligne(s)"
-
-
-def test_sinistres_vide(session):
-    """La table sinistres doit être vide après seed."""
-    count = session.query(Sinistre).count()
-    assert count == 0, f"sinistres non vide : {count} ligne(s)"

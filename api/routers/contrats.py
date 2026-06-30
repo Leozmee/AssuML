@@ -73,6 +73,26 @@ def creer_contrat(body: ContratCreate, db: Session = Depends(get_db)):
     return contrat
 
 
+@router.put("/{contrat_id}/prime", response_model=ContratRead)
+def modifier_prime_contrat(
+    contrat_id: int,
+    body: dict,
+    db: Session = Depends(get_db),
+):
+    """Met à jour la prime mensuelle d'un contrat."""
+    prime = body.get("prime_mensuelle")
+    if prime is None or prime <= 0:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=422, detail="prime_mensuelle invalide")
+    contrat = crud.update_contrat_prime(db, contrat_id, prime)
+    if contrat is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Contrat introuvable")
+    return contrat
+
+
 @router.put("/{contrat_id}/statut", response_model=ContratRead)
 def modifier_statut_contrat(
     contrat_id: int,

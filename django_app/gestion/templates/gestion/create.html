@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouveau client{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Nouveau client</h1>
+  <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+</div>
+
+<div class="row">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">{{ form.age.label }}</label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="text-danger small">{{ form.age.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.sexe.label }}</label>
+              {{ form.sexe }}
+              {% if form.sexe.errors %}<div class="text-danger small">{{ form.sexe.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.region.label }}</label>
+              {{ form.region }}
+              {% if form.region.errors %}<div class="text-danger small">{{ form.region.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          {% include 'components/imc_calculator.html' %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">{{ form.enfants.label }}</label>
+              {{ form.enfants }}
+              {% if form.enfants.errors %}<div class="text-danger small">{{ form.enfants.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.email.label }}</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check">
+                {{ form.fumeur }}
+                <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>
+              </div>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Créer le client</button>
+            <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

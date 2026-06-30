@@ -7,7 +7,7 @@ Documentation : http://localhost:8000/docs
 Configuration :
   - Lifespan : chargement des modèles ML au démarrage (singletons)
   - CORS : autorisé pour http://localhost:8501 (Streamlit)
-  - Routers : clients, contrats, sinistres, articles, meteo, ml, stats, health
+  - Routers : clients, contrats, articles, meteo, ml, stats, health
 """
 
 from contextlib import asynccontextmanager
@@ -30,7 +30,6 @@ from api.routers import (  # noqa: E402
     health,
     meteo,
     ml,
-    sinistres,
     stats,
 )
 
@@ -62,7 +61,7 @@ app = FastAPI(
     description=(
         "API REST du système de prédiction d'assurance AssuML. "
         "Expose les endpoints CRUD clients, prédictions ML, "
-        "contrats, sinistres, articles et données météo."
+        "contrats, articles et données météo."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -81,7 +80,6 @@ app.add_middleware(
 _auth = [Depends(verify_api_key)]
 app.include_router(clients.router, prefix="/api", dependencies=_auth)
 app.include_router(contrats.router, prefix="/api", dependencies=_auth)
-app.include_router(sinistres.router, prefix="/api", dependencies=_auth)
 app.include_router(ml.router, prefix="/api", dependencies=_auth)
 app.include_router(stats.router, prefix="/api", dependencies=_auth)
 

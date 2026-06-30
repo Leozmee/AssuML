@@ -84,6 +84,7 @@ def creer_client(body: ClientCreate, db: Session = Depends(get_db)):
         region_id=body.region_id,
         email=body.email,
         telephone=body.telephone,
+        a_un_compte=body.a_un_compte,
     )
     return client
 
