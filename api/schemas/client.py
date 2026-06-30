@@ -27,6 +27,9 @@ class ClientCreate(BaseModel):
     )
     email: Optional[str] = Field(None, max_length=255)
     telephone: Optional[str] = Field(None, max_length=20)
+    a_un_compte: bool = Field(
+        False, description="Vrai si le client a un compte utilisateur"
+    )
 
 
 class ClientRead(BaseModel):
@@ -43,6 +46,7 @@ class ClientRead(BaseModel):
     region_id: int
     email: Optional[str] = None
     telephone: Optional[str] = None
+    a_un_compte: bool = False
     date_creation: datetime
     date_suppression: Optional[datetime] = None
 

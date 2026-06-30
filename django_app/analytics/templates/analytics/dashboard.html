@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📊 Analytics Big Data</h1>
+</div>
+
+<!-- KPIs -->
+{% if kpis %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    {% include 'components/kpi_card.html' with label="Clients analysés" value=kpis.nb_clients|default:"—" %}
+  </div>
+  <div class="col-md-3">
+    {% include 'components/kpi_card.html' with label="Coût moyen" value=kpis.cout_moyen|floatformat:2|default:"—" sublabel="USD/an" %}
+  </div>
+  <div class="col-md-3">
+    {% include 'components/kpi_card.html' with label="Taux fumeurs" value=kpis.taux_fumeurs|floatformat:1|default:"—" sublabel="%" %}
+  </div>
+  <div class="col-md-3">
+    {% include 'components/kpi_card.html' with label="Âge moyen" value=kpis.age_moyen|floatformat:1|default:"—" sublabel="ans" %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Graphiques DuckDB -->
+{% if charts %}
+  <div class="row g-4">
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_region" chart_data=charts.par_region title="Charges par région" %}
+    </div>
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_fumeur" chart_data=charts.par_fumeur title="Impact tabac sur les charges" %}
+    </div>
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_dist" chart_data=charts.distribution title="Distribution des charges" %}
+    </div>
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_corr" chart_data=charts.correlation title="Corrélation âge / charges" %}
+    </div>
+  </div>
+
+  {% if charts.profils %}
+  <div class="card mt-4">
+    <div class="card-header fw-semibold">Top 10 profils à risque</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              {% for key in charts.profils.0.keys %}
+              <th>{{ key }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in charts.profils %}
+            <tr>
+              {% for val in row.values %}
+              <td>{{ val }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-warning">
+    Analytics DuckDB indisponibles. Vérifiez que le fichier Parquet est présent.
+  </div>
+{% endif %}
+
+<div class="text-muted small mt-4 text-end">
+  5 000 000 lignes analysées via DuckDB
+</div>
+{% endblock %}

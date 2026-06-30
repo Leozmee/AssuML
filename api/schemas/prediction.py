@@ -56,3 +56,7 @@ class PredictCompletResponse(BaseModel):
     prediction_id: Optional[int] = Field(
         None, description="ID en base si persisté, None sinon"
     )
+    deja_existante: bool = Field(
+        False,
+        description="True si la prédiction existait déjà en base (données inchangées)",
+    )

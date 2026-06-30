@@ -5,7 +5,6 @@ Opérations de base sur les entités principales :
   - Client       : create, get, list, update, soft_delete
   - Prediction   : create, list par client
   - Contrat      : create
-  - Sinistre     : create
 
 Toutes les fonctions reçoivent une session SQLAlchemy (db) en premier argument.
 Le soft delete utilise date_suppression — jamais de DELETE physique sur les clients.
@@ -16,7 +15,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from database.models import Article, Client, Contrat, DonneesMeteo, Prediction, Sinistre
+from database.models import Article, Client, Contrat, DonneesMeteo, Prediction
 
 
 # ── Client ────────────────────────────────────────────────────────────────────
@@ -32,6 +31,7 @@ def create_client(
     region_id: int,
     email: Optional[str] = None,
     telephone: Optional[str] = None,
+    a_un_compte: bool = False,
 ) -> Client:
     """Crée un nouveau client et le persiste en base.
 
@@ -45,6 +45,7 @@ def create_client(
         region_id: FK vers la table regions.
         email: Adresse e-mail (optionnel).
         telephone: Numéro de téléphone (optionnel).
+        a_un_compte: True si le client a créé un compte utilisateur.
 
     Returns:
         Client: Instance persistée avec client_id assigné.
@@ -58,6 +59,7 @@ def create_client(
         region_id=region_id,
         email=email,
         telephone=telephone,
+        a_un_compte=a_un_compte,
     )
     db.add(client)
     db.commit()
@@ -98,7 +100,7 @@ def get_clients(
     query = db.query(Client)
     if actifs_only:
         query = query.filter(Client.date_suppression.is_(None))
-    return query.offset(skip).limit(limit).all()
+    return query.order_by(Client.client_id).offset(skip).limit(limit).all()
 
 
 def update_client(
@@ -208,6 +210,24 @@ def get_predictions_by_client(db: Session, client_id: int) -> list[Prediction]:
     return db.query(Prediction).filter(Prediction.client_id == client_id).all()
 
 
+def get_last_prediction_by_client(db: Session, client_id: int) -> Optional[Prediction]:
+    """Retourne la prédiction la plus récente d'un client, ou None.
+
+    Args:
+        db: Session SQLAlchemy active.
+        client_id: FK vers la table clients.
+
+    Returns:
+        Dernière Prediction ou None si aucune n'existe.
+    """
+    return (
+        db.query(Prediction)
+        .filter(Prediction.client_id == client_id)
+        .order_by(Prediction.date_prediction.desc())
+        .first()
+    )
+
+
 # ── Contrat ───────────────────────────────────────────────────────────────────
 
 
@@ -309,52 +329,17 @@ def update_contrat_statut(
     return contrat
 
 
-# ── Sinistre ──────────────────────────────────────────────────────────────────
-
-
-def get_sinistres(
-    db: Session,
-    contrat_id: Optional[int] = None,
-    skip: int = 0,
-    limit: int = 100,
-) -> list[Sinistre]:
-    """Retourne une liste paginée de sinistres, avec filtre optionnel par contrat.
-
-    Args:
-        db: Session SQLAlchemy active.
-        contrat_id: Si fourni, filtre les sinistres de ce contrat uniquement.
-        skip: Décalage pagination.
-        limit: Nombre maximum de résultats.
-
-    Returns:
-        Liste de Sinistre.
-    """
-    query = db.query(Sinistre)
-    if contrat_id is not None:
-        query = query.filter(Sinistre.contrat_id == contrat_id)
-    return query.offset(skip).limit(limit).all()
-
-
-def update_sinistre_statut(
-    db: Session, sinistre_id: int, statut_sinistre: str
-) -> Optional[Sinistre]:
-    """Modifie le statut de traitement d'un sinistre.
-
-    Args:
-        db: Session SQLAlchemy active.
-        sinistre_id: Clé primaire du sinistre.
-        statut_sinistre: Nouveau statut — 'en_cours', 'accepte', 'refuse', 'rembourse'.
-
-    Returns:
-        Sinistre mis à jour, ou None si sinistre_id inexistant.
-    """
-    sinistre = db.query(Sinistre).filter(Sinistre.sinistre_id == sinistre_id).first()
-    if sinistre is None:
+def update_contrat_prime(
+    db: Session, contrat_id: int, prime_mensuelle: float
+) -> Optional[Contrat]:
+    """Met à jour la prime mensuelle d'un contrat existant."""
+    contrat = get_contrat(db, contrat_id)
+    if contrat is None:
         return None
-    sinistre.statut_sinistre = statut_sinistre
+    contrat.prime_mensuelle = prime_mensuelle
     db.commit()
-    db.refresh(sinistre)
-    return sinistre
+    db.refresh(contrat)
+    return contrat
 
 
 # ── Article et DonneesMeteo (lecture seule) ───────────────────────────────────
@@ -412,44 +397,3 @@ def get_donnees_meteo(
     if saison:
         query = query.filter(DonneesMeteo.saison == saison)
     return query.offset(skip).limit(limit).all()
-
-
-# ── Sinistre (create) ─────────────────────────────────────────────────────────
-
-
-def create_sinistre(
-    db: Session,
-    contrat_id: int,
-    date_sinistre,
-    montant_sinistre: float,
-    type_sinistre: str,
-    statut_sinistre: str = "en_cours",
-    description: Optional[str] = None,
-) -> Sinistre:
-    """Crée un événement de sinistre rattaché à un contrat.
-
-    Args:
-        db: Session SQLAlchemy active.
-        contrat_id: FK vers la table contrats.
-        date_sinistre: Date du sinistre (date ou datetime).
-        montant_sinistre: Montant en USD (> 0).
-        type_sinistre: Type parmi hospitalisation/consultation/pharmacie/
-                       chirurgie/urgence/autre.
-        statut_sinistre: Statut initial — 'en_cours' par défaut.
-        description: Texte libre de description (optionnel).
-
-    Returns:
-        Sinistre: Instance persistée avec sinistre_id assigné.
-    """
-    sinistre = Sinistre(
-        contrat_id=contrat_id,
-        date_sinistre=date_sinistre,
-        montant_sinistre=montant_sinistre,
-        type_sinistre=type_sinistre,
-        statut_sinistre=statut_sinistre,
-        description=description,
-    )
-    db.add(sinistre)
-    db.commit()
-    db.refresh(sinistre)
-    return sinistre

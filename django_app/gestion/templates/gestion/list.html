@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion clients{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Gestion clients</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'gestion:create' %}" class="btn btn-primary btn-sm">+ Nouveau client</a>
+    <a href="{% url 'accounts:create_admin' %}" class="btn btn-outline-secondary btn-sm">+ Admin</a>
+  </div>
+</div>
+
+<form method="get" class="d-flex gap-2 mb-3 align-items-center">
+  <input type="search" name="q" value="{{ q }}" placeholder="Rechercher par ID client…"
+         class="form-control form-control-sm" style="max-width:220px">
+  <select name="sort" class="form-select form-select-sm" style="max-width:240px" onchange="this.form.submit()">
+    <option value="id_asc"    {% if sort == 'id_asc'    %}selected{% endif %}>ID croissant</option>
+    <option value="id_desc"   {% if sort == 'id_desc'   %}selected{% endif %}>ID décroissant</option>
+    <option value="risque_asc" {% if sort == 'risque_asc' %}selected{% endif %}>Risque croissant</option>
+    <option value="risque_desc"{% if sort == 'risque_desc'%}selected{% endif %}>Risque décroissant</option>
+  </select>
+  <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
+  {% if q %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Âge</th>
+            <th>Sexe</th>
+            <th>IMC</th>
+            <th>Fumeur</th>
+            <th>Enfants</th>
+            <th>Région</th>
+            <th>Risque</th>
+            <th>Compte</th>
+            <th>Contrat</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+          {% if not client.date_suppression %}
+          <tr>
+            <td>{{ client.client_id }}</td>
+            <td>{{ client.age }}</td>
+            <td>{{ client.sexe|capfirst }}</td>
+            <td>{{ client.imc }}</td>
+            <td>{% if client.fumeur %}<span class="badge bg-danger">Oui</span>{% else %}<span class="badge bg-light text-dark">Non</span>{% endif %}</td>
+            <td>{{ client.enfants }}</td>
+            <td>{{ client.region_nom }}</td>
+            <td>
+              {% if client.categorie_risque %}
+                <span class="badge
+                  {% if client.categorie_risque == 'faible' %}bg-success
+                  {% elif client.categorie_risque == 'moyen' %}bg-warning text-dark
+                  {% elif client.categorie_risque == 'eleve' %}bg-orange
+                  {% else %}bg-danger{% endif %}">
+                  {{ client.categorie_risque|capfirst }}
+                </span>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if client.a_un_compte %}<span title="A un compte utilisateur">👤</span>{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td>
+              {% if client.contrat %}
+                <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
+                  {{ client.contrat.statut|capfirst }}
+                </span>
+              {% else %}
+                <span class="text-muted small">Aucun</span>
+              {% endif %}
+            </td>
+            <td class="table-actions">
+              <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">Fiche</a>
+              <a href="{% url 'gestion:score' client.client_id %}" class="btn btn-outline-primary btn-sm">Scorer</a>
+              {% if not client.contrat %}
+                <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm">+ Contrat</a>
+              {% elif client.contrat.statut == 'actif' %}
+                <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="statut" value="resilie">
+                  <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                  <button type="submit" class="btn btn-outline-warning btn-sm">Résilier</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="statut" value="actif">
+                  <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                  <button type="submit" class="btn btn-outline-success btn-sm">Réactiver</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
+          {% empty %}
+          <tr><td colspan="11" class="text-center text-muted py-4">Aucun client</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

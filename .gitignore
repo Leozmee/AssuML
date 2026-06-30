@@ -37,3 +37,6 @@ data/big_data/
 data/external/
 
 .claude/
+
+# Specs (documentation interne, non versionnée)
+specs/

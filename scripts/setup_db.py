@@ -68,7 +68,7 @@ def executer_schema(schema_path: Path) -> None:
 def rapport_validation() -> None:
     """Affiche un rapport de validation des tables principales."""
     with engine.connect() as conn:
-        tables = ["regions", "clients", "predictions", "contrats", "sinistres"]
+        tables = ["regions", "clients", "predictions", "contrats"]
         print("\nRapport de validation :")
         for table in tables:
             result = conn.execute(text(f"SELECT COUNT(*) FROM {table}"))  # noqa: S608

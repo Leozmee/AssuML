@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer un compte{% endblock %}
+
+{% block extra_js %}{% endblock %}
+
+{% block main_content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-header py-3" style="background: #1f4e79; color: white;">
+        <h3 class="mb-0 fs-5">Créer un compte assuré</h3>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <h6 class="text-muted mb-3 text-uppercase small">Identifiants</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label">{{ form.email.label }}</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ form.password1.label }}</label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ form.password2.label }}</label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <hr>
+          <h6 class="text-muted mb-3 text-uppercase small">Profil médical</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">{{ form.age.label }}</label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="text-danger small">{{ form.age.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.sexe.label }}</label>
+              {{ form.sexe }}
+              {% if form.sexe.errors %}<div class="text-danger small">{{ form.sexe.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.region.label }}</label>
+              {{ form.region }}
+              {% if form.region.errors %}<div class="text-danger small">{{ form.region.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          {% include 'components/imc_calculator.html' %}
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">{{ form.enfants.label }}</label>
+              {{ form.enfants }}
+              {% if form.enfants.errors %}<div class="text-danger small">{{ form.enfants.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                {{ form.fumeur }}
+                <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>
+              </div>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-success w-100">Créer mon compte</button>
+        </form>
+      </div>
+      <div class="card-footer text-center py-3">
+        <small>Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

@@ -6,8 +6,8 @@ import streamlit as st
 
 
 def afficher_kpis(kpis: dict) -> None:
-    """Affiche les 5 KPIs globaux en colonnes."""
-    c1, c2, c3, c4, c5 = st.columns(5)
+    """Affiche les KPIs globaux en colonnes."""
+    c1, c2, c3, c4 = st.columns(4)
 
     c1.metric(
         label="Clients actifs",
@@ -17,20 +17,16 @@ def afficher_kpis(kpis: dict) -> None:
         label="Contrats actifs",
         value=f"{kpis.get('nb_contrats_actifs', 0):,}",
     )
-    c3.metric(
-        label="Sinistres en cours",
-        value=f"{kpis.get('sinistres_en_cours', 0):,}",
-    )
 
     cout_moyen = kpis.get("cout_moyen_predit")
-    c4.metric(
+    c3.metric(
         label="Coût moyen prédit",
         value=f"${cout_moyen:,.0f}" if cout_moyen is not None else "N/A",
     )
 
     rep = kpis.get("repartition_risque", {})
     total_pred = sum(rep.values())
-    c5.metric(
+    c4.metric(
         label="Prédictions totales",
         value=f"{total_pred:,}",
     )
@@ -48,6 +44,24 @@ def badge_decision(decision: str) -> str:
     return (
         f'<span style="background:{bg};color:{fg};padding:4px 12px;'
         f'border-radius:6px;font-weight:bold;font-size:1.1em;">{label}</span>'
+    )
+
+
+def badge_categorie_risque(categorie) -> str:
+    """Retourne le HTML d'un badge de catégorie de risque ML."""
+    if categorie is None:
+        return '<span style="color:#6c757d;font-size:0.85em;">Aucune prédiction</span>'
+    mapping = {
+        "faible": ("#28a745", "Faible"),
+        "moyen": ("#ffc107", "Moyen"),
+        "eleve": ("#fd7e14", "Élevé"),
+        "critique": ("#dc3545", "Critique"),
+    }
+    bg, libelle = mapping.get(categorie, ("#6c757d", categorie.capitalize()))
+    color = "white" if categorie != "moyen" else "#212529"
+    return (
+        f'<span style="background:{bg};color:{color};padding:2px 8px;'
+        f'border-radius:4px;font-size:0.85em;font-weight:bold;">{libelle}</span>'
     )
 
 

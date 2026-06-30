@@ -110,6 +110,10 @@ def get_kpis():
     return _get("/stats/kpis")
 
 
+def get_dernieres_predictions():
+    return _get("/stats/dernieres-predictions")
+
+
 # ── Clients ────────────────────────────────────────────────────────────────────
 
 
@@ -200,42 +204,6 @@ def create_contrat(data: dict):
 
 def update_contrat_statut(contrat_id: int, statut: str):
     return _put(f"/contrats/{contrat_id}/statut", {"statut": statut})
-
-
-# ── Sinistres ──────────────────────────────────────────────────────────────────
-
-
-def get_sinistres(contrat_id: int = None, skip: int = 0, limit: int = 100):
-    params = {"skip": skip, "limit": limit}
-    if contrat_id is not None:
-        params["contrat_id"] = contrat_id
-    return _get("/sinistres/", params=params)
-
-
-def get_all_sinistres():
-    """Récupère tous les sinistres en gérant la pagination."""
-    all_sinistres = []
-    skip = 0
-    limit = 100
-    while True:
-        data, err = get_sinistres(skip=skip, limit=limit)
-        if err:
-            return None, err
-        if not data:
-            break
-        all_sinistres.extend(data)
-        if len(data) < limit:
-            break
-        skip += limit
-    return all_sinistres, None
-
-
-def create_sinistre(data: dict):
-    return _post("/sinistres/", data)
-
-
-def update_sinistre_statut(sinistre_id: int, statut: str):
-    return _put(f"/sinistres/{sinistre_id}/statut", {"statut_sinistre": statut})
 
 
 # ── Articles ───────────────────────────────────────────────────────────────────

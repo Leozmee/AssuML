@@ -23,7 +23,8 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - PostgreSQL 15+ — tables `regions` et `clients` uniquemen (011-seed-database)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
-- **Frontend**: Streamlit 1.32+, Plotly Express
+- **Frontend principal**: Django 5.2+, Bootstrap 5, Plotly.js (port 8001)
+- **Frontend POC**: Streamlit 1.32+, Plotly Express (port 8501 — conservé)
 - **BDD**: PostgreSQL 15+, DuckDB 0.10+ (lecture seule Parquet)
 - **ML**: scikit-learn 1.4+, Pandas 2.0+, NumPy, Joblib
 - **ETL**: Requests, BeautifulSoup4 (scraping), OpenWeatherMap API
@@ -48,11 +49,17 @@ AssuML/
 ├── data_pipeline/transform/             # Transformations par source
 ├── data_pipeline/load/db_loader.py
 ├── api/main.py                          # FastAPI app (port 8000)
-├── api/models/                          # SQLAlchemy ORM (7 tables)
+├── api/models/                          # SQLAlchemy ORM (6 tables)
 ├── api/schemas/                         # Pydantic schemas
 ├── api/routers/                         # Endpoints par domaine
-├── streamlit_app/app.py                 # Streamlit (port 8501)
-├── streamlit_app/pages/                 # 5 modules
+├── django_app/                          # Django frontend principal (port 8001)
+│   ├── config/                          # settings, urls, wsgi
+│   ├── utils/api_client.py              # SEULE couche HTTP vers FastAPI
+│   ├── accounts/                        # Auth double rôle admin/user
+│   ├── scoring/ gestion/ analytics/     # 5 modules métier
+│   └── monitoring/ actualites/
+├── streamlit_app/app.py                 # Streamlit POC (port 8501 — conservé)
+├── streamlit_app/pages/                 # 5 modules POC
 ├── database/schema.sql                  # DDL PostgreSQL
 ├── tests/unit/                          # Tests unitaires ML/business
 ├── tests/integration/                   # Tests API
@@ -67,7 +74,8 @@ AssuML/
 ```bash
 # Démarrage développement
 uvicorn api.main:app --reload --port 8000
-streamlit run streamlit_app/app.py --server.port 8501
+python django_app/manage.py runserver 8001   # Frontend principal
+streamlit run streamlit_app/app.py --server.port 8501  # POC uniquement
 
 # Entraînement ML
 python ml_models/training/train_regression.py
@@ -107,18 +115,22 @@ docker compose up --build
 
 ## Règles architecture
 
-- Streamlit → FastAPI → PostgreSQL (toujours via API pour les données relationnelles)
-- Exception : `2_analytics.py` appelle DuckDB directement (lecture seule Parquet)
+- Django → FastAPI → PostgreSQL (frontend principal, toujours via API pour les données relationnelles)
+- Streamlit → FastAPI → PostgreSQL (POC conservé, même règle)
+- Exception unique Analytics : DuckDB appelé directement (lecture seule Parquet, performances 10 M lignes)
+- `django_app/utils/api_client.py` est la SEULE couche qui parle à FastAPI depuis Django
 - Soft delete : `UPDATE clients SET date_suppression = NOW()` — jamais de DELETE physique
 - Les modèles ML sont chargés une fois au démarrage FastAPI (singleton)
-- Ports : API=8000, Streamlit=8501, Prometheus=9090, Grafana=3000, PostgreSQL=5432
+- Ports : API=8000, Django=8001, Streamlit=8501 (POC), Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
-- 011-seed-database: Added Python 3.11 + SQLAlchemy 2.0+ (ORM existant), Pandas 2.0+, python-dotenv
-- 011-seed-database: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 009-bigdata-duckdb-parquet: Added Python 3.11 + NumPy, Pandas 2.0+, PyArrow, DuckDB, Plotly Express, Streamlit 1.32+
+- 012-django-frontend-migration: Django 5.2 devient frontend principal (port 8001), Streamlit rétrogradé en POC
+- predict-evol: Table `sinistres` supprimée → 6 tables PostgreSQL désormais
+- predict-evol: Colonne `a_un_compte BOOLEAN DEFAULT FALSE` ajoutée à `clients`
+- 011-seed-database: seed.py charge insurance.csv → table clients (1 338 lignes)
+- 009-bigdata-duckdb-parquet: DuckDB + Parquet 10 M lignes pour Analytics
 
-  (stack Python, architecture 3 couches, 7 tables PostgreSQL, 2 modèles ML,
+  (stack Python, architecture 3 couches, 6 tables PostgreSQL, 2 modèles ML,
   Big Data DuckDB, ETL 3 sources, CI/CD GitHub Actions, monitoring Prometheus)
 
 <!-- MANUAL ADDITIONS START -->
@@ -132,7 +144,6 @@ docker compose up --build
 | `clients` | 1 338 lignes — chargées par `database/seed.py` depuis `insurance.csv` |
 | `predictions` | **vide** — remplie uniquement via l'endpoint `/predict/complet` |
 | `contrats` | **vide** — créés par l'assureur via le module CRUD |
-| `sinistres` | **vide** — déclarés par l'assureur via le module CRUD |
 
 ### Transformations insurance.csv → table clients
 - `sex` : `female`→`femme`, `male`→`homme`
@@ -143,7 +154,9 @@ docker compose up --build
 - `charges` → **ignoré** (donnée du dataset ML, pas une prédiction produite par l'app)
 
 ### Flux métier scoring (NE PAS court-circuiter)
-L'assureur ouvre Streamlit → sélectionne un client → clique "Scorer" → l'API appelle `/predict/complet` → les deux modèles ML tournent en direct → `business/scoring.py` calcule prime + décision → INSERT dans `predictions`.
+L'assureur ouvre Django (/gestion/ ou /scoring/) → sélectionne un client → clique "Scorer" → Django appelle FastAPI `/predict/complet` → les deux modèles ML tournent en direct → `business/scoring.py` calcule prime + décision → INSERT dans `predictions`.
+
+Le même flux existe dans le POC Streamlit mais Django est l'interface de référence pour la soutenance.
 
 Ne jamais pré-remplir `predictions` depuis un script. Le jury doit voir les modèles ML travailler en live.
 

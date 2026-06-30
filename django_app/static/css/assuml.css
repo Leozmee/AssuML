@@ -1,0 +1,155 @@
+/* AssuML — palette cohérente avec le POC Streamlit */
+
+:root {
+  --primary: #1f4e79;
+  --primary-light: #2e75b6;
+  --accent: #3b82f6;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --bg-sidebar: #1f4e79;
+  --bg-body: #f8fafc;
+  --text-sidebar: #e2e8f0;
+}
+
+body {
+  background-color: var(--bg-body);
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--bg-sidebar);
+  color: var(--text-sidebar);
+  padding: 1.5rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.sidebar .brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 0 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sidebar .brand small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.6);
+  margin-top: 2px;
+}
+
+.sidebar .nav-link {
+  color: var(--text-sidebar);
+  padding: 0.55rem 1.25rem;
+  border-radius: 0;
+  transition: background 0.15s;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sidebar .nav-link .icon {
+  width: 1.2rem;
+  margin-right: 0.6rem;
+  text-align: center;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Main content ─────────────────────────────────────────────────────────── */
+.main-content {
+  margin-left: 240px;
+  padding: 1.5rem 2rem;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+/* ── KPI Cards ─────────────────────────────────────────────────────────────── */
+.kpi-card {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--accent);
+}
+
+.kpi-card .kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.kpi-card .kpi-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Badges décision ──────────────────────────────────────────────────────── */
+.badge-accepter { background-color: #dcfce7; color: #166534; }
+.badge-examiner { background-color: #fef9c3; color: #92400e; }
+.badge-refuser  { background-color: #fee2e2; color: #991b1b; }
+
+/* ── Table clients ─────────────────────────────────────────────────────────── */
+.table-actions .btn { padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+
+/* ── IMC calculator ────────────────────────────────────────────────────────── */
+#imc-resultat {
+  font-size: 1rem;
+  margin-top: 0.4rem;
+}
+
+/* ── Scoring résultat ─────────────────────────────────────────────────────── */
+.score-section {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
+}
+
+.score-section.faible  { border-left: 4px solid #16a34a; }
+.score-section.moyen   { border-left: 4px solid #d97706; }
+.score-section.eleve   { border-left: 4px solid #ea580c; }
+.score-section.critique { border-left: 4px solid #dc2626; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { width: 100%; min-height: auto; position: relative; }
+  .main-content { margin-left: 0; }
+}

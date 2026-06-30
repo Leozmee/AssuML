@@ -24,7 +24,7 @@ st.markdown(
     |--------|-------------|
     | 🎯 Scoring | Prédiction de coût, risque et prime à partir d'un profil |
     | 📊 Analytics | KPIs du portefeuille et tableau de bord Big Data |
-    | 👥 CRUD | Gestion des clients, contrats et sinistres |
+    | 👥 CRUD | Gestion des clients et contrats |
     | 📈 Monitoring | Santé API, métriques ML et détection de drift |
     | 📰 Actualités | Articles santé et données météo régionales |
     """

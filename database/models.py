@@ -69,6 +69,7 @@ class Client(Base):
     imc: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)
     enfants: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     fumeur: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    a_un_compte: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     telephone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     date_creation: Mapped[datetime] = mapped_column(
@@ -109,7 +110,7 @@ class Prediction(Base):
     categorie_risque: Mapped[Optional[str]] = mapped_column(String(20))
     decision: Mapped[Optional[str]] = mapped_column(String(20))
     prime: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
-    version_modele: Mapped[Optional[str]] = mapped_column(String(20))
+    version_modele: Mapped[Optional[str]] = mapped_column(String(60))
     date_prediction: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
@@ -153,41 +154,6 @@ class Contrat(Base):
 
     # Relations
     client: Mapped["Client"] = relationship(back_populates="contrats")
-    sinistres: Mapped[List["Sinistre"]] = relationship(back_populates="contrat")
-
-
-class Sinistre(Base):
-    """Événement de sinistre rattaché à un contrat."""
-
-    __tablename__ = "sinistres"
-    __table_args__ = (
-        CheckConstraint("montant_sinistre > 0", name="chk_sinistres_montant"),
-        CheckConstraint(
-            "type_sinistre IN ("
-            "'hospitalisation', 'consultation', 'pharmacie', "
-            "'chirurgie', 'urgence', 'autre')",
-            name="chk_sinistres_type",
-        ),
-        CheckConstraint(
-            "statut_sinistre IN ('en_cours', 'accepte', 'refuse', 'rembourse')",
-            name="chk_sinistres_statut",
-        ),
-    )
-
-    sinistre_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    contrat_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("contrats.contrat_id", ondelete="CASCADE"), nullable=False
-    )
-    date_sinistre: Mapped[date] = mapped_column(Date, nullable=False)
-    montant_sinistre: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-    type_sinistre: Mapped[str] = mapped_column(String(50), nullable=False)
-    statut_sinistre: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="en_cours"
-    )
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    # Relations
-    contrat: Mapped["Contrat"] = relationship(back_populates="sinistres")
 
 
 class DonneesMeteo(Base):
