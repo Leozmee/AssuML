@@ -16,62 +16,49 @@
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="brand">
-      AssuML
-      <small>Assurance ML</small>
+      <img src="{% static 'img/logo-assuml-light.png' %}" alt="AssuML" class="brand-logo">
     </div>
 
-    <ul class="nav flex-column mt-3">
+    <ul class="nav flex-column mt-1">
       {% if user.profil.role == 'admin' %}
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'scoring' %}active{% endif %}"
-             href="{% url 'scoring:index' %}">
-            <span class="icon">🎯</span> Scoring
-          </a>
+             href="{% url 'scoring:index' %}">Scoring ML</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'gestion' %}active{% endif %}"
-             href="{% url 'gestion:list' %}">
-            <span class="icon">👥</span> Gestion clients
-          </a>
+             href="{% url 'gestion:list' %}">Gestion clients</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'analytics' %}active{% endif %}"
-             href="{% url 'analytics:dashboard' %}">
-            <span class="icon">📊</span> Analytics
-          </a>
+             href="{% url 'analytics:dashboard' %}">Analytics</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'monitoring' %}active{% endif %}"
-             href="{% url 'monitoring:dashboard' %}">
-            <span class="icon">🔍</span> Monitoring
-          </a>
+             href="{% url 'monitoring:dashboard' %}">Monitoring</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'actualites' %}active{% endif %}"
-             href="{% url 'actualites:list' %}">
-            <span class="icon">📰</span> Actualités
-          </a>
+             href="{% url 'actualites:list' %}">Actualités</a>
         </li>
       {% else %}
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.url_name == 'mon_compte' %}active{% endif %}"
-             href="{% url 'accounts:mon_compte' %}">
-            <span class="icon">👤</span> Mon compte
-          </a>
+             href="{% url 'accounts:mon_compte' %}">Mon compte</a>
         </li>
       {% endif %}
     </ul>
 
     <div class="sidebar-footer">
       {{ user.email }}<br>
-      <a href="{% url 'accounts:logout' %}" class="text-white-50">Se déconnecter</a>
+      <a href="{% url 'accounts:logout' %}">Se déconnecter</a>
     </div>
   </nav>
 
-  <!-- Contenu principal avec sidebar -->
+  <!-- Contenu principal -->
   <main class="main-content flex-grow-1">
     {% if messages %}
-      <div class="mb-3">
+      <div style="padding:16px 32px 0;">
         {% for message in messages %}
           <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
             {{ message }}
@@ -85,21 +72,19 @@
 </div>
 
 {% else %}
-<!-- Page sans sidebar (login, register) -->
-<div class="container-fluid">
-  {% if messages %}
-    <div class="row justify-content-center mt-3">
-      <div class="col-md-6">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-  {% block main_content %}{% endblock %}
+<!-- Pages sans sidebar (login, register) -->
+<div class="auth-wrap">
+  <div style="width:100%;max-width:460px;">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-3" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block main_content %}{% endblock %}
+  </div>
 </div>
 {% endif %}
 

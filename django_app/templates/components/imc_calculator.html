@@ -1,24 +1,21 @@
 {% load static %}
-{# Partial réutilisable : inputs poids + taille + affichage IMC live #}
-<div class="row g-3 mb-3">
-  <div class="col-md-4">
-    <label for="id_poids" class="form-label">Poids (kg)</label>
-    {{ form.poids }}
-    {% if form.poids.errors %}
-      <div class="text-danger small">{{ form.poids.errors.0 }}</div>
-    {% endif %}
-  </div>
-  <div class="col-md-4">
+<div class="row g-3 mb-2">
+  <div class="col-6">
     <label for="id_taille" class="form-label">Taille (cm)</label>
     {{ form.taille }}
     {% if form.taille.errors %}
       <div class="text-danger small">{{ form.taille.errors.0 }}</div>
     {% endif %}
   </div>
-  <div class="col-md-4 d-flex align-items-end">
-    <div>
-      <span id="imc-resultat" class="text-muted">IMC calculé : —</span>
-    </div>
+  <div class="col-6">
+    <label for="id_poids" class="form-label">Poids (kg)</label>
+    {{ form.poids }}
+    {% if form.poids.errors %}
+      <div class="text-danger small">{{ form.poids.errors.0 }}</div>
+    {% endif %}
   </div>
+</div>
+<div class="mb-3">
+  <span id="imc-resultat">IMC calculé : —</span>
 </div>
 <script src="{% static 'js/imc.js' %}"></script>

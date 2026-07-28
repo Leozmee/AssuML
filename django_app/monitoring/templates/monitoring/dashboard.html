@@ -6,8 +6,11 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>🔍 Monitoring système</h1>
-  <small class="text-muted">Auto-refresh toutes les 10s</small>
+  <div>
+    <h1>Monitoring système</h1>
+    <div class="subtitle">Auto-refresh 10s</div>
+  </div>
+  <span style="font-size:.78rem;color:var(--success);">● Auto-refresh 10s</span>
 </div>
 
 <!-- Santé API -->
@@ -80,19 +83,19 @@
   <div class="card-body">
     <div class="row g-3">
       <div class="col-md-3 text-center">
-        <div class="fw-bold fs-5 text-primary">0.783</div>
+        <div class="metric-blue">0.783</div>
         <div class="text-muted small">R² Régression</div>
       </div>
       <div class="col-md-3 text-center">
-        <div class="fw-bold fs-5 text-primary">4 812 $</div>
+        <div class="metric-blue">4 812 $</div>
         <div class="text-muted small">RMSE Régression</div>
       </div>
       <div class="col-md-3 text-center">
-        <div class="fw-bold fs-5 text-success">87.3%</div>
+        <div class="metric-green">87.3%</div>
         <div class="text-muted small">Accuracy Classification</div>
       </div>
       <div class="col-md-3 text-center">
-        <div class="fw-bold fs-5 text-success">0.871</div>
+        <div class="metric-green">0.871</div>
         <div class="text-muted small">F1-Score Classification</div>
       </div>
     </div>
