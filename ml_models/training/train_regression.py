@@ -2,7 +2,8 @@
 Script d'entraînement standalone — Modèle de Régression.
 
 Usage :
-    python -m ml_models.training.train_regression
+    python -m ml_models.training.train_regression            # entraînement
+    python -m ml_models.training.train_regression --search    # GridSearchCV
 
 Fichiers produits :
     ml_models/saved_models/regression.pkl  — Pipeline sklearn complet (gitignored)
@@ -20,6 +21,7 @@ Constitution AssuML — Principes respectés :
 
 import json
 import os
+import sys
 from datetime import date
 
 import joblib
@@ -28,7 +30,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -58,12 +60,28 @@ PASSTHROUGH_COLS = [
     "region_southwest",
 ]
 
-# Hyperparamètres optimaux (issus de GridSearchCV — notebook 03)
+# Hyperparamètres — historique de recherche
+# ------------------------------------------
+# Origine : grille GridSearchCV (cv=5, scoring='r2') — notebook 03, Section 5 —
+#   n_estimators=[100,200], max_depth=[3,4,5], min_samples_split=[2,5],
+#   min_samples_leaf=[1,2] → 24 combinaisons x 5 folds, résultat retenu :
+#   (200, 4, 2, 1). Cette grille ne testait ni learning_rate ni subsample.
+#
+# Revu le 2026-07-01 : la config (200, 4, 2, 1) présentait un sur-apprentissage
+# net (R² train=0.9554 vs test=0.8533, écart=0.102). Une grille élargie
+# (rechercher_hyperparametres() ci-dessous, 432 combinaisons x 5 folds) incluant
+# learning_rate et subsample a trouvé une config bien plus robuste :
+#   (100, 2, 5, 1, learning_rate=0.1, subsample=0.8)
+#   → R² test=0.8806 (vs 0.8533), écart train-test=-0.003 (quasi nul),
+#   R² CV dataset complet=0.8600±0.0301 (vs 0.8315±0.0429), MAE test=2441.96$
+#   (vs 2666.63$). Amélioration sur toutes les métriques, adoptée.
 BEST_PARAMS = {
-    "n_estimators": 200,
-    "max_depth": 4,
-    "min_samples_split": 2,
+    "n_estimators": 100,
+    "max_depth": 2,
+    "min_samples_split": 5,
     "min_samples_leaf": 1,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
 }
 
 RANDOM_STATE = 42
@@ -174,6 +192,71 @@ def sauvegarder_metadata(metriques_test, metriques_cv, best_params):
     print(f"✅ Metadata sauvegardée : {METADATA_PATH}")
 
 
+def rechercher_hyperparametres():
+    """Relance le GridSearchCV de vérification des BEST_PARAMS (essai 2026-07-01).
+
+    Reproduit le split de main() (train_test_split, test_size=0.2, random_state=42)
+    et explore une grille élargie autour de la config d'origine du notebook 03,
+    incluant learning_rate et subsample — jamais testés dans la grille d'origine
+    (24 combinaisons, cf. commentaire au-dessus de BEST_PARAMS).
+
+    N'est pas appelée par main() ; à lancer explicitement via
+    `python -m ml_models.training.train_regression --search`.
+    """
+    X, y = charger_donnees()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=RANDOM_STATE
+    )
+
+    pipeline_gs = Pipeline(
+        [
+            (
+                "preprocessor",
+                ColumnTransformer(
+                    [
+                        ("scaler", StandardScaler(), NUMERIC_COLS),
+                        ("passthrough", "passthrough", PASSTHROUGH_COLS),
+                    ]
+                ),
+            ),
+            ("model", GradientBoostingRegressor(random_state=RANDOM_STATE)),
+        ]
+    )
+
+    param_grid = {
+        "model__n_estimators": [100, 150, 200],
+        "model__max_depth": [2, 3, 4, 5],
+        "model__min_samples_split": [2, 5, 10],
+        "model__min_samples_leaf": [1, 2],
+        "model__learning_rate": [0.05, 0.1, 0.2],
+        "model__subsample": [0.8, 1.0],
+    }
+    n_combos = 1
+    for valeurs in param_grid.values():
+        n_combos *= len(valeurs)
+    print(f"Grille : {n_combos} combinaisons x 5 folds = {n_combos * 5} fits")
+
+    grid_search = GridSearchCV(
+        pipeline_gs, param_grid, cv=5, scoring="r2", n_jobs=-1, verbose=1
+    )
+    grid_search.fit(X_train, y_train)
+
+    print(f"\n✅ Meilleurs hyperparamètres : {grid_search.best_params_}")
+    print(f"   R² CV moyen (X_train) : {grid_search.best_score_:.4f}")
+
+    y_pred_gs = grid_search.best_estimator_.predict(X_test)
+    print("\n--- Métriques test (candidat GridSearchCV) ---")
+    print(f"R²  : {r2_score(y_test, y_pred_gs):.4f}")
+    print(f"MAE : {mean_absolute_error(y_test, y_pred_gs):.2f} $")
+
+    baseline = construire_pipeline()
+    baseline.fit(X_train, y_train)
+    y_pred_baseline = baseline.predict(X_test)
+    print("\n--- Métriques test (BEST_PARAMS actuels) ---")
+    print(f"R²  : {r2_score(y_test, y_pred_baseline):.4f}")
+    print(f"MAE : {mean_absolute_error(y_test, y_pred_baseline):.2f} $")
+
+
 def main():
     """Point d'entrée principal du script d'entraînement."""
     print("=" * 55)
@@ -221,4 +304,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--search" in sys.argv:
+        rechercher_hyperparametres()
+    else:
+        main()
