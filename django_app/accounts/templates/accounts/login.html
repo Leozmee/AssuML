@@ -1,36 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Connexion{% endblock %}
 
 {% block main_content %}
-<div class="row justify-content-center mt-5">
-  <div class="col-md-5">
-    <div class="card shadow-sm">
-      <div class="card-header text-center py-4" style="background: #1f4e79; color: white;">
-        <h2 class="mb-0 fs-4 fw-bold">AssuML</h2>
-        <small class="opacity-75">Assurance intelligente</small>
-      </div>
-      <div class="card-body p-4">
-        <h3 class="fs-5 mb-4 text-center">Connexion</h3>
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label">{{ form.email.label }}</label>
-            {{ form.email }}
-          </div>
-          <div class="mb-4">
-            <label class="form-label">{{ form.password.label }}</label>
-            {{ form.password }}
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Se connecter</button>
-        </form>
-      </div>
-      <div class="card-footer text-center py-3">
-        <small>Pas encore de compte ?
-          <a href="{% url 'accounts:register' %}">Créer un compte</a>
-        </small>
-      </div>
-    </div>
+<div class="auth-card">
+  <div class="auth-head">
+    <img src="{% static 'img/logo-assuml-light.png' %}" alt="AssuML"
+         style="height:130px;width:auto;display:block;margin:0 auto;">
   </div>
+  <div class="auth-subtitle">Connectez-vous à votre espace</div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label">{{ form.email.label }}</label>
+      {{ form.email }}
+      {% if form.email.errors %}
+        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-4">
+      <label class="form-label">{{ form.password.label }}</label>
+      {{ form.password }}
+      {% if form.password.errors %}
+        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2 mb-3">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100" style="padding:.65rem;">Se connecter</button>
+
+    <div style="text-align:center;margin-top:18px;font-size:.82rem;color:var(--muted);">
+      Pas de compte ? <a href="{% url 'accounts:register' %}" style="color:var(--primary-soft);font-weight:600;">Créer un compte</a>
+    </div>
+  </form>
 </div>
 {% endblock main_content %}

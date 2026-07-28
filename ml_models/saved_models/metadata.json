@@ -14,32 +14,36 @@
   "random_state": 42,
   "regression": {
     "version": "1.0.0",
-    "date_entrainement": "2026-05-04",
+    "date_entrainement": "2026-07-01",
     "algorithme": "GradientBoostingRegressor",
     "hyperparametres": {
-      "n_estimators": 200,
-      "max_depth": 4,
-      "min_samples_split": 2,
-      "min_samples_leaf": 1
+      "n_estimators": 100,
+      "max_depth": 2,
+      "min_samples_split": 5,
+      "min_samples_leaf": 1,
+      "learning_rate": 0.1,
+      "subsample": 0.8
     },
     "metriques_test": {
-      "r2": 0.8533,
-      "mae": 2666.63,
-      "rmse": 4771.56
+      "r2": 0.8806,
+      "mae": 2441.96,
+      "rmse": 4305.06
     },
     "metriques_cv": {
-      "r2_mean": 0.8315,
-      "r2_std": 0.0429
+      "r2_mean": 0.86,
+      "r2_std": 0.0301
     }
   },
   "classification": {
     "version": "1.0.0",
-    "date_entrainement": "2026-05-04",
+    "date_entrainement": "2026-07-01",
     "algorithme": "GradientBoostingClassifier",
     "hyperparametres": {
       "n_estimators": 100,
       "max_depth": 3,
-      "min_samples_split": 5
+      "min_samples_split": 5,
+      "learning_rate": 0.05,
+      "subsample": 0.8
     },
     "metriques_test": {
       "accuracy": 0.8918,
@@ -48,11 +52,11 @@
       "recall_macro": 0.8471
     },
     "metriques_cv": {
-      "accuracy_mean": 0.8871,
-      "accuracy_std": 0.0166
+      "accuracy_mean": 0.8894,
+      "accuracy_std": 0.0141
     }
   },
-  "date_mise_a_jour": "2026-05-04",
+  "date_mise_a_jour": "2026-07-01",
   "target_regression": "charges",
   "target_classification": "categorie_risque"
 }

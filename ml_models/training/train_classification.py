@@ -9,11 +9,13 @@ Produit :
   - ml_models/saved_models/metadata.json       (mis à jour → v1.1.0)
 
 Usage :
-    python -m ml_models.training.train_classification
+    python -m ml_models.training.train_classification            # entraînement
+    python -m ml_models.training.train_classification --search    # GridSearchCV
 """
 
 import json
 import os
+import sys
 from datetime import date
 
 import joblib
@@ -21,7 +23,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -55,11 +57,29 @@ PASSTHROUGH_COLS = [
 CLASSES_ORDER = ["faible", "moyen", "eleve", "critique"]
 RANDOM_STATE = 42
 
-# Hyperparamètres optimaux issus de GridSearchCV (notebook 03, Section 10)
+# Hyperparamètres — historique de recherche
+# ------------------------------------------
+# Origine : grille GridSearchCV (cv=5, scoring='accuracy') sur
+#   n_estimators=[100,200], max_depth=[3,5,None], min_samples_split=[2,5]
+#   → 12 combinaisons x 5 folds, résultat retenu : (100, 3, 5).
+#
+# Revu le 2026-07-01 : après avoir détecté un sur-apprentissage significatif sur
+# la régression (corrigé via subsample), le même diagnostic a été fait ici.
+# La config (100, 3, 5) présentait un écart train-test de 0.0465 (accuracy
+# train=0.9383 vs test=0.8918). Une grille élargie (rechercher_hyperparametres()
+# ci-dessous, jusqu'à 432 combinaisons x 5 folds) incluant learning_rate et
+# subsample a confirmé qu'ajouter learning_rate=0.05 et subsample=0.8 (en
+# gardant n_estimators/max_depth/min_samples_split inchangés) réduit l'écart de
+# 42% (0.0465 → 0.0269) et améliore la robustesse en CV dataset complet
+# (accuracy 0.8871±0.0166 → 0.8894±0.0141), sans rien perdre sur le test set
+# (accuracy=0.8918 inchangée). Adoptée.
+
 BEST_PARAMS = {
     "n_estimators": 100,
     "max_depth": 3,
     "min_samples_split": 5,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
 }
 
 
@@ -189,6 +209,70 @@ def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params):
     print("✅ metadata.json mis à jour → v1.1.0")
 
 
+def rechercher_hyperparametres():
+    """Relance le GridSearchCV de vérification des BEST_PARAMS (essai 2026-07-01).
+
+    Reproduit le split de main() (train_test_split, test_size=0.2, random_state=42,
+    sans stratify) et explore une grille élargie autour de BEST_PARAMS, incluant
+    min_samples_leaf, learning_rate et subsample — jamais testés dans la grille
+    d'origine (12 combinaisons, cf. commentaire au-dessus de BEST_PARAMS).
+
+    N'est pas appelée par main() ; à lancer explicitement via
+    `python -m ml_models.training.train_classification --search`.
+    """
+    X, y = charger_donnees()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=RANDOM_STATE
+    )
+
+    preprocessor = ColumnTransformer(
+        [
+            ("scaler", StandardScaler(), NUMERIC_COLS),
+            ("passthrough", "passthrough", PASSTHROUGH_COLS),
+        ]
+    )
+    pipeline_gs = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            ("model", GradientBoostingClassifier(random_state=RANDOM_STATE)),
+        ]
+    )
+
+    param_grid = {
+        "model__n_estimators": [100, 150, 200],
+        "model__max_depth": [2, 3],
+        "model__min_samples_split": [2, 5, 10],
+        "model__min_samples_leaf": [1, 2],
+        "model__learning_rate": [0.05, 0.1, 0.2],
+        "model__subsample": [0.7, 0.8, 0.9, 1.0],
+    }
+    n_combos = 1
+    for valeurs in param_grid.values():
+        n_combos *= len(valeurs)
+    print(f"Grille : {n_combos} combinaisons x 5 folds = {n_combos * 5} fits")
+
+    grid_search = GridSearchCV(
+        pipeline_gs, param_grid, cv=5, scoring="f1_macro", n_jobs=-1, verbose=1
+    )
+    grid_search.fit(X_train, y_train)
+
+    print(f"\n✅ Meilleurs hyperparamètres : {grid_search.best_params_}")
+    print(f"   f1_macro CV moyen (train) : {grid_search.best_score_:.4f}")
+
+    y_pred_gs = grid_search.best_estimator_.predict(X_test)
+    metriques_gs = calculer_metriques_clf(y_test, y_pred_gs)
+    print("\n--- Métriques test (candidat GridSearchCV) ---")
+    print(f"Accuracy  : {metriques_gs['accuracy']:.4f}")
+    print(f"F1-macro  : {metriques_gs['f1_macro']:.4f}")
+
+    baseline = construire_pipeline()
+    baseline.fit(X_train, y_train)
+    metriques_baseline = calculer_metriques_clf(y_test, baseline.predict(X_test))
+    print("\n--- Métriques test (BEST_PARAMS actuels) ---")
+    print(f"Accuracy  : {metriques_baseline['accuracy']:.4f}")
+    print(f"F1-macro  : {metriques_baseline['f1_macro']:.4f}")
+
+
 def main():
     """Entraîne le modèle de classification et sérialise le pipeline."""
     print("=" * 60)
@@ -239,4 +323,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--search" in sys.argv:
+        rechercher_hyperparametres()
+    else:
+        main()
