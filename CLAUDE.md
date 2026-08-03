@@ -21,6 +21,8 @@ Vérifier le dossier `specs/` à la racine du projet et lire les fichiers corres
 - Parquet (lecture seule) — PAS de PostgreSQL pour cette feature (009-bigdata-duckdb-parquet)
 - Python 3.11 + SQLAlchemy 2.0+ (ORM existant), Pandas 2.0+, python-dotenv (011-seed-database)
 - PostgreSQL 15+ — tables `regions` et `clients` uniquemen (011-seed-database)
+- Python 3.11 + MLflow 3.1+ (Tracking, Model Registry via alias), python-dotenv (013-integration-mlflow)
+- SQLite local (`mlflow.db`) + `mlruns/` — aucun serveur externe (013-integration-mlflow)
 
 - **Backend**: Python 3.11, FastAPI 0.110+, Pydantic v2, SQLAlchemy 2.0+, Uvicorn
 - **Frontend principal**: Django 5.2+, Bootstrap 5, Plotly.js (port 8001)
@@ -40,9 +42,12 @@ AssuML/
 ├── data/small_data/insurance.csv        # Source ML (1 338 lignes)
 ├── data/big_data/insurance_big.parquet  # Big Data 10 M lignes (.gitignore)
 ├── notebooks/exploration.ipynb          # EDA + expérimentation ML
-├── ml_models/training/                  # Scripts d'entraînement
+├── ml_models/training/                  # Scripts d'entraînement (+ MLflow Tracking/Registry)
+├── ml_models/training/mlflow_gate.py    # Gate anti-régression + promotion Model Registry
 ├── ml_models/saved_models/             # .pkl + metadata.json (.gitignore)
 ├── ml_models/prediction/predict.py     # predict_cost(), predict_risk()
+├── mlflow.db                            # Backend SQLite MLflow (.gitignore)
+├── mlruns/                              # Artefacts MLflow Tracking (.gitignore)
 ├── business/scoring.py                  # Calcul prime + décision
 ├── business/risk_engine.py              # Règles métier risque
 ├── data_pipeline/extract/               # csv_extractor, api_extractor, scraper
@@ -77,9 +82,14 @@ uvicorn api.main:app --reload --port 8000
 python django_app/manage.py runserver 8001   # Frontend principal
 streamlit run streamlit_app/app.py --server.port 8501  # POC uniquement
 
-# Entraînement ML
-python ml_models/training/train_regression.py
-python ml_models/training/train_classification.py
+# Entraînement ML (toujours via -m depuis la racine — imports absolus ml_models.*)
+python -m ml_models.training.train_regression
+python -m ml_models.training.train_classification
+
+# MLflow — tracking, garde-fou anti-régression, Model Registry (013-integration-mlflow)
+# --backend-store-uri est OBLIGATOIRE : mlflow ui ne lit PAS MLFLOW_TRACKING_URI
+# tout seul (variable utilisée uniquement côté client Python, pas par le serveur ui)
+mlflow ui --backend-store-uri sqlite:///mlflow.db   # UI locale sur http://localhost:5000
 
 # ETL
 python -m data_pipeline.extract.csv_extractor
@@ -124,6 +134,7 @@ docker compose up --build
 - Ports : API=8000, Django=8001, Streamlit=8501 (POC), Prometheus=9090, Grafana=3000, PostgreSQL=5432
 
 ## Recent Changes
+- 013-integration-mlflow: MLflow Tracking + Model Registry ajoutés aux scripts d'entraînement (gate anti-régression : le `.pkl` n'est remplacé que si strictement meilleur ; alias `production` — pas de stages, dépréciés depuis MLflow 2.9.0)
 - 012-django-frontend-migration: Django 5.2 devient frontend principal (port 8001), Streamlit rétrogradé en POC
 - predict-evol: Table `sinistres` supprimée → 6 tables PostgreSQL désormais
 - predict-evol: Colonne `a_un_compte BOOLEAN DEFAULT FALSE` ajoutée à `clients`

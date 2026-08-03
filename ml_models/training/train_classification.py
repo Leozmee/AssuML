@@ -19,13 +19,22 @@ import sys
 from datetime import date
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+from ml_models.training.mlflow_gate import (
+    est_meilleur_modele,
+    lire_metrique_actuelle,
+    promouvoir_modele,
+)
 
 # ── Chemins ────────────────────────────────────────────────────────────────
 _DIR = os.path.dirname(__file__)
@@ -279,46 +288,69 @@ def main():
     print("Entraînement du modèle de classification — AssuML")
     print("=" * 60)
 
-    # Chargement
-    X, y = charger_donnees()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=RANDOM_STATE
-    )
+    load_dotenv()
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db"))
+    mlflow.set_experiment("assuml-classification")
 
-    # Entraînement
-    pipeline = construire_pipeline()
-    pipeline.fit(X_train, y_train)
+    with mlflow.start_run():
+        mlflow.sklearn.autolog()
 
-    # Métriques test
-    y_pred = pipeline.predict(X_test)
-    metriques_test = calculer_metriques_clf(y_test, y_pred)
+        # Chargement
+        X, y = charger_donnees()
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=RANDOM_STATE
+        )
 
-    print("\n--- Métriques finales (GradientBoostingClassifier) ---")
-    print(f"Accuracy  : {metriques_test['accuracy']:.4f}")
-    print(f"F1-macro  : {metriques_test['f1_macro']:.4f}")
-    print(f"Precision : {metriques_test['precision_macro']:.4f}")
-    print(f"Recall    : {metriques_test['recall_macro']:.4f}")
+        # Entraînement
+        pipeline = construire_pipeline()
+        pipeline.fit(X_train, y_train)
 
-    # Cross-validation 5 plis
-    cv_scores = cross_val_score(pipeline, X, y, cv=5, scoring="accuracy", n_jobs=-1)
-    metriques_cv = {
-        "accuracy_mean": round(float(cv_scores.mean()), 4),
-        "accuracy_std": round(float(cv_scores.std()), 4),
-    }
-    print(f"\nCV accuracy : {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+        # Métriques test
+        y_pred = pipeline.predict(X_test)
+        metriques_test = calculer_metriques_clf(y_test, y_pred)
 
-    # Sérialisation
-    os.makedirs(os.path.abspath(MODEL_DIR), exist_ok=True)
-    chemin_clf = os.path.abspath(CLF_PATH)
-    joblib.dump(pipeline, chemin_clf)
-    print("✅ classification.pkl sauvegardé")
+        print("\n--- Métriques finales (GradientBoostingClassifier) ---")
+        print(f"Accuracy  : {metriques_test['accuracy']:.4f}")
+        print(f"F1-macro  : {metriques_test['f1_macro']:.4f}")
+        print(f"Precision : {metriques_test['precision_macro']:.4f}")
+        print(f"Recall    : {metriques_test['recall_macro']:.4f}")
 
-    # Mise à jour metadata.json
-    mettre_a_jour_metadata(metriques_test, metriques_cv, BEST_PARAMS)
+        # Cross-validation 5 plis
+        cv_scores = cross_val_score(pipeline, X, y, cv=5, scoring="accuracy", n_jobs=-1)
+        metriques_cv = {
+            "accuracy_mean": round(float(cv_scores.mean()), 4),
+            "accuracy_std": round(float(cv_scores.std()), 4),
+        }
+        print(f"\nCV accuracy : {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+
+        # Logging explicite MLflow (params + métriques, complète l'autolog)
+        mlflow.log_params(BEST_PARAMS)
+        for cle, valeur in {**metriques_test, **metriques_cv}.items():
+            mlflow.log_metric(cle, valeur)
+
+        # Gate anti-régression : ne déployer que si strictement meilleur
+        metrique_actuelle = lire_metrique_actuelle(
+            METADATA_PATH, "classification", "accuracy"
+        )
+        if est_meilleur_modele(metriques_test["accuracy"], metrique_actuelle):
+            os.makedirs(os.path.abspath(MODEL_DIR), exist_ok=True)
+            chemin_clf = os.path.abspath(CLF_PATH)
+            joblib.dump(pipeline, chemin_clf)
+            print("✅ classification.pkl sauvegardé")
+
+            mettre_a_jour_metadata(metriques_test, metriques_cv, BEST_PARAMS)
+
+            logged_model = mlflow.last_logged_model()
+            promouvoir_modele("assuml-classification", logged_model.model_id)
+        else:
+            print(
+                f"\n⚠️  Modèle non déployé — accuracy={metriques_test['accuracy']:.4f} "
+                f"≤ accuracy actuelle={metrique_actuelle:.4f}. "
+                "classification.pkl conservé, run tracké dans MLflow."
+            )
 
     print("\n" + "=" * 60)
     print("Entraînement terminé avec succès.")
-    print("Version metadata.json : 1.1.0")
     print("=" * 60)
 
 
