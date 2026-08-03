@@ -32,16 +32,16 @@
 {% if charts %}
   <div class="row g-4">
     <div class="col-md-6">
-      {% include 'components/plotly_chart.html' with div_id="chart_region" chart_data=charts.par_region title="Charges par région" %}
+      {% include 'components/plotly_chart.html' with div_id="chart_region" chart_data=charts.par_region layout=layouts.par_region title="Coût moyen prédit par région" %}
     </div>
     <div class="col-md-6">
-      {% include 'components/plotly_chart.html' with div_id="chart_fumeur" chart_data=charts.par_fumeur title="Impact tabac sur les charges" %}
+      {% include 'components/plotly_chart.html' with div_id="chart_fumeur" chart_data=charts.par_fumeur layout=layouts.par_fumeur title="Impact du tabac sur le coût moyen prédit" %}
     </div>
     <div class="col-md-6">
-      {% include 'components/plotly_chart.html' with div_id="chart_dist" chart_data=charts.distribution title="Distribution des charges" %}
+      {% include 'components/plotly_chart.html' with div_id="chart_dist" chart_data=charts.distribution layout=layouts.distribution title="Distribution des coûts prédits (tranches de 5 000 $)" %}
     </div>
     <div class="col-md-6">
-      {% include 'components/plotly_chart.html' with div_id="chart_corr" chart_data=charts.correlation title="Corrélation âge / charges" %}
+      {% include 'components/plotly_chart.html' with div_id="chart_corr" chart_data=charts.correlation layout=layouts.correlation title="Coût moyen prédit par âge" %}
     </div>
   </div>
 
