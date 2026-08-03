@@ -25,14 +25,23 @@ import sys
 from datetime import date
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+from ml_models.training.mlflow_gate import (
+    est_meilleur_modele,
+    lire_metrique_actuelle,
+    promouvoir_modele,
+)
 
 # --- Constantes ---
 DATA_PATH = os.path.join("data", "processed", "features.csv")
@@ -263,41 +272,65 @@ def main():
     print("  Entraînement — Modèle de Régression AssuML")
     print("=" * 55)
 
-    # 1. Chargement des données
-    X, y = charger_donnees()
+    load_dotenv()
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db"))
+    mlflow.set_experiment("assuml-regression")
 
-    # 2. Split 80/20 — random_state fixe pour reproductibilité
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=RANDOM_STATE
-    )
-    print(f"   X_train={X_train.shape[0]} lignes | X_test={X_test.shape[0]} lignes")
+    with mlflow.start_run():
+        mlflow.sklearn.autolog()
 
-    # 3. Construction et entraînement du pipeline
-    print("\nEntraînement du pipeline (GradientBoostingRegressor)...")
-    pipeline = construire_pipeline()
-    pipeline.fit(X_train, y_train)
+        # 1. Chargement des données
+        X, y = charger_donnees()
 
-    # 4. Métriques sur le test set
-    y_pred = pipeline.predict(X_test)
-    metriques_test = calculer_metriques(y_test, y_pred)
-    print("\n--- Métriques finales (test set 20%) ---")
-    print(f"R²   : {metriques_test['r2']:.4f}")
-    print(f"MAE  : {metriques_test['mae']:.2f} USD")
-    print(f"RMSE : {metriques_test['rmse']:.2f} USD")
+        # 2. Split 80/20 — random_state fixe pour reproductibilité
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=RANDOM_STATE
+        )
+        print(f"   X_train={X_train.shape[0]} lignes | X_test={X_test.shape[0]} lignes")
 
-    # 5. Cross-validation 5 plis pour la traçabilité
-    print("\nCross-validation 5 plis...")
-    cv_scores = cross_val_score(pipeline, X, y, cv=5, scoring="r2", n_jobs=-1)
-    metriques_cv = {
-        "r2_mean": round(float(cv_scores.mean()), 4),
-        "r2_std": round(float(cv_scores.std()), 4),
-    }
-    print(f"R² moyen CV : {metriques_cv['r2_mean']:.4f} ± {metriques_cv['r2_std']:.4f}")
+        # 3. Construction et entraînement du pipeline
+        print("\nEntraînement du pipeline (GradientBoostingRegressor)...")
+        pipeline = construire_pipeline()
+        pipeline.fit(X_train, y_train)
 
-    # 6. Sauvegarde pipeline + metadata
-    print()
-    sauvegarder_pipeline(pipeline)
-    sauvegarder_metadata(metriques_test, metriques_cv, BEST_PARAMS)
+        # 4. Métriques sur le test set
+        y_pred = pipeline.predict(X_test)
+        metriques_test = calculer_metriques(y_test, y_pred)
+        print("\n--- Métriques finales (test set 20%) ---")
+        print(f"R²   : {metriques_test['r2']:.4f}")
+        print(f"MAE  : {metriques_test['mae']:.2f} USD")
+        print(f"RMSE : {metriques_test['rmse']:.2f} USD")
+
+        # 5. Cross-validation 5 plis pour la traçabilité
+        print("\nCross-validation 5 plis...")
+        cv_scores = cross_val_score(pipeline, X, y, cv=5, scoring="r2", n_jobs=-1)
+        metriques_cv = {
+            "r2_mean": round(float(cv_scores.mean()), 4),
+            "r2_std": round(float(cv_scores.std()), 4),
+        }
+        r2_mean = metriques_cv["r2_mean"]
+        r2_std = metriques_cv["r2_std"]
+        print(f"R² moyen CV : {r2_mean:.4f} ± {r2_std:.4f}")
+
+        # 6. Logging explicite MLflow (params + métriques, complète l'autolog)
+        mlflow.log_params(BEST_PARAMS)
+        for cle, valeur in {**metriques_test, **metriques_cv}.items():
+            mlflow.log_metric(cle, valeur)
+
+        # 7. Gate anti-régression : ne déployer que si strictement meilleur
+        metrique_actuelle = lire_metrique_actuelle(METADATA_PATH, "regression", "r2")
+        if est_meilleur_modele(metriques_test["r2"], metrique_actuelle):
+            print()
+            sauvegarder_pipeline(pipeline)
+            sauvegarder_metadata(metriques_test, metriques_cv, BEST_PARAMS)
+            logged_model = mlflow.last_logged_model()
+            promouvoir_modele("assuml-regression", logged_model.model_id)
+        else:
+            print(
+                f"\n⚠️  Modèle non déployé — R²={metriques_test['r2']:.4f} "
+                f"≤ R² actuel={metrique_actuelle:.4f}. "
+                "regression.pkl conservé, run tracké dans MLflow."
+            )
 
     print("\n✅ Entraînement terminé avec succès.")
     print("=" * 55)
