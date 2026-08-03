@@ -33,6 +33,10 @@ Thumbs.db
 ml_models/saved_models/*.pkl
 data/big_data/
 
+# MLflow (tracking/registry — artefacts générés localement, non versionnés)
+mlruns/
+mlflow.db
+
 # Backups ETL (données externes brutes — non versionnées)
 data/external/
 
@@ -40,3 +44,5 @@ data/external/
 
 # Specs (documentation interne, non versionnée)
 specs/
+.specify/
+CLAUDE.md

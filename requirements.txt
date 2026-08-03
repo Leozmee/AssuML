@@ -43,6 +43,12 @@ prometheus-client>=0.19.0
 # --- Modèles statistiques ---
 statsmodels>=0.14.0
 
+# --- Configuration ---
+python-dotenv>=1.0.0
+
+# --- MLOps / Tracking d'expériences ---
+mlflow>=2.10.0
+
 # --- Tests ---
 pytest==8.4.2
 pytest-asyncio==1.2.0

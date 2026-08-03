@@ -14,7 +14,7 @@
   "random_state": 42,
   "regression": {
     "version": "1.0.0",
-    "date_entrainement": "2026-07-01",
+    "date_entrainement": "2026-07-28",
     "algorithme": "GradientBoostingRegressor",
     "hyperparametres": {
       "n_estimators": 100,
@@ -36,7 +36,7 @@
   },
   "classification": {
     "version": "1.0.0",
-    "date_entrainement": "2026-07-01",
+    "date_entrainement": "2026-07-28",
     "algorithme": "GradientBoostingClassifier",
     "hyperparametres": {
       "n_estimators": 100,
@@ -56,7 +56,7 @@
       "accuracy_std": 0.0141
     }
   },
-  "date_mise_a_jour": "2026-07-01",
+  "date_mise_a_jour": "2026-07-28",
   "target_regression": "charges",
   "target_classification": "categorie_risque"
 }
