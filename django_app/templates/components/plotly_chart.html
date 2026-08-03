@@ -9,6 +9,6 @@
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    assumlPlot("{{ div_id }}", {{ chart_data|safe }}, {{ layout|default:"{}" }});
+    assumlPlot("{{ div_id }}", {{ chart_data|safe }}, {{ layout|default:"{}"|safe }});
   });
 </script>

@@ -26,25 +26,64 @@ def dashboard(request):
 
         analytics = DuckDBAnalytics(str(PARQUET_PATH))
 
-        def _to_json(df):
+        def _to_json(df, x_col, y_col, chart_type="bar"):
             if df is None or df.empty:
                 return "[]"
-            x_vals = [
-                str(v) if isinstance(v, bool) else v for v in df.iloc[:, 0].tolist()
-            ]
+            x_vals = [str(v) if isinstance(v, bool) else v for v in df[x_col].tolist()]
             return json.dumps(
-                [{"type": "bar", "x": x_vals, "y": df.iloc[:, 1].tolist()}]
+                [{"type": chart_type, "x": x_vals, "y": df[y_col].tolist()}]
             )
 
-        charts["par_region"] = _to_json(analytics.stats_par_region())
-        charts["par_fumeur"] = _to_json(analytics.stats_par_fumeur())
-        dist = analytics.distribution_cout()
-        charts["distribution"] = json.dumps(
-            [{"type": "histogram", "x": dist.iloc[:, 0].tolist()}]
-            if dist is not None and not dist.empty
-            else []
+        charts["par_region"] = _to_json(
+            analytics.stats_par_region(), "region", "cout_moy"
         )
-        charts["correlation"] = _to_json(analytics.correlation_age_cout())
+
+        df_fumeur = analytics.stats_par_fumeur()
+        if df_fumeur is not None and not df_fumeur.empty:
+            df_fumeur = df_fumeur.copy()
+            df_fumeur["fumeur"] = df_fumeur["fumeur"].map(
+                {True: "Fumeur", False: "Non-fumeur"}
+            )
+        charts["par_fumeur"] = _to_json(df_fumeur, "fumeur", "cout_moy")
+
+        dist = analytics.distribution_cout()
+        if dist is not None and not dist.empty:
+            dist = dist.copy()
+            dist["label"] = dist["bin_min"].apply(lambda x: f"{x // 1000}k$")
+            charts["distribution"] = _to_json(dist, "label", "nb")
+        else:
+            charts["distribution"] = "[]"
+
+        charts["correlation"] = _to_json(
+            analytics.correlation_age_cout(), "age", "cout_moy"
+        )
+
+        layouts = {
+            "par_region": json.dumps(
+                {
+                    "xaxis": {"title": "Région"},
+                    "yaxis": {"title": "Coût moyen prédit ($)"},
+                }
+            ),
+            "par_fumeur": json.dumps(
+                {
+                    "xaxis": {"title": "Statut fumeur"},
+                    "yaxis": {"title": "Coût moyen prédit ($)"},
+                }
+            ),
+            "distribution": json.dumps(
+                {
+                    "xaxis": {"title": "Tranche de coût prédit ($, pas de 5 000)"},
+                    "yaxis": {"title": "Nombre de profils"},
+                }
+            ),
+            "correlation": json.dumps(
+                {
+                    "xaxis": {"title": "Âge"},
+                    "yaxis": {"title": "Coût moyen prédit ($)"},
+                }
+            ),
+        }
         profils = analytics.top_profils_risque()
         charts["profils"] = (
             profils.to_dict(orient="records")
@@ -65,9 +104,10 @@ def dashboard(request):
     except Exception as exc:
         messages.warning(request, f"Analytics DuckDB indisponibles : {exc}")
         charts = {}
+        layouts = {}
 
     return render(
         request,
         "analytics/dashboard.html",
-        {"kpis": kpis, "charts": charts},
+        {"kpis": kpis, "charts": charts, "layouts": layouts},
     )
