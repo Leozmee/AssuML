@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 
-{% block title %}Client #{{ client.client_id }}{% endblock %}
+{% block title %}Client {{ client.client_id }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h1>Client #{{ client.client_id }}</h1>
-  <div class="d-flex gap-2">
-    <a href="{% url 'gestion:edit' client.client_id %}" class="btn btn-outline-primary btn-sm">Modifier</a>
-    <a href="{% url 'gestion:score' client.client_id %}" class="btn btn-primary btn-sm">🎯 Scorer</a>
-    {% if not contrats %}
-      <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm">+ Contrat</a>
+  <h1>
+    {% if client.nom or client.prenom %}
+      {{ client.prenom }} {{ client.nom }} - Client {{ client.client_id }}
+    {% else %}
+      Client {{ client.client_id }}
     {% endif %}
-    <a href="{% url 'gestion:delete' client.client_id %}" class="btn btn-outline-danger btn-sm">Supprimer</a>
+  </h1>
+  <div class="d-flex gap-2 align-items-center actions-align-cards">
+    <form method="post" action="{% url 'gestion:score' client.client_id %}" class="me-2">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-rose fw-semibold">Simuler</button>
+    </form>
     <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
   </div>
 </div>
@@ -20,7 +24,10 @@
   <!-- Profil assuré -->
   <div class="col-md-6">
     <div class="card h-100">
-      <div class="card-header fw-semibold">👤 Profil assuré</div>
+      <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span>👤 Profil assuré</span>
+        <a href="{% url 'gestion:edit' client.client_id %}" class="btn btn-outline-primary btn-sm">Modifier</a>
+      </div>
       <div class="card-body">
         <dl class="row mb-0">
           <dt class="col-sm-5 text-muted">Âge</dt><dd class="col-sm-7">{{ client.age }} ans</dd>
@@ -29,6 +36,7 @@
           <dt class="col-sm-5 text-muted">Enfants</dt><dd class="col-sm-7">{{ client.enfants }}</dd>
           <dt class="col-sm-5 text-muted">Fumeur</dt><dd class="col-sm-7">{% if client.fumeur %}Oui{% else %}Non{% endif %}</dd>
           <dt class="col-sm-5 text-muted">Région</dt><dd class="col-sm-7">{{ client.region_nom|default:client.region_id }}</dd>
+          <dt class="col-sm-5 text-muted">Email</dt><dd class="col-sm-7">{{ client.email|default:"—" }}</dd>
           <dt class="col-sm-5 text-muted">Compte user</dt><dd class="col-sm-7">{% if client.a_un_compte %}👤 Oui{% else %}—{% endif %}</dd>
         </dl>
       </div>

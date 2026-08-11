@@ -4,8 +4,14 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 
 from accounts.decorators import admin_required
+from accounts.models import ProfilUtilisateur, User
 from gestion.forms import ClientForm, ContratForm
-from utils import api_client, region_id_to_nom, region_nom_to_id
+from utils import (
+    api_client,
+    client_to_predict_payload,
+    region_id_to_nom,
+    region_nom_to_id,
+)
 from utils.api_client import ApiError, ApiTimeoutError, ApiUnavailableError
 
 COEFFICIENTS = {"faible": 1.20, "moyen": 1.35, "eleve": 1.50, "critique": 1.80}
@@ -53,10 +59,7 @@ def client_list(request):
         client["categorie_risque"] = risque_map.get(client["client_id"])
         client["region_nom"] = region_id_to_nom(client["region_id"])
 
-    # Recherche par ID
-    q = request.GET.get("q", "").strip()
-    if q.isdigit():
-        clients = [c for c in clients if str(c["client_id"]) == q]
+    # Recherche par ID/nom/prénom : filtrage instantané côté client (JS), pas ici.
 
     # Filtre par statut de compte utilisateur
     compte = request.GET.get("compte", "")
@@ -72,17 +75,21 @@ def client_list(request):
         clients.sort(key=lambda c: c["client_id"])
     elif sort == "id_desc":
         clients.sort(key=lambda c: c["client_id"], reverse=True)
-    elif sort == "risque_asc":
-        clients.sort(key=lambda c: RISQUE_ORDRE.get(c["categorie_risque"], 0))
-    elif sort == "risque_desc":
-        clients.sort(
-            key=lambda c: RISQUE_ORDRE.get(c["categorie_risque"], 0), reverse=True
+    elif sort in ("risque_asc", "risque_desc"):
+        # Les clients non scorés n'ont pas de valeur comparable : ils restent
+        # toujours en fin de liste, quel que soit le sens du tri.
+        scores = [c for c in clients if c.get("categorie_risque")]
+        non_scores = [c for c in clients if not c.get("categorie_risque")]
+        scores.sort(
+            key=lambda c: RISQUE_ORDRE.get(c["categorie_risque"], 0),
+            reverse=(sort == "risque_desc"),
         )
+        clients = scores + non_scores
 
     return render(
         request,
         "gestion/list.html",
-        {"clients": clients, "q": q, "sort": sort, "compte": compte},
+        {"clients": clients, "sort": sort, "compte": compte},
     )
 
 
@@ -120,12 +127,21 @@ def client_detail(request, client_id):
 @admin_required
 def client_create(request):
     """Créer un nouveau client (admin)."""
-    form = ClientForm(request.POST or None)
+    form = ClientForm(request.POST or None, require_identite=True)
     if request.method == "POST" and form.is_valid():
         cd = form.cleaned_data
+        creer_compte = cd.get("creer_compte")
+
+        user = None
+        if creer_compte:
+            # Créé en premier — facile à annuler (rollback) si l'API échoue.
+            user = User.objects.create_user(email=cd["email"], password=cd["password1"])
+
         try:
-            api_client.create_client(
+            client = api_client.create_client(
                 {
+                    "nom": cd["nom"],
+                    "prenom": cd["prenom"],
                     "age": cd["age"],
                     "sexe": cd["sexe"],
                     "imc": round(cd["imc"], 2),
@@ -133,13 +149,24 @@ def client_create(request):
                     "fumeur": cd["fumeur"],
                     "region_id": region_nom_to_id(cd["region"]),
                     "email": cd.get("email") or None,
-                    "a_un_compte": False,
+                    "a_un_compte": bool(creer_compte),
                 }
             )
-            messages.success(request, "Client créé avec succès.")
-            return redirect("gestion:list")
         except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+            if user is not None:
+                user.delete()
             messages.error(request, f"Erreur lors de la création : {exc}")
+            return render(request, "gestion/create.html", {"form": form})
+
+        if creer_compte:
+            ProfilUtilisateur.objects.create(
+                user=user, role="user", client_id=client["client_id"]
+            )
+            messages.success(request, "Client et compte créés avec succès.")
+        else:
+            messages.success(request, "Client créé avec succès.")
+
+        return redirect("gestion:list")
 
     return render(request, "gestion/create.html", {"form": form})
 
@@ -154,6 +181,8 @@ def client_update(request, client_id):
         return redirect("gestion:list")
 
     initial = {
+        "nom": client.get("nom") or "",
+        "prenom": client.get("prenom") or "",
         "age": client["age"],
         "sexe": client["sexe"],
         "enfants": client["enfants"],
@@ -169,6 +198,8 @@ def client_update(request, client_id):
             api_client.update_client(
                 client_id,
                 {
+                    "nom": cd.get("nom") or None,
+                    "prenom": cd.get("prenom") or None,
                     "age": cd["age"],
                     "sexe": cd["sexe"],
                     "imc": round(cd["imc"], 2),
@@ -219,17 +250,9 @@ def client_score(request, client_id):
 
     if request.method == "POST":
         try:
-            raw = api_client.predict_complet(
-                {
-                    "age": client["age"],
-                    "sexe": 0 if client["sexe"] == "homme" else 1,
-                    "imc": float(client["imc"]),
-                    "enfants": client["enfants"],
-                    "fumeur": 1 if client["fumeur"] else 0,
-                    "region": region_id_to_nom(client["region_id"]),
-                    "client_id": client["client_id"],
-                }
-            )
+            payload = client_to_predict_payload(client)
+            payload["client_id"] = client["client_id"]
+            raw = api_client.predict_complet(payload)
             resultat = _enrichir(raw)
         except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
             messages.error(request, f"Erreur de scoring : {exc}")

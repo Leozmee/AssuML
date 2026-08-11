@@ -23,7 +23,7 @@
     {% if user.profil.role == 'admin' %}
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'scoring' %}active{% endif %}"
-           href="{% url 'scoring:index' %}">Scoring ML</a>
+           href="{% url 'scoring:index' %}">Simulation ML</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'gestion' %}active{% endif %}"
@@ -45,6 +45,10 @@
       <li>
         <a class="topbar-link {% if request.resolver_match.url_name == 'mon_compte' %}active{% endif %}"
            href="{% url 'accounts:mon_compte' %}">Mon compte</a>
+      </li>
+      <li>
+        <a class="topbar-link {% if request.resolver_match.url_name == 'simulation' %}active{% endif %}"
+           href="{% url 'accounts:simulation' %}">Simulation</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'actualites' %}active{% endif %}"
@@ -106,6 +110,8 @@
 <script src="{% static 'js/charts.js' %}"></script>
 <script src="{% static 'js/refresh.js' %}"></script>
 <script src="{% static 'js/topbar-scroll.js' %}"></script>
+<script src="{% static 'js/password_toggle.js' %}"></script>
+<script src="{% static 'js/capitalize_name.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

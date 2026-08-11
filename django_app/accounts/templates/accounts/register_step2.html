@@ -14,6 +14,19 @@
     {% csrf_token %}
 
     <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label">{{ form.nom.label }}</label>
+        {{ form.nom }}
+        {% if form.nom.errors %}<div class="text-danger small mt-1">{{ form.nom.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ form.prenom.label }}</label>
+        {{ form.prenom }}
+        {% if form.prenom.errors %}<div class="text-danger small mt-1">{{ form.prenom.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
       <div class="col-md-4">
         <label class="form-label">{{ form.age.label }}</label>
         {{ form.age }}

@@ -15,6 +15,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class ClientCreate(BaseModel):
     """Données requises pour créer un nouveau client."""
 
+    nom: Optional[str] = Field(None, max_length=100)
+    prenom: Optional[str] = Field(None, max_length=100)
     age: int = Field(..., ge=18, le=120, description="Âge de l'assuré (18–120)")
     sexe: str = Field(
         ..., pattern="^(homme|femme)$", description="Sexe : homme ou femme"
@@ -38,6 +40,8 @@ class ClientRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     client_id: int
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
     age: int
     sexe: str
     imc: float
@@ -54,6 +58,8 @@ class ClientRead(BaseModel):
 class ClientUpdate(BaseModel):
     """Mise à jour partielle d'un client — tous les champs sont optionnels."""
 
+    nom: Optional[str] = Field(None, max_length=100)
+    prenom: Optional[str] = Field(None, max_length=100)
     age: Optional[int] = Field(None, ge=18, le=120)
     sexe: Optional[str] = Field(None, pattern="^(homme|femme)$")
     imc: Optional[float] = Field(None, ge=10.0, le=80.0)
