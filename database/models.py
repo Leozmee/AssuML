@@ -61,6 +61,8 @@ class Client(Base):
     )
 
     client_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    nom: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    prenom: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     region_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("regions.region_id", ondelete="CASCADE"), nullable=False
     )

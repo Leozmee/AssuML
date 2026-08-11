@@ -16,6 +16,19 @@
           {% csrf_token %}
 
           <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ form.nom.label }}</label>
+              {{ form.nom }}
+              {% if form.nom.errors %}<div class="text-danger small">{{ form.nom.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ form.prenom.label }}</label>
+              {{ form.prenom }}
+              {% if form.prenom.errors %}<div class="text-danger small">{{ form.prenom.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label">{{ form.age.label }}</label>
               {{ form.age }}
@@ -54,6 +67,27 @@
             </div>
           </div>
 
+          <div class="form-check mb-3">
+            {{ form.creer_compte }}
+            <label class="form-check-label" for="id_creer_compte">{{ form.creer_compte.label }}</label>
+          </div>
+
+          <div id="compte-fields" class="row g-3 mb-3" style="display: none;">
+            <div class="col-md-6">
+              <label class="form-label">{{ form.password1.label }}</label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ form.password2.label }}</label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              <div class="form-text">L'email ci-dessus devient obligatoire et servira d'identifiant de connexion.</div>
+            </div>
+          </div>
+
           {% if form.non_field_errors %}
             <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
           {% endif %}
@@ -67,4 +101,15 @@
     </div>
   </div>
 </div>
+
+<script>
+  (function () {
+    const checkbox = document.getElementById("id_creer_compte");
+    const fields = document.getElementById("compte-fields");
+    if (!checkbox || !fields) return;
+    const sync = () => { fields.style.display = checkbox.checked ? "" : "none"; };
+    checkbox.addEventListener("change", sync);
+    sync();
+  })();
+</script>
 {% endblock %}

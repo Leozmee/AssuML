@@ -29,6 +29,8 @@ def create_client(
     enfants: int,
     fumeur: bool,
     region_id: int,
+    nom: Optional[str] = None,
+    prenom: Optional[str] = None,
     email: Optional[str] = None,
     telephone: Optional[str] = None,
     a_un_compte: bool = False,
@@ -43,6 +45,8 @@ def create_client(
         enfants: Nombre d'enfants à charge (>= 0).
         fumeur: True si le client est fumeur.
         region_id: FK vers la table regions.
+        nom: Nom de famille (optionnel — absent pour les clients seedés).
+        prenom: Prénom (optionnel — absent pour les clients seedés).
         email: Adresse e-mail (optionnel).
         telephone: Numéro de téléphone (optionnel).
         a_un_compte: True si le client a créé un compte utilisateur.
@@ -57,6 +61,8 @@ def create_client(
         enfants=enfants,
         fumeur=fumeur,
         region_id=region_id,
+        nom=nom,
+        prenom=prenom,
         email=email,
         telephone=telephone,
         a_un_compte=a_un_compte,

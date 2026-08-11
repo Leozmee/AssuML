@@ -7,13 +7,16 @@
   <h1>Gestion clients</h1>
   <div class="d-flex gap-2">
     <a href="{% url 'gestion:create' %}" class="btn btn-primary btn-sm">+ Nouveau client</a>
-    <a href="{% url 'accounts:create_admin' %}" class="btn btn-outline-secondary btn-sm">+ Admin</a>
+    {% if user.is_superuser %}
+      <a href="{% url 'accounts:create_admin' %}" class="btn btn-outline-secondary btn-sm">+ Admin</a>
+    {% endif %}
   </div>
 </div>
 
-<form method="get" class="d-flex gap-2 mb-3 align-items-center">
-  <input type="search" name="q" value="{{ q }}" placeholder="Rechercher par ID client…"
+<div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+  <input type="search" id="client-search" placeholder="Rechercher id, nom, prénom"
          class="form-control form-control-sm" style="max-width:220px">
+<form method="get" class="d-flex gap-2 align-items-center">
   <select name="sort" class="form-select form-select-sm" style="max-width:240px" onchange="this.form.submit()">
     <option value="id_asc"    {% if sort == 'id_asc'    %}selected{% endif %}>ID croissant</option>
     <option value="id_desc"   {% if sort == 'id_desc'   %}selected{% endif %}>ID décroissant</option>
@@ -26,8 +29,9 @@
     <option value="non" {% if compte == 'non' %}selected{% endif %}>Sans compte</option>
   </select>
   <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
-  {% if q or compte %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
+  {% if compte %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
 </form>
+</div>
 
 <div class="card">
   <div class="card-body p-0">
@@ -36,6 +40,7 @@
         <thead class="table-light">
           <tr>
             <th>ID</th>
+            <th>Nom Prénom</th>
             <th>Âge</th>
             <th>Sexe</th>
             <th>IMC</th>
@@ -51,8 +56,15 @@
         <tbody>
           {% for client in clients %}
           {% if not client.date_suppression %}
-          <tr>
+          <tr data-search="{{ client.client_id }} {{ client.nom|default:'' }} {{ client.prenom|default:'' }}">
             <td>{{ client.client_id }}</td>
+            <td>
+              {% if client.nom or client.prenom %}
+                {{ client.prenom }} {{ client.nom }}
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
             <td>{{ client.age }}</td>
             <td>{{ client.sexe|capfirst }}</td>
             <td>{{ client.imc }}</td>
@@ -86,7 +98,6 @@
             </td>
             <td class="table-actions">
               <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">Fiche</a>
-              <a href="{% url 'gestion:score' client.client_id %}" class="btn btn-outline-primary btn-sm">Scorer</a>
               {% if not client.contrat %}
                 <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm">+ Contrat</a>
               {% elif client.contrat.statut == 'actif' %}
@@ -108,11 +119,26 @@
           </tr>
           {% endif %}
           {% empty %}
-          <tr><td colspan="11" class="text-center text-muted py-4">Aucun client</td></tr>
+          <tr><td colspan="12" class="text-center text-muted py-4">Aucun client</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
+<script>
+  (function () {
+    const input = document.getElementById("client-search");
+    const rows = document.querySelectorAll("tbody tr[data-search]");
+    if (!input) return;
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      rows.forEach((row) => {
+        const match = row.dataset.search.toLowerCase().includes(q);
+        row.style.display = match ? "" : "none";
+      });
+    });
+  })();
+</script>
 {% endblock %}

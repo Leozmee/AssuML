@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
 from accounts.models import User
+from utils import capitaliser_nom
 
 REGIONS = [
     ("", "— Sélectionner —"),
@@ -49,6 +50,16 @@ class RegisterStep1Form(UserCreationForm):
 class RegisterStep2Form(forms.Form):
     """Inscription assuré — étape 2/2 : profil médical (poids/taille → IMC)."""
 
+    nom = forms.CharField(
+        max_length=100,
+        label="Nom",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    prenom = forms.CharField(
+        max_length=100,
+        label="Prénom",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
     age = forms.IntegerField(
         min_value=18,
         max_value=64,
@@ -90,6 +101,12 @@ class RegisterStep2Form(forms.Form):
         label="Région",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
+
+    def clean_nom(self):
+        return capitaliser_nom(self.cleaned_data.get("nom", ""))
+
+    def clean_prenom(self):
+        return capitaliser_nom(self.cleaned_data.get("prenom", ""))
 
     def clean(self):
         cleaned = super().clean()

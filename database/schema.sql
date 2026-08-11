@@ -35,6 +35,8 @@ INSERT INTO regions (nom_region) VALUES
 -- ============================================================
 CREATE TABLE clients (
     client_id        SERIAL PRIMARY KEY,
+    nom              VARCHAR(100) NULL,  -- NULL pour les clients seedés (insurance.csv)
+    prenom           VARCHAR(100) NULL,  -- obligatoire pour tout nouveau client créé via l'app
     region_id        INTEGER NOT NULL
                      REFERENCES regions(region_id) ON DELETE CASCADE,
     age              INTEGER NOT NULL

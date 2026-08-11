@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}Scoring client #{{ client.client_id }}{% endblock %}
+{% block title %}Scoring client {{ client.client_id }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h1>Scoring client #{{ client.client_id }}</h1>
+  <h1>Scoring client {{ client.client_id }}</h1>
   <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
 </div>
 
@@ -28,7 +28,7 @@
 {% if not resultat %}
 <form method="post">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary">🎯 Lancer le scoring ML</button>
+  <button type="submit" class="btn btn-rose">Lancer le scoring ML</button>
 </form>
 {% else %}
 <div class="row g-3">

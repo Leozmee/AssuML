@@ -26,6 +26,8 @@
   --danger-bg:     #fde4e4;
   --orange:        #ea580c;
   --orange-bg:     #fee8db;
+  --rose:        #d14985;
+  --rose-dark:   #b83a70;
 
   --radius:        8px;
   --radius-sm:     6px;
@@ -204,6 +206,11 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   font-size: 0.75rem;
   color: var(--muted);
   margin-top: 3px;
+}
+/* Aligne le bord droit d'un groupe de boutons du header avec les cartes
+   en dessous — compense le demi-gutter Bootstrap (12px) des col-md-*. */
+.page-header .actions-align-cards {
+  margin-right: 0.75rem;
 }
 
 /* Auto-padding after page-header */
@@ -560,6 +567,49 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 }
 .site-footer-links a:first-child { margin-left: 0; }
 .site-footer-links a:hover { color: var(--primary); }
+
+/* ── Bouton rose (actions de simulation ML, mis en avant) ────────────────── */
+.btn-rose {
+  background: var(--rose);
+  border-color: var(--rose);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(209, 73, 133, 0.35);
+}
+.btn-rose:hover,
+.btn-rose:focus {
+  background: var(--rose-dark);
+  border-color: var(--rose-dark);
+  color: #ffffff;
+}
+
+/* ── Champ mot de passe (icône œil intégrée) ─────────────────────────────── */
+.password-field {
+  position: relative;
+}
+.password-field .form-control {
+  padding-right: 2.5rem;
+}
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+.password-toggle-icon:hover {
+  color: var(--ink-soft);
+}
+.password-toggle-icon svg {
+  width: 20px;
+  height: 20px;
+}
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {

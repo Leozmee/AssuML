@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from accounts.decorators import admin_required
+from accounts.decorators import superuser_required
 from accounts.forms import (
     CreateAdminForm,
     LoginForm,
@@ -14,7 +14,12 @@ from accounts.forms import (
     RegisterStep2Form,
 )
 from accounts.models import ProfilUtilisateur, User
-from utils import api_client, region_id_to_nom, region_nom_to_id
+from utils import (
+    api_client,
+    client_to_predict_payload,
+    region_id_to_nom,
+    region_nom_to_id,
+)
 from utils.api_client import ApiError, ApiTimeoutError, ApiUnavailableError
 
 
@@ -83,12 +88,15 @@ def register_step2_view(request):
         try:
             client = api_client.create_client(
                 {
+                    "nom": cd["nom"],
+                    "prenom": cd["prenom"],
                     "age": cd["age"],
                     "sexe": cd["sexe"],
                     "imc": round(cd["imc"], 2),
                     "enfants": cd["enfants"],
                     "fumeur": cd["fumeur"],
                     "region_id": region_nom_to_id(cd["region"]),
+                    "email": email,
                     "a_un_compte": True,
                 }
             )
@@ -112,9 +120,9 @@ def register_step2_view(request):
     return render(request, "accounts/register_step2.html", {"form": form})
 
 
-@admin_required
+@superuser_required
 def create_admin_view(request):
-    """Création d'un compte admin (réservé aux admins)."""
+    """Création d'un compte admin (réservé au super-admin)."""
     form = CreateAdminForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         cd = form.cleaned_data
@@ -169,6 +177,51 @@ def mon_compte_view(request):
         request,
         "accounts/mon_compte.html",
         {"client": client, "contrats": contrats, "predictions": predictions},
+    )
+
+
+@login_required
+def simulation_view(request):
+    """Simulation de scoring par l'assuré sur son propre profil.
+
+    Utilise /predict/complet sans client_id : le calcul est fait par les
+    mêmes modèles ML que le scoring admin, mais rien n'est persisté en base
+    (la persistance dans `predictions` n'a lieu que si client_id est fourni).
+    Seul le montant final (prime, coût déjà incluse) est restitué —
+    jamais le coût brut, le score ou la catégorie de risque.
+    """
+    try:
+        profil = request.user.profil
+    except ProfilUtilisateur.DoesNotExist:
+        return redirect("accounts:login")
+
+    if profil.role != "user":
+        return redirect("gestion:list")
+
+    client = None
+    montant = None
+
+    try:
+        client = api_client.get_client(profil.client_id)
+        if client:
+            client["region_nom"] = region_id_to_nom(client["region_id"])
+    except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+        messages.warning(request, f"Impossible de charger vos informations : {exc}")
+
+    if request.method == "POST" and client:
+        try:
+            resultat = api_client.predict_complet(client_to_predict_payload(client))
+            montant = {
+                "annuel": round(resultat["prime"], 2),
+                "mensuel": round(resultat["prime"] / 12, 2),
+            }
+        except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+            messages.error(request, f"Erreur lors de la simulation : {exc}")
+
+    return render(
+        request,
+        "accounts/simulation.html",
+        {"client": client, "montant": montant},
     )
 
 
