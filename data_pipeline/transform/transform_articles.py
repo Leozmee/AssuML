@@ -70,6 +70,27 @@ def nettoyer_html(texte: str) -> str:
     return texte_brut
 
 
+def nettoyer_contenu(texte: str) -> str:
+    """Nettoie un contenu multi-paragraphes en préservant les sauts de paragraphe.
+
+    nettoyer_html() normalise tous les espaces (y compris les \\n\\n) en un seul
+    espace — adapté à un titre sur une ligne, mais destructeur pour un contenu
+    d'article : les paragraphes construits par le scraper (séparés par \\n\\n)
+    seraient sinon fusionnés en un seul bloc de texte illisible.
+
+    Args:
+        texte: Contenu brut, paragraphes séparés par \\n\\n.
+
+    Returns:
+        str: Contenu nettoyé, sauts de paragraphe conservés.
+    """
+    if not texte:
+        return ""
+    paragraphes = [nettoyer_html(p) for p in texte.split("\n\n")]
+    paragraphes = [p for p in paragraphes if p]
+    return "\n\n".join(paragraphes)
+
+
 def normaliser_date(date_str: Optional[str]) -> Optional[datetime]:
     """Convertit une chaîne de date en objet datetime.
 
@@ -138,12 +159,15 @@ def transformer_articles(articles_bruts: list[dict]) -> list[dict]:
             continue
         vus.add(url)
 
-        # Nettoyage du résumé
+        # Nettoyage du résumé (préserve les sauts de paragraphe)
         resume_brut = article.get("resume", "") or ""
-        resume = nettoyer_html(resume_brut)  # TEXT illimité en PostgreSQL
+        resume = nettoyer_contenu(resume_brut)  # TEXT illimité en PostgreSQL
 
         # Normalisation de la date
         date_pub = normaliser_date(article.get("date_publication_str"))
+
+        # Image : conservée telle quelle si présente (URL absolue attendue)
+        image_url = article.get("image_url", "") or None
 
         articles_propres.append(
             {
@@ -151,6 +175,7 @@ def transformer_articles(articles_bruts: list[dict]) -> list[dict]:
                 "url_source": url,
                 "nom_source": article.get("nom_source", ""),
                 "resume": resume if resume else None,
+                "image_url": image_url,
                 "date_publication": date_pub,
             }
         )

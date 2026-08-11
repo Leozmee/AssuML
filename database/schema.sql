@@ -118,6 +118,7 @@ CREATE TABLE articles (
     url_source       TEXT UNIQUE NOT NULL,
     nom_source       VARCHAR(100) NOT NULL,
     resume           TEXT NULL,
+    image_url        TEXT NULL,
     date_publication TIMESTAMP NULL,
     date_scraping    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

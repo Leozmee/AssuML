@@ -73,5 +73,26 @@ services:
       - API_BASE_URL=http://api:8000
       - API_KEY=${API_KEY}
 
+  etl_scheduler:
+    build: .
+    # Exécute le scraping + la météo au démarrage, puis toutes les 7 jours (604800s)
+    command: >
+      sh -c "while true; do
+        python -m data_pipeline.extract.scraper;
+        python -m data_pipeline.extract.api_extractor;
+        sleep 604800;
+      done"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+
 volumes:
   postgres_data:

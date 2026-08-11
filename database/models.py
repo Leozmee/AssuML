@@ -198,6 +198,7 @@ class Article(Base):
     url_source: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     nom_source: Mapped[str] = mapped_column(String(100), nullable=False)
     resume: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     date_publication: Mapped[Optional[datetime]] = mapped_column(
         DateTime, nullable=True
     )
