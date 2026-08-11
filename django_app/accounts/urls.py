@@ -13,5 +13,6 @@ urlpatterns = [
     path("register/profil/", views.register_step2_view, name="register_step2"),
     path("create-admin/", views.create_admin_view, name="create_admin"),
     path("mon-compte/", views.mon_compte_view, name="mon_compte"),
+    path("mon-compte/simulation/", views.simulation_view, name="simulation"),
     path("mon-compte/edit/", views.mon_compte_edit_view, name="mon_compte_edit"),
 ]

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}Supprimer client #{{ client_id }}{% endblock %}
+{% block title %}Supprimer client {{ client_id }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h1>Supprimer client #{{ client_id }}</h1>
+  <h1>Supprimer client {{ client_id }}</h1>
 </div>
 
 <div class="row">
@@ -12,7 +12,7 @@
     <div class="card border-danger">
       <div class="card-body">
         <p class="mb-4">
-          Êtes-vous sûr de vouloir supprimer le client <strong>#{{ client_id }}</strong> ?
+          Êtes-vous sûr de vouloir supprimer le client <strong>{{ client_id }}</strong> ?
           <br><span class="text-muted small">Cette action est réversible (suppression logique).</span>
         </p>
         <form method="post">
