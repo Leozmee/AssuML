@@ -4,7 +4,7 @@ import pytest
 
 from scoring.forms import ScoringForm
 from gestion.forms import ClientForm
-from accounts.forms import RegisterForm
+from accounts.forms import RegisterStep1Form, RegisterStep2Form
 
 
 @pytest.mark.django_db
@@ -67,13 +67,32 @@ class TestClientFormIMC:
 
 
 @pytest.mark.django_db
-class TestRegisterFormIMC:
-    def test_inscription_valide(self):
-        form = RegisterForm(
+class TestRegisterStep1Form:
+    def test_identifiants_valides(self):
+        form = RegisterStep1Form(
             data={
                 "email": "test@test.fr",
                 "password1": "TestPass123!",
                 "password2": "TestPass123!",
+            }
+        )
+        assert form.is_valid(), form.errors
+
+    def test_mots_de_passe_differents(self):
+        form = RegisterStep1Form(
+            data={
+                "email": "test@test.fr",
+                "password1": "TestPass123!",
+                "password2": "AutrePass456!",
+            }
+        )
+        assert not form.is_valid()
+
+
+class TestRegisterStep2FormIMC:
+    def test_profil_valide(self):
+        form = RegisterStep2Form(
+            data={
                 "age": 25,
                 "sexe": "homme",
                 "poids": "70.0",
@@ -87,20 +106,3 @@ class TestRegisterFormIMC:
         imc = form.cleaned_data["imc"]
         # 70 / (1.80)^2 = 21.60
         assert abs(imc - 21.60) < 0.1
-
-    def test_mots_de_passe_differents(self):
-        form = RegisterForm(
-            data={
-                "email": "test@test.fr",
-                "password1": "TestPass123!",
-                "password2": "AutrePass456!",
-                "age": 25,
-                "sexe": "homme",
-                "poids": "70.0",
-                "taille": "180",
-                "enfants": 0,
-                "fumeur": False,
-                "region": "northwest",
-            }
-        )
-        assert not form.is_valid()

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Contact</h1>
+</div>
+
+<div class="card legal-card">
+  <div class="card-body">
+    {% include 'legal/_contact_content.html' %}
+  </div>
+</div>
+{% endblock %}
+
+{% block main_content %}
+<div class="card">
+  <div class="card-header fw-semibold">Contact</div>
+  <div class="card-body">
+    {% include 'legal/_contact_content.html' %}
+  </div>
+</div>
+{% endblock %}

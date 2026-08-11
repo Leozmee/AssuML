@@ -318,7 +318,9 @@ def main():
             mlflow.log_metric(cle, valeur)
 
         # 7. Gate anti-régression : ne déployer que si strictement meilleur
-        metrique_actuelle = lire_metrique_actuelle(METADATA_PATH, "regression", "r2")
+        metrique_actuelle = lire_metrique_actuelle(
+            METADATA_PATH, "regression", "r2", model_path=MODEL_PATH
+        )
         if est_meilleur_modele(metriques_test["r2"], metrique_actuelle):
             print()
             sauvegarder_pipeline(pipeline)

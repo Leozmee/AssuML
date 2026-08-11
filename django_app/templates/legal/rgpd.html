@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}RGPD{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Protection des données personnelles</h1>
+</div>
+
+<div class="card legal-card legal-card--wide">
+  <div class="card-body">
+    {% include 'legal/_rgpd_content.html' %}
+  </div>
+</div>
+{% endblock %}
+
+{% block main_content %}
+<div class="card">
+  <div class="card-header fw-semibold">Protection des données personnelles</div>
+  <div class="card-body">
+    {% include 'legal/_rgpd_content.html' %}
+  </div>
+</div>
+{% endblock %}

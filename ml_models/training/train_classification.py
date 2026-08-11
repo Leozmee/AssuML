@@ -330,7 +330,7 @@ def main():
 
         # Gate anti-régression : ne déployer que si strictement meilleur
         metrique_actuelle = lire_metrique_actuelle(
-            METADATA_PATH, "classification", "accuracy"
+            METADATA_PATH, "classification", "accuracy", model_path=CLF_PATH
         )
         if est_meilleur_modele(metriques_test["accuracy"], metrique_actuelle):
             os.makedirs(os.path.abspath(MODEL_DIR), exist_ok=True)

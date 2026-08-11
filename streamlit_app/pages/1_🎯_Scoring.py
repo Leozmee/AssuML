@@ -122,7 +122,7 @@ if btn_complet:
             couleur_risque = COULEURS_RISQUE.get(categorie, "#6c757d")
             st.markdown(
                 f'<span style="background:{couleur_risque};color:white;'
-                f'padding:4px 14px;border-radius:6px;font-weight:bold;'
+                f"padding:4px 14px;border-radius:6px;font-weight:bold;"
                 f'font-size:1.1em;">{categorie.upper()}</span>',
                 unsafe_allow_html=True,
             )
@@ -203,7 +203,7 @@ if btn_risque:
         with col1:
             st.markdown(
                 f'<span style="background:{couleur_risque};color:white;'
-                f'padding:4px 14px;border-radius:6px;font-weight:bold;'
+                f"padding:4px 14px;border-radius:6px;font-weight:bold;"
                 f'font-size:1.1em;">{categorie.upper()}</span>',
                 unsafe_allow_html=True,
             )
