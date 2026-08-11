@@ -7,8 +7,11 @@ Nécessite l'API en cours d'exécution sur le port 8000.
 
 import os
 
-import pytest
 import httpx
+import pytest
+from sqlalchemy import text
+
+from database.connection import SessionLocal
 
 BASE_URL = "http://localhost:8000"
 
@@ -77,3 +80,13 @@ def test_creer_et_supprimer_client():
     # Le client ne doit plus apparaître dans la liste active
     r_get = httpx.get(f"{BASE_URL}/api/clients/{client_id}", headers=HEADERS)
     assert r_get.status_code == 404
+
+    # Nettoyage : le soft delete de l'API laisse la ligne en base (comportement
+    # attendu en production) — on la retire physiquement ici pour ne pas fausser
+    # le COUNT(*) des tests de seed qui s'exécutent après celui-ci.
+    db = SessionLocal()
+    try:
+        db.execute(text("DELETE FROM clients WHERE client_id = :id"), {"id": client_id})
+        db.commit()
+    finally:
+        db.close()

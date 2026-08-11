@@ -108,7 +108,8 @@ def dialog_scorer_client(client: dict):
     from business.scoring import COEFFICIENTS
 
     st.caption(
-        f"Client #{client['client_id']} · {client['sexe'].capitalize()}, {client['age']} ans"
+        f"Client #{client['client_id']} · {client['sexe'].capitalize()}, "
+        f"{client['age']} ans"
     )
 
     payload = {
@@ -196,7 +197,8 @@ def dialog_scorer_client(client: dict):
 
     if data.get("deja_existante"):
         st.info(
-            f"Données inchangées — prédiction existante retournée (ID : {data['prediction_id']})",
+            "Données inchangées — prédiction existante retournée "
+            f"(ID : {data['prediction_id']})",
             icon="ℹ️",
         )
     elif data.get("prediction_id"):
@@ -207,7 +209,8 @@ def dialog_scorer_client(client: dict):
 def dialog_resilier_contrat(contrat: dict):
     st.warning(
         f"Résilier définitivement le contrat **#{contrat['contrat_id']}** "
-        f"(prime : ${contrat['prime_mensuelle']:,.2f}/mois · {contrat['type_couverture']}) ?",
+        f"(prime : ${contrat['prime_mensuelle']:,.2f}/mois · "
+        f"{contrat['type_couverture']}) ?",
         icon="⚠️",
     )
     st.caption("Le statut passera à « Résilié » — le contrat reste visible en base.")
