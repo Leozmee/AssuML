@@ -9,7 +9,6 @@ import streamlit as st
 
 from utils import api_client as api
 from components.charts import jauge_cout, jauge_risque
-from components.metrics import badge_decision
 
 st.set_page_config(page_title="Scoring — AssuML", page_icon="🎯", layout="wide")
 st.title("🎯 Scoring assurantiel")
