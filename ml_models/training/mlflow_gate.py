@@ -16,19 +16,33 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 
-def lire_metrique_actuelle(metadata_path, cle_modele, cle_metrique):
+def lire_metrique_actuelle(metadata_path, cle_modele, cle_metrique, model_path=None):
     """Lit la métrique principale du modèle actuellement déployé.
+
+    metadata.json est committé dans le dépôt (source de vérité constitutionnelle)
+    alors que les .pkl sont gitignorés — sur un checkout neuf (ex. CI), metadata.json
+    peut donc exister sans qu'aucun .pkl ne soit réellement présent sur disque.
+    Sans model_path, la fonction croirait alors qu'un modèle est déjà déployé et
+    bloquerait le tout premier entraînement du run. Si model_path est fourni et que
+    ce fichier n'existe pas, on traite la situation comme "aucune baseline" — même
+    comportement que l'absence de metadata.json.
 
     Args:
         metadata_path (str): Chemin vers metadata.json.
         cle_modele (str): "regression" ou "classification".
         cle_metrique (str): Nom de la métrique (ex. "r2", "accuracy").
+        model_path (str | None): Chemin vers le .pkl déployé. Si fourni et absent,
+            la métrique de metadata.json est ignorée (pas de modèle réellement
+            déployé, quoi qu'en dise metadata.json).
 
     Returns:
-        float | None: La métrique actuelle, ou None si metadata.json est absent
-        ou si la clé n'existe pas encore (premier entraînement).
+        float | None: La métrique actuelle, ou None si metadata.json ou le .pkl
+        associé sont absents, ou si la clé n'existe pas encore (premier
+        entraînement).
     """
     if not os.path.exists(metadata_path):
+        return None
+    if model_path is not None and not os.path.exists(model_path):
         return None
     with open(metadata_path, encoding="utf-8") as f:
         meta = json.load(f)

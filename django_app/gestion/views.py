@@ -58,6 +58,13 @@ def client_list(request):
     if q.isdigit():
         clients = [c for c in clients if str(c["client_id"]) == q]
 
+    # Filtre par statut de compte utilisateur
+    compte = request.GET.get("compte", "")
+    if compte == "oui":
+        clients = [c for c in clients if c.get("a_un_compte")]
+    elif compte == "non":
+        clients = [c for c in clients if not c.get("a_un_compte")]
+
     # Tri
     RISQUE_ORDRE = {"faible": 1, "moyen": 2, "eleve": 3, "critique": 4}
     sort = request.GET.get("sort", "id_asc")
@@ -73,7 +80,9 @@ def client_list(request):
         )
 
     return render(
-        request, "gestion/list.html", {"clients": clients, "q": q, "sort": sort}
+        request,
+        "gestion/list.html",
+        {"clients": clients, "q": q, "sort": sort, "compte": compte},
     )
 
 

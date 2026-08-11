@@ -58,3 +58,36 @@ def test_lire_metrique_actuelle_valeur_presente(tmp_path):
     with open(chemin, "w", encoding="utf-8") as f:
         json.dump({"regression": {"metriques_test": {"r2": 0.8533}}}, f)
     assert lire_metrique_actuelle(chemin, "regression", "r2") == 0.8533
+
+
+def test_lire_metrique_actuelle_pkl_absent_ignore_metadata(tmp_path):
+    """metadata.json présent (ex. committé en CI) mais .pkl absent (gitignoré,
+    jamais checkouté) → traité comme aucune baseline, pas comme un blocage.
+    Reproduit le bug CI où metadata.json était committé sans le .pkl associé,
+    empêchant tout premier entraînement en environnement neuf de se déployer.
+    """
+    metadata_path = os.path.join(tmp_path, "metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump({"regression": {"metriques_test": {"r2": 0.8806}}}, f)
+    pkl_inexistant = os.path.join(tmp_path, "regression.pkl")
+    assert (
+        lire_metrique_actuelle(
+            metadata_path, "regression", "r2", model_path=pkl_inexistant
+        )
+        is None
+    )
+
+
+def test_lire_metrique_actuelle_pkl_present_lit_metadata(tmp_path):
+    """metadata.json et .pkl tous deux présents → la métrique est bien lue
+    (cas normal, modèle réellement déployé)."""
+    metadata_path = os.path.join(tmp_path, "metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump({"regression": {"metriques_test": {"r2": 0.8806}}}, f)
+    pkl_path = os.path.join(tmp_path, "regression.pkl")
+    with open(pkl_path, "wb") as f:
+        f.write(b"contenu-pkl-factice")
+    assert (
+        lire_metrique_actuelle(metadata_path, "regression", "r2", model_path=pkl_path)
+        == 0.8806
+    )

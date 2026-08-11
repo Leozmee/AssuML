@@ -20,8 +20,13 @@
     <option value="risque_asc" {% if sort == 'risque_asc' %}selected{% endif %}>Risque croissant</option>
     <option value="risque_desc"{% if sort == 'risque_desc'%}selected{% endif %}>Risque décroissant</option>
   </select>
+  <select name="compte" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+    <option value=""    {% if compte == ''    %}selected{% endif %}>Tous les comptes</option>
+    <option value="oui" {% if compte == 'oui' %}selected{% endif %}>Avec compte</option>
+    <option value="non" {% if compte == 'non' %}selected{% endif %}>Sans compte</option>
+  </select>
   <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
-  {% if q %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
+  {% if q or compte %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
 </form>
 
 <div class="card">

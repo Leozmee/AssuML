@@ -1,9 +1,9 @@
-"""Vue actualités — articles (admin uniquement)."""
+"""Vue actualités — accessible à tout utilisateur connecté (admin ou client)."""
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from accounts.decorators import admin_required
 from utils.api_client import (
     ApiError,
     ApiTimeoutError,
@@ -14,7 +14,7 @@ from utils.api_client import (
 SOURCES = [("", "Toutes sources"), ("santemagazine.fr", "Santé Magazine")]
 
 
-@admin_required
+@login_required(login_url="/accounts/login/")
 def actualites_list(request):
     """Articles filtrés par source."""
     source = request.GET.get("source", "")

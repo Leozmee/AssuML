@@ -32,8 +32,22 @@ class LoginForm(forms.Form):
     )
 
 
-class RegisterForm(UserCreationForm):
-    """Inscription assuré — poids/taille → IMC calculé dans clean()."""
+class RegisterStep1Form(UserCreationForm):
+    """Inscription assuré — étape 1/2 : identifiants (email + mot de passe)."""
+
+    class Meta:
+        model = User
+        fields = ("email", "password1", "password2")
+        widgets = {"email": forms.EmailInput(attrs={"class": "form-control"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password1"].widget.attrs["class"] = "form-control"
+        self.fields["password2"].widget.attrs["class"] = "form-control"
+
+
+class RegisterStep2Form(forms.Form):
+    """Inscription assuré — étape 2/2 : profil médical (poids/taille → IMC)."""
 
     age = forms.IntegerField(
         min_value=18,
@@ -76,16 +90,6 @@ class RegisterForm(UserCreationForm):
         label="Région",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
-
-    class Meta:
-        model = User
-        fields = ("email", "password1", "password2")
-        widgets = {"email": forms.EmailInput(attrs={"class": "form-control"})}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["password1"].widget.attrs["class"] = "form-control"
-        self.fields["password2"].widget.attrs["class"] = "form-control"
 
     def clean(self):
         cleaned = super().clean()
