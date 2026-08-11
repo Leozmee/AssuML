@@ -10,7 +10,8 @@ from accounts.forms import (
     CreateAdminForm,
     LoginForm,
     MonCompteEditForm,
-    RegisterForm,
+    RegisterStep1Form,
+    RegisterStep2Form,
 )
 from accounts.models import ProfilUtilisateur, User
 from utils import api_client, region_id_to_nom, region_nom_to_id
@@ -43,20 +44,40 @@ def logout_view(request):
     return redirect("accounts:login")
 
 
-def register_view(request):
-    """Inscription assuré — création atomique User + client PostgreSQL + Profil."""
+def register_step1_view(request):
+    """Inscription assuré — étape 1/2 : email + mot de passe (stockés en session)."""
     if request.user.is_authenticated:
         return _redirect_by_role(request.user)
 
-    form = RegisterForm(request.POST or None)
+    form = RegisterStep1Form(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        cd = form.cleaned_data
+        # Rien n'est créé en base à cette étape — on garde juste les identifiants
+        # validés en session le temps que l'étape 2 soit complétée.
+        request.session["register_email"] = cd["email"]
+        request.session["register_password"] = cd["password1"]
+        return redirect("accounts:register_step2")
+
+    return render(request, "accounts/register_step1.html", {"form": form})
+
+
+def register_step2_view(request):
+    """Inscription assuré — étape 2/2 : profil médical, puis création atomique."""
+    if request.user.is_authenticated:
+        return _redirect_by_role(request.user)
+
+    email = request.session.get("register_email")
+    password = request.session.get("register_password")
+    if not email or not password:
+        messages.warning(request, "Merci de renseigner d'abord vos identifiants.")
+        return redirect("accounts:register")
+
+    form = RegisterStep2Form(request.POST or None)
     if request.method == "POST" and form.is_valid():
         cd = form.cleaned_data
 
         # Étape 1 — créer le User Django
-        user = User.objects.create_user(
-            email=cd["email"],
-            password=cd["password1"],
-        )
+        user = User.objects.create_user(email=email, password=password)
 
         # Étape 2 — créer le client dans PostgreSQL via FastAPI
         try:
@@ -76,16 +97,19 @@ def register_view(request):
             # Rollback étape 1
             user.delete()
             messages.error(request, f"Erreur lors de la création du compte : {exc}")
-            return render(request, "accounts/register.html", {"form": form})
+            return render(request, "accounts/register_step2.html", {"form": form})
 
         # Étape 3 — créer le ProfilUtilisateur
         ProfilUtilisateur.objects.create(user=user, role="user", client_id=client_id)
+
+        del request.session["register_email"]
+        del request.session["register_password"]
 
         login(request, user)
         messages.success(request, "Compte créé avec succès. Bienvenue !")
         return redirect("accounts:mon_compte")
 
-    return render(request, "accounts/register.html", {"form": form})
+    return render(request, "accounts/register_step2.html", {"form": form})
 
 
 @admin_required

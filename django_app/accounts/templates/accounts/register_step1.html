@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Créer un compte — Étape 1{% endblock %}
+
+{% block main_content %}
+<div class="auth-card">
+  <div class="auth-head">
+    <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="auth-logo">
+  </div>
+  <div class="auth-subtitle">Créer un compte assuré — étape 1/2 : identifiants</div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label">{{ form.email.label }}</label>
+      {{ form.email }}
+      {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">{{ form.password1.label }}</label>
+      {{ form.password1 }}
+      {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">{{ form.password2.label }}</label>
+      {{ form.password2 }}
+      {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>{% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100">Suivant →</button>
+  </form>
+
+  <div class="text-center py-3 small">
+    Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a>
+  </div>
+</div>
+{% endblock main_content %}

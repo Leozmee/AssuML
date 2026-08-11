@@ -163,7 +163,7 @@ def dialog_scorer_client(client: dict):
         couleur_risque = COULEURS_RISQUE.get(categorie, "#6c757d")
         st.markdown(
             f'<span style="background:{couleur_risque};color:white;'
-            f'padding:4px 14px;border-radius:6px;font-weight:bold;'
+            f"padding:4px 14px;border-radius:6px;font-weight:bold;"
             f'font-size:1.1em;">{categorie.upper()}</span>',
             unsafe_allow_html=True,
         )
@@ -212,7 +212,9 @@ def dialog_resilier_contrat(contrat: dict):
     )
     st.caption("Le statut passera à « Résilié » — le contrat reste visible en base.")
     col1, col2 = st.columns(2)
-    if col1.button("Confirmer la résiliation", type="primary", use_container_width=True):
+    if col1.button(
+        "Confirmer la résiliation", type="primary", use_container_width=True
+    ):
         data, err = api.update_contrat_statut(contrat["contrat_id"], "resilie")
         if err:
             st.error(f"Erreur : {err}")
@@ -374,7 +376,17 @@ clients_page = clients_filtres[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]  # noq
 hdr = st.columns([1, 1, 2, 2, 2, 2, 2, 2, 5])
 for col, label in zip(
     hdr,
-    ["ID", "Âge", "Sexe", "IMC", "Fumeur", "Région", "Risque", "Statut contrat", "Actions"],
+    [
+        "ID",
+        "Âge",
+        "Sexe",
+        "IMC",
+        "Fumeur",
+        "Région",
+        "Risque",
+        "Statut contrat",
+        "Actions",
+    ],
 ):
     col.markdown(f"**{label}**")
 st.divider()
@@ -416,7 +428,9 @@ for client in clients_page:
                 if a4.button("📄✕", key=f"resilier_{cid}", help="Résilier le contrat"):
                     dialog_resilier_contrat(contrat)
             else:
-                a4.markdown(badge_statut_contrat(contrat["statut"]), unsafe_allow_html=True)
+                a4.markdown(
+                    badge_statut_contrat(contrat["statut"]), unsafe_allow_html=True
+                )
         else:
             if a4.button("📄+", key=f"contrat_{cid}", help="Nouveau contrat"):
                 prime_annuelle = pred["prime"] if pred else None
@@ -451,7 +465,8 @@ with st.expander("📋 Tous les contrats", expanded=False):
         # En-tête
         ch = st.columns([1, 1, 2, 2, 2, 2, 2])
         for col, label in zip(
-            ch, ["ID", "Client", "Statut", "Prime/mois", "Couverture", "Début", "Actions"]
+            ch,
+            ["ID", "Client", "Statut", "Prime/mois", "Couverture", "Début", "Actions"],
         ):
             col.markdown(f"**{label}**")
         st.divider()
@@ -500,4 +515,3 @@ with st.expander("📋 Tous les contrats", expanded=False):
                     st.success(f"Contrat #{contrat_id_mod} → {nouveau_statut}")
                     invalider_cache()
                     st.rerun()
-

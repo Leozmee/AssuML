@@ -6,8 +6,7 @@
 {% block main_content %}
 <div class="auth-card">
   <div class="auth-head">
-    <img src="{% static 'img/logo-assuml-light.png' %}" alt="AssuML"
-         style="height:130px;width:auto;display:block;margin:0 auto;">
+    <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="auth-logo">
   </div>
   <div class="auth-subtitle">Connectez-vous à votre espace</div>
 
@@ -33,10 +32,10 @@
       <div class="alert alert-danger py-2 mb-3">{{ form.non_field_errors.0 }}</div>
     {% endif %}
 
-    <button type="submit" class="btn btn-primary w-100" style="padding:.65rem;">Se connecter</button>
+    <button type="submit" class="btn btn-primary w-100 auth-submit">Se connecter</button>
 
-    <div style="text-align:center;margin-top:18px;font-size:.82rem;color:var(--muted);">
-      Pas de compte ? <a href="{% url 'accounts:register' %}" style="color:var(--primary-soft);font-weight:600;">Créer un compte</a>
+    <div class="auth-footer-note">
+      Pas de compte ? <a href="{% url 'accounts:register' %}" class="fw-semibold">Créer un compte</a>
     </div>
   </form>
 </div>
