@@ -21,6 +21,7 @@ class ArticleRead(BaseModel):
     url_source: str
     nom_source: str
     resume: Optional[str] = None
+    image_url: Optional[str] = None
     date_publication: Optional[datetime] = None
     date_scraping: datetime
 

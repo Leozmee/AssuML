@@ -7,11 +7,11 @@
   <h1>📰 Actualités assurance</h1>
 </div>
 
-<!-- Filtres -->
+<!-- Filtre -->
 <div class="card mb-4">
   <div class="card-body">
     <form method="get" class="row g-3 align-items-end">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label class="form-label">Source</label>
         <select name="source" class="form-select">
           {% for val, label in sources %}
@@ -19,85 +19,46 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-3">
-        <label class="form-label">Région (météo)</label>
-        <select name="region" class="form-select">
-          {% for val, label in regions %}
-          <option value="{{ val }}" {% if val == region_sel %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Saison (météo)</label>
-        <select name="saison" class="form-select">
-          {% for val, label in saisons %}
-          <option value="{{ val }}" {% if val == saison_sel %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <button type="submit" class="btn btn-primary w-100">Filtrer</button>
       </div>
     </form>
   </div>
 </div>
 
-<div class="row g-4">
-  <!-- Articles -->
-  <div class="col-md-7">
-    <h5 class="mb-3">Articles ({{ articles|length }})</h5>
-    {% if articles %}
-      {% for art in articles %}
-      <details class="mb-2">
-        <summary class="d-flex justify-content-between align-items-center p-2 bg-light rounded" style="cursor:pointer;">
-          <span class="fw-semibold">{{ art.titre|default:"Sans titre" }}</span>
-          <span class="badge bg-secondary ms-2">{{ art.source }}</span>
-        </summary>
-        <div class="p-3 border rounded-bottom">
-          {% if art.contenu %}
-            <p class="small mb-1">{{ art.contenu|truncatewords:80 }}</p>
+{% if articles %}
+  <div class="d-flex flex-column gap-3" style="max-width: 760px;">
+    {% for art in articles %}
+    <details class="card article-card">
+      <summary class="d-flex align-items-center gap-3 p-3">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" alt="" class="rounded flex-shrink-0" style="width: 64px; height: 64px; object-fit: cover;">
+        {% endif %}
+        <span class="fw-semibold">{{ art.titre|default:"Sans titre" }}</span>
+      </summary>
+      <div class="card-body border-top">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" alt="{{ art.titre }}" class="img-fluid rounded mb-3" style="max-height: 320px; width: 100%; object-fit: cover;">
+        {% endif %}
+        {% if art.resume %}
+          <p class="mb-0" style="white-space: pre-line; line-height: 1.8; text-align: justify;">{{ art.resume }}</p>
+        {% endif %}
+        <div class="text-muted small d-flex justify-content-between align-items-center border-top pt-2 mt-3">
+          <span>{{ art.date_publication|date:"d/m/Y"|default:"Date inconnue" }}</span>
+          {% if art.url_source %}
+            <a href="{{ art.url_source }}" target="_blank" rel="noopener">Source : {{ art.nom_source }} →</a>
           {% endif %}
-          {% if art.url %}
-            <a href="{{ art.url }}" target="_blank" class="small">Lire l'article →</a>
-          {% endif %}
-          <div class="text-muted small mt-1">{{ art.date_publication|default:"Date inconnue" }}</div>
         </div>
-      </details>
-      {% endfor %}
-    {% else %}
-      <div class="alert alert-light">Aucun article disponible.</div>
-    {% endif %}
-  </div>
-
-  <!-- Météo -->
-  <div class="col-md-5">
-    <h5 class="mb-3">Données météo ({{ meteo|length }})</h5>
-    {% if meteo %}
-      <div class="table-responsive">
-        <table class="table table-sm table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Région</th>
-              <th>Saison</th>
-              <th>Temp. moy.</th>
-              <th>Précip.</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for m in meteo %}
-            <tr>
-              <td>{{ m.region_id }}</td>
-              <td>{{ m.saison|capfirst }}</td>
-              <td>{{ m.temperature_moyenne|floatformat:1|default:"—" }}°C</td>
-              <td>{{ m.precipitations_mm|floatformat:0|default:"—" }} mm</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
       </div>
-    {% else %}
-      <div class="alert alert-light">Aucune donnée météo.</div>
-    {% endif %}
+    </details>
+    {% endfor %}
   </div>
-</div>
+{% else %}
+  <div class="alert alert-light">Aucun article disponible.</div>
+{% endif %}
+
+<style>
+  .article-card summary { cursor: pointer; list-style: none; }
+  .article-card summary::-webkit-details-marker { display: none; }
+</style>
 {% endblock %}
