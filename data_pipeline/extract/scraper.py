@@ -137,7 +137,8 @@ def scraper_article(url: str) -> Optional[dict]:
 
     # Titre : H1 en priorité, og:title en fallback
     h1 = soup.find("h1")
-    titre = h1.get_text(strip=True) if h1 else ""
+    titre = h1.get_text(separator=" ", strip=True) if h1 else ""
+    titre = re.sub(r"\s+", " ", titre).strip()
     if not titre:
         og_title = soup.find("meta", property="og:title")
         titre = og_title["content"].strip() if og_title else ""
@@ -164,6 +165,12 @@ def scraper_article(url: str) -> Optional[dict]:
         og_desc = soup.find("meta", property="og:description")
         contenu = og_desc["content"].strip() if og_desc else ""
 
+    # Image de l'article : og:image (image principale utilisée pour le partage social)
+    og_image = soup.find("meta", property="og:image")
+    image_url = (
+        og_image["content"].strip() if og_image and og_image.get("content") else ""
+    )
+
     # Date : article:published_time → og:updated_time → balise <time>
     date_str = ""
     og_pub = soup.find("meta", property="article:published_time")
@@ -183,6 +190,7 @@ def scraper_article(url: str) -> Optional[dict]:
         "url_source": url,
         "nom_source": NOM_SOURCE,
         "resume": contenu,
+        "image_url": image_url,
         "date_publication_str": date_str,
     }
 

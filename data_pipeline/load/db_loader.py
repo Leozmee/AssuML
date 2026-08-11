@@ -84,6 +84,7 @@ def insert_articles(records: list[dict]) -> int:
                 "url_source": r["url_source"],
                 "nom_source": r["nom_source"],
                 "resume": r.get("resume"),
+                "image_url": r.get("image_url"),
                 "date_publication": r.get("date_publication"),
                 "date_scraping": datetime.now(),
             }
