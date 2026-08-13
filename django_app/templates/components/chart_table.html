@@ -1,0 +1,27 @@
+{# Usage: {% include 'components/chart_table.html' with table=tables.xxx title="Titre du graphique" %} #}
+{% if table %}
+<details class="mt-2">
+  <summary class="small text-muted">Voir les données de ce graphique en tableau</summary>
+  <div class="table-responsive mt-2">
+    <table class="table table-sm mb-0">
+      <caption class="visually-hidden">Alternative textuelle : {{ title }}</caption>
+      <thead class="table-light">
+        <tr>
+          {% for key in table.0.keys %}
+          <th scope="col">{{ key }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table %}
+        <tr>
+          {% for val in row.values %}
+          <td>{{ val }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+{% endif %}

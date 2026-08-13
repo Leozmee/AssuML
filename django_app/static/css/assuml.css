@@ -4,7 +4,9 @@
 
 :root {
   color-scheme: light;
-  --primary:       #3a80b8;
+  /* Assombri pour un contraste AA (>= 4.5:1) en texte normal (liens,
+     .text-primary) — l'origine #3a80b8 ne mesurait que 4.05-4.23:1. */
+  --primary:       #2f6a9c;
   --primary-dark:  #1e3a5f;
   --primary-soft:  #5ba3c9;
 
@@ -15,16 +17,20 @@
 
   --ink:           #1e3346;
   --ink-soft:      #5c7893;
-  --muted:         #93a8bb;
+  --muted:         #516980;
   --line:          #eaf1f7;
 
-  --success:       #16a34a;
+  /* Assombries pour un contraste AA (>= 4.5:1) sur --success-bg/--warning-bg/
+     --danger-bg/--orange-bg (badges) et en texte blanc sur fond plein
+     (.btn-success) — les teintes d'origine, plus claires, ne passaient pas
+     WCAG 2.1 AA (mesuré ~2.9-4.0:1 selon la combinaison). */
+  --success:       #0f7535;
   --success-bg:    #e3f8ea;
-  --warning:       #d97706;
+  --warning:       #975304;
   --warning-bg:    #fef1dc;
-  --danger:        #dc2626;
+  --danger:        #b41f1f;
   --danger-bg:     #fde4e4;
-  --orange:        #ea580c;
+  --orange:        #a83f08;
   --orange-bg:     #fee8db;
   --rose:        #d14985;
   --rose-dark:   #b83a70;
@@ -107,11 +113,16 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .topbar-nav {
   display: flex;
   align-items: center;
+  flex: 1;
+}
+.topbar-nav-list {
+  display: flex;
+  align-items: center;
   gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
-  flex: 1;
+  width: 100%;
 }
 .topbar-link {
   display: block;
@@ -614,7 +625,8 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .topbar { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 12px; }
-  .topbar-nav { order: 3; width: 100%; flex-wrap: wrap; }
+  .topbar-nav { order: 3; width: 100%; }
+  .topbar-nav-list { flex-wrap: wrap; }
   .page-header { padding: 16px 18px; }
   .main-content .page-header ~ .row,
   .main-content .page-header ~ .card,

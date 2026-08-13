@@ -34,8 +34,21 @@ def dashboard(request):
                 [{"type": chart_type, "x": x_vals, "y": df[y_col].tolist()}]
             )
 
-        charts["par_region"] = _to_json(
-            analytics.stats_par_region(), "region", "cout_moy"
+        def _to_table(df, x_col, y_col, x_label, y_label):
+            """Alternative textuelle d'un graphique Plotly (mêmes données tracées)."""
+            if df is None or df.empty:
+                return []
+            x_vals = [str(v) if isinstance(v, bool) else v for v in df[x_col].tolist()]
+            return [
+                {x_label: x, y_label: y} for x, y in zip(x_vals, df[y_col].tolist())
+            ]
+
+        tables = {}
+
+        df_region = analytics.stats_par_region()
+        charts["par_region"] = _to_json(df_region, "region", "cout_moy")
+        tables["par_region"] = _to_table(
+            df_region, "region", "cout_moy", "Région", "Coût moyen prédit ($)"
         )
 
         df_fumeur = analytics.stats_par_fumeur()
@@ -45,6 +58,9 @@ def dashboard(request):
                 {True: "Fumeur", False: "Non-fumeur"}
             )
         charts["par_fumeur"] = _to_json(df_fumeur, "fumeur", "cout_moy")
+        tables["par_fumeur"] = _to_table(
+            df_fumeur, "fumeur", "cout_moy", "Statut fumeur", "Coût moyen prédit ($)"
+        )
 
         dist = analytics.distribution_cout()
         if dist is not None and not dist.empty:
@@ -53,9 +69,14 @@ def dashboard(request):
             charts["distribution"] = _to_json(dist, "label", "nb")
         else:
             charts["distribution"] = "[]"
+        tables["distribution"] = _to_table(
+            dist, "label", "nb", "Tranche de coût prédit ($)", "Nombre de profils"
+        )
 
-        charts["correlation"] = _to_json(
-            analytics.correlation_age_cout(), "age", "cout_moy"
+        df_corr = analytics.correlation_age_cout()
+        charts["correlation"] = _to_json(df_corr, "age", "cout_moy")
+        tables["correlation"] = _to_table(
+            df_corr, "age", "cout_moy", "Âge", "Coût moyen prédit ($)"
         )
 
         layouts = {
@@ -105,9 +126,10 @@ def dashboard(request):
         messages.warning(request, f"Analytics DuckDB indisponibles : {exc}")
         charts = {}
         layouts = {}
+        tables = {}
 
     return render(
         request,
         "analytics/dashboard.html",
-        {"kpis": kpis, "charts": charts, "layouts": layouts},
+        {"kpis": kpis, "charts": charts, "layouts": layouts, "tables": tables},
     )

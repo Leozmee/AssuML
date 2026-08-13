@@ -44,7 +44,21 @@ class TestLogin:
 
 @pytest.mark.django_db
 class TestRegisterRollback:
-    """Vérifie le rollback si l'API FastAPI échoue à la création du client."""
+    """Vérifie le rollback si l'API FastAPI échoue à la création du client.
+
+    L'inscription se fait en 2 étapes (étape 1 : email/mdp en session,
+    étape 2 : profil → création atomique User + client FastAPI).
+    """
+
+    def _remplir_etape1(self, client, email):
+        client.post(
+            "/accounts/register/",
+            {
+                "email": email,
+                "password1": "TestPass123!",
+                "password2": "TestPass123!",
+            },
+        )
 
     @patch("accounts.views.api_client.create_client")
     def test_rollback_si_api_echoue(self, mock_create, client):
@@ -52,13 +66,13 @@ class TestRegisterRollback:
 
         mock_create.side_effect = ApiError(500, "Erreur serveur")
 
+        self._remplir_etape1(client, "nouveau@test.fr")
         nb_users_avant = User.objects.count()
         resp = client.post(
-            "/accounts/register/",
+            "/accounts/register/profil/",
             {
-                "email": "nouveau@test.fr",
-                "password1": "TestPass123!",
-                "password2": "TestPass123!",
+                "nom": "Dupont",
+                "prenom": "Jean",
                 "age": 30,
                 "sexe": "homme",
                 "poids": "75.0",
@@ -75,14 +89,14 @@ class TestRegisterRollback:
 
     @patch("accounts.views.api_client.create_client")
     def test_inscription_succes(self, mock_create, client):
-        mock_create.return_value = {"id": 999}
+        mock_create.return_value = {"client_id": 999}
 
+        self._remplir_etape1(client, "nouveau2@test.fr")
         resp = client.post(
-            "/accounts/register/",
+            "/accounts/register/profil/",
             {
-                "email": "nouveau2@test.fr",
-                "password1": "TestPass123!",
-                "password2": "TestPass123!",
+                "nom": "Dupont",
+                "prenom": "Jean",
                 "age": 30,
                 "sexe": "homme",
                 "poids": "75.0",
@@ -101,9 +115,15 @@ class TestRegisterRollback:
 
 @pytest.mark.django_db
 class TestCreateAdmin:
-    def test_create_admin_accessible_admin(self, admin_client):
-        resp = admin_client.get("/accounts/create-admin/")
+    """Création d'un compte admin — réservée au super-admin (is_superuser)."""
+
+    def test_create_admin_accessible_superuser(self, superuser_client):
+        resp = superuser_client.get("/accounts/create-admin/")
         assert resp.status_code == 200
+
+    def test_create_admin_inaccessible_admin_classique(self, admin_client):
+        resp = admin_client.get("/accounts/create-admin/")
+        assert resp.status_code == 302
 
     def test_create_admin_inaccessible_user(self, user_client):
         resp = user_client.get("/accounts/create-admin/")

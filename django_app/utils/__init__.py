@@ -27,6 +27,20 @@ def capitaliser_nom(valeur: str) -> str:
     return valeur[:1].upper() + valeur[1:] if valeur else valeur
 
 
+def client_identite(client: dict) -> str:
+    """Nom lisible d'un client pour les aria-label (ex. boutons d'action).
+
+    "Prénom Nom" si renseignés, sinon "client <id>" (clients seedés sans
+    nom/prénom) — évite l'ambiguïté entre lignes similaires d'un tableau
+    pour les technologies d'assistance.
+    """
+    nom = (client.get("nom") or "").strip()
+    prenom = (client.get("prenom") or "").strip()
+    if nom or prenom:
+        return f"{prenom} {nom}".strip()
+    return f"client {client['client_id']}"
+
+
 def client_to_predict_payload(client: dict) -> dict:
     """Convertit un client (dict retourné par l'API) en payload /predict/*.
 

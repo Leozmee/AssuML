@@ -93,6 +93,8 @@ class TestRegisterStep2FormIMC:
     def test_profil_valide(self):
         form = RegisterStep2Form(
             data={
+                "nom": "Dupont",
+                "prenom": "Jean",
                 "age": 25,
                 "sexe": "homme",
                 "poids": "70.0",

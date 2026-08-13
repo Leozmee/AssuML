@@ -161,3 +161,89 @@ jobs:
           DB_NAME: assuml_db
           API_KEY: ${{ secrets.CI_API_KEY }}
         run: pytest -m integration -v
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 4 — Tests Django (django_app/tests/) avec un vrai PostgreSQL
+  # django_app a ses propres dépendances (django_app/requirements.txt) et
+  # son propre pytest.ini (DJANGO_SETTINGS_MODULE = config.settings).
+  # pytest-django crée sa propre base éphémère "test_assuml_db" via
+  # `CREATE DATABASE` puis y rejoue les migrations Django de l'app
+  # accounts (les tables métier gérées par SQLAlchemy — clients, regions...
+  # — ne sont pas nécessaires ici : les tests mockent l'API FastAPI).
+  # Le POSTGRES_USER de l'image officielle postgres est superuser sur
+  # l'instance, donc CREATEDB est déjà accordé (contrairement à un
+  # assuml_user provisionné manuellement en local).
+  # ──────────────────────────────────────────────────────────────
+  tests-django:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: assuml_user
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+          POSTGRES_DB: assuml_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: django_app/requirements.txt
+
+      - name: Installer les dépendances Django
+        run: pip install -r django_app/requirements.txt
+
+      - name: Pytest (django_app)
+        working-directory: django_app
+        env:
+          # Valeur factice : uniquement nécessaire pour que settings.py se
+          # charge (os.environ["DJANGO_SECRET_KEY"], strict) — pas besoin
+          # d'un vrai secret pour lancer des tests (même logique que le
+          # job docker-build ci-dessous).
+          DJANGO_SECRET_KEY: dummy_secret_ci
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: assuml_user
+          DB_PASS: ${{ secrets.CI_DB_PASSWORD }}
+          DB_NAME: assuml_db
+          API_KEY: ${{ secrets.CI_API_KEY }}
+        run: pytest tests/ -v
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 5 — Docker : vérifie que les images du projet construisent
+  # toujours, et que docker-compose.yml reste syntaxiquement valide.
+  # Ne démarre pas les conteneurs (pas de docker compose up) : ce job
+  # attrape les régressions de build (Dockerfile cassé, requirements
+  # manquants...), pas les régressions de comportement à l'exécution.
+  # ──────────────────────────────────────────────────────────────
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build de l'image principale (api / seed / streamlit / etl_scheduler)
+        run: docker build -t assuml-api-test .
+
+      - name: Build de l'image Django
+        run: docker build -f django_app/Dockerfile -t assuml-django-test .
+
+      - name: Valider la syntaxe de docker-compose.yml
+        env:
+          DB_USER: assuml_user
+          DB_PASS: dummy_password
+          DB_NAME: assuml_db
+          API_KEY: dummy_key
+          DJANGO_SECRET_KEY: dummy_secret
+          OPENWEATHER_API_KEY: dummy_key
+        run: docker compose config --quiet

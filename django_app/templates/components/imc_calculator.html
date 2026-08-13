@@ -1,21 +1,21 @@
 {% load static %}
 <div class="row g-3 mb-2">
   <div class="col-6">
-    <label for="id_taille" class="form-label">Taille (cm)</label>
+    <label for="id_taille" class="form-label">Taille (cm){% if form.taille.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
     {{ form.taille }}
     {% if form.taille.errors %}
-      <div class="text-danger small">{{ form.taille.errors.0 }}</div>
+      <div class="text-danger small" id="error_taille" role="alert">{{ form.taille.errors.0 }}</div>
     {% endif %}
   </div>
   <div class="col-6">
-    <label for="id_poids" class="form-label">Poids (kg)</label>
+    <label for="id_poids" class="form-label">Poids (kg){% if form.poids.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
     {{ form.poids }}
     {% if form.poids.errors %}
-      <div class="text-danger small">{{ form.poids.errors.0 }}</div>
+      <div class="text-danger small" id="error_poids" role="alert">{{ form.poids.errors.0 }}</div>
     {% endif %}
   </div>
 </div>
 <div class="mb-3">
-  <span id="imc-resultat">IMC calculé : —</span>
+  <span id="imc-resultat" aria-live="polite">IMC calculé : —</span>
 </div>
 <script src="{% static 'js/imc.js' %}"></script>

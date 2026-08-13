@@ -15,13 +15,15 @@
         <form method="post" novalidate>
           {% csrf_token %}
 
+          <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
+
           <div class="mb-3">
-            <label class="form-label">{{ form.type_couverture.label }}</label>
+            <label class="form-label" for="id_type_couverture">{{ form.type_couverture.label }} <span aria-hidden="true">*</span></label>
             {{ form.type_couverture }}
-            {% if form.type_couverture.errors %}<div class="text-danger small">{{ form.type_couverture.errors.0 }}</div>{% endif %}
+            {% if form.type_couverture.errors %}<div class="text-danger small" id="error_type_couverture" role="alert">{{ form.type_couverture.errors.0 }}</div>{% endif %}
           </div>
           <div class="mb-3">
-            <label class="form-label">{{ form.prime_mensuelle.label }}</label>
+            <label class="form-label" for="id_prime_mensuelle">{{ form.prime_mensuelle.label }} <span aria-hidden="true">*</span></label>
             {{ form.prime_mensuelle }}
             {% if prime_initiale %}
             <div class="form-text text-success">
@@ -30,12 +32,12 @@
             {% else %}
             <div class="form-text">Montant suggéré par le scoring ML (scorer d'abord le client)</div>
             {% endif %}
-            {% if form.prime_mensuelle.errors %}<div class="text-danger small">{{ form.prime_mensuelle.errors.0 }}</div>{% endif %}
+            {% if form.prime_mensuelle.errors %}<div class="text-danger small" id="error_prime_mensuelle" role="alert">{{ form.prime_mensuelle.errors.0 }}</div>{% endif %}
           </div>
           <div class="mb-4">
-            <label class="form-label">{{ form.date_debut.label }}</label>
+            <label class="form-label" for="id_date_debut">{{ form.date_debut.label }} <span aria-hidden="true">*</span></label>
             {{ form.date_debut }}
-            {% if form.date_debut.errors %}<div class="text-danger small">{{ form.date_debut.errors.0 }}</div>{% endif %}
+            {% if form.date_debut.errors %}<div class="text-danger small" id="error_date_debut" role="alert">{{ form.date_debut.errors.0 }}</div>{% endif %}
           </div>
 
           <div class="d-flex gap-2">
