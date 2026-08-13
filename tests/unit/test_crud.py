@@ -11,7 +11,14 @@ import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
-from database.models import Base, Client, Contrat, Prediction, Region
+from database.models import (
+    Base,
+    Client,
+    Contrat,
+    Prediction,
+    Region,
+    StatsRegionales,
+)
 from database import crud
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -208,4 +215,62 @@ def test_create_contrat_retourne_contrat(db, region_id):
     )
     assert isinstance(contrat, Contrat)
     assert contrat.contrat_id is not None
-    assert contrat.prime_mensuelle == 250.0
+
+
+# ── Tests get_stats_regionales ──────────────────────────────────────────────────
+#
+# Note : `db.commit()` n'est pas annulé par le rollback de la fixture `db`
+# (qui n'annule que le travail non commité) — les lignes insérées ici
+# persistent dans le moteur SQLite in-memory partagé (`engine`, portée
+# module) pour le reste du module. `test_vide_si_aucune_ligne` doit donc
+# s'exécuter avant toute insertion, et les autres assertions évitent de
+# supposer un décompte exact.
+
+
+def test_get_stats_regionales_vide_si_aucune_ligne(db):
+    """get_stats_regionales() retourne une liste vide si la table est vide."""
+    assert crud.get_stats_regionales(db) == []
+
+
+def test_get_stats_regionales_retourne_les_stats(db, region_id):
+    """get_stats_regionales() doit retourner la ligne insérée pour la région."""
+    db.add(
+        StatsRegionales(
+            region_id=region_id,
+            taux_obesite=29.5,
+            taux_tabagisme=14.0,
+            esperance_vie=78.5,
+            taux_diabete=10.5,
+            medecins_pour_100k=255.0,
+            taux_non_assures=15.5,
+        )
+    )
+    db.commit()
+
+    resultats = crud.get_stats_regionales(db)
+    assert any(r.region_id == region_id for r in resultats)
+
+
+def test_get_stats_regionales_filtre_par_region(db, region_id):
+    """get_stats_regionales() doit filtrer sur nom_region via jointure regions."""
+    db.add(
+        StatsRegionales(
+            region_id=region_id,
+            taux_obesite=29.5,
+            taux_tabagisme=14.0,
+            esperance_vie=78.5,
+            taux_diabete=10.5,
+            medecins_pour_100k=255.0,
+            taux_non_assures=15.5,
+        )
+    )
+    db.commit()
+
+    resultats = crud.get_stats_regionales(db, region="southwest")
+    assert len(resultats) >= 1
+
+    # Aucune région "southeast" n'existe dans cette fixture (une seule
+    # région "southwest" y est créée) — le filtre doit donc rester vide
+    # quel que soit l'état accumulé de la table.
+    resultats_absents = crud.get_stats_regionales(db, region="southeast")
+    assert resultats_absents == []

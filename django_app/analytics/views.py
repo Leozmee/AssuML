@@ -3,11 +3,14 @@
 import json
 from pathlib import Path
 
+import pandas as pd
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 
 from accounts.decorators import admin_required
+from utils import api_client, region_id_to_nom
+from utils.api_client import ApiError, ApiTimeoutError, ApiUnavailableError
 
 PARQUET_PATH = Path(settings.REPO_ROOT) / "data" / "big_data" / "insurance_big.parquet"
 
@@ -17,6 +20,7 @@ def dashboard(request):
     """Dashboard analytique — KPIs et graphiques 100% depuis DuckDB/Parquet."""
     kpis = {}
     charts = {}
+    contexte_regional = []
 
     try:
         from big_data.duckdb_analytics import DuckDBAnalytics
@@ -79,6 +83,18 @@ def dashboard(request):
             df_corr, "age", "cout_moy", "Âge", "Coût moyen prédit ($)"
         )
 
+        df_imc_region = analytics.imc_moyen_par_region()
+        charts["imc_region"] = _to_json(df_imc_region, "region", "imc_moy")
+        tables["imc_region"] = _to_table(
+            df_imc_region, "region", "imc_moy", "Région", "IMC moyen"
+        )
+
+        df_fumeurs_region = analytics.effectif_fumeurs_par_region()
+        charts["fumeurs_region"] = _to_json(df_fumeurs_region, "region", "nb_fumeurs")
+        tables["fumeurs_region"] = _to_table(
+            df_fumeurs_region, "region", "nb_fumeurs", "Région", "Nombre de fumeurs"
+        )
+
         layouts = {
             "par_region": json.dumps(
                 {
@@ -104,6 +120,18 @@ def dashboard(request):
                     "yaxis": {"title": "Coût moyen prédit ($)"},
                 }
             ),
+            "imc_region": json.dumps(
+                {
+                    "xaxis": {"title": "Région"},
+                    "yaxis": {"title": "IMC moyen"},
+                }
+            ),
+            "fumeurs_region": json.dumps(
+                {
+                    "xaxis": {"title": "Région"},
+                    "yaxis": {"title": "Nombre de fumeurs"},
+                }
+            ),
         }
         profils = analytics.top_profils_risque()
         charts["profils"] = (
@@ -122,14 +150,39 @@ def dashboard(request):
                 "age_moyen": round(float(g["age_moy"]), 1),
             }
 
+        # Contexte régional : Big Data + météo (API) + statistiques de
+        # santé régionales (BDD externe) — dans son propre try/except pour
+        # qu'une source externe manquante (météo/stats non encore chargées)
+        # ne désactive pas le reste du tableau de bord.
+        try:
+            meteo = api_client.get_meteo() or []
+            stats = api_client.get_stats_regionales() or []
+            if meteo and stats:
+                df_meteo = pd.DataFrame(meteo)
+                df_meteo["nom_region"] = df_meteo["region_id"].apply(region_id_to_nom)
+                df_stats = pd.DataFrame(stats)
+                df_stats["nom_region"] = df_stats["region_id"].apply(region_id_to_nom)
+                contexte_regional = analytics.contexte_regional(
+                    df_meteo, df_stats
+                ).to_dict(orient="records")
+        except (ApiUnavailableError, ApiTimeoutError, ApiError):
+            contexte_regional = []
+
     except Exception as exc:
         messages.warning(request, f"Analytics DuckDB indisponibles : {exc}")
         charts = {}
         layouts = {}
         tables = {}
+        contexte_regional = []
 
     return render(
         request,
         "analytics/dashboard.html",
-        {"kpis": kpis, "charts": charts, "layouts": layouts, "tables": tables},
+        {
+            "kpis": kpis,
+            "charts": charts,
+            "layouts": layouts,
+            "tables": tables,
+            "contexte_regional": contexte_regional,
+        },
     )

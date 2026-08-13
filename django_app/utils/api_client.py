@@ -255,3 +255,13 @@ def get_meteo(region: str = None, saison: str = None, skip: int = 0, limit: int 
     if saison:
         params["saison"] = saison
     return _get("/meteo/", params=params)
+
+
+# ── Statistiques régionales ──────────────────────────────────────────────────
+
+
+def get_stats_regionales(region: str = None, skip: int = 0, limit: int = 100):
+    params = {"skip": skip, "limit": limit}
+    if region:
+        params["region"] = region
+    return _get("/stats-regionales/", params=params)

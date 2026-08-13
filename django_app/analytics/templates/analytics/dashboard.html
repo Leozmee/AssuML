@@ -49,6 +49,76 @@
     </div>
   </div>
 
+  <div class="row g-4 mt-4">
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_imc_region" chart_data=charts.imc_region layout=layouts.imc_region title="IMC moyen par région" %}
+      {% include 'components/chart_table.html' with table=tables.imc_region title="IMC moyen par région" %}
+    </div>
+    <div class="col-md-6">
+      {% include 'components/plotly_chart.html' with div_id="chart_fumeurs_region" chart_data=charts.fumeurs_region layout=layouts.fumeurs_region title="Effectif fumeurs par région" %}
+      {% include 'components/chart_table.html' with table=tables.fumeurs_region title="Effectif fumeurs par région" %}
+    </div>
+  </div>
+
+  <!-- Contexte régional : Big Data + météo + statistiques de santé régionales -->
+  {% if contexte_regional %}
+<div class="card mt-4">
+  <div class="card-header fw-semibold">Contexte régional</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <caption class="visually-hidden">Contexte régional du portefeuille : volumétrie Big Data, météo actuelle et statistiques de santé publique par région</caption>
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Région</th>
+            <th scope="col">Profils (Big Data)</th>
+            <th scope="col">Coût moyen prédit ($)</th>
+            <th scope="col">IMC moyen</th>
+            <th scope="col">% fumeurs</th>
+            <th scope="col">Température (°C)</th>
+            <th scope="col">Humidité (%)</th>
+            <th scope="col">Saison</th>
+            <th scope="col">Taux d'obésité (%)</th>
+            <th scope="col">Taux de tabagisme (%)</th>
+            <th scope="col">Espérance de vie (ans)</th>
+            <th scope="col">Taux de diabète (%)</th>
+            <th scope="col">Médecins / 100k hab.</th>
+            <th scope="col">Taux de non-assurés (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in contexte_regional %}
+          <tr>
+            <td>{{ r.region|capfirst }}</td>
+            <td>{{ r.nb }}</td>
+            <td>{{ r.cout_moy|floatformat:2 }}</td>
+            <td>{{ r.imc_moy|floatformat:2 }}</td>
+            <td>{{ r.taux_fumeurs|floatformat:1 }}</td>
+            <td>{{ r.temperature_moy|floatformat:1|default:"—" }}</td>
+            <td>{{ r.humidite_moy|floatformat:1|default:"—" }}</td>
+            <td>{{ r.saison|default:"—"|capfirst }}</td>
+            <td>{{ r.taux_obesite|floatformat:1 }}</td>
+            <td>{{ r.taux_tabagisme|floatformat:1 }}</td>
+            <td>{{ r.esperance_vie|floatformat:1 }}</td>
+            <td>{{ r.taux_diabete|floatformat:1 }}</td>
+            <td>{{ r.medecins_pour_100k|floatformat:1 }}</td>
+            <td>{{ r.taux_non_assures|floatformat:1 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer text-muted small">
+    Statistiques de santé régionales : CDC, NCHS, KFF, Census/ACS, pour l'État représentatif de chaque région (même ville que la météo) — pas une moyenne régionale officielle, ce découpage en 4 régions n'existant dans aucune source fédérale US.
+  </div>
+</div>
+  {% else %}
+  <div class="alert alert-info mt-4">
+    Contexte régional indisponible — les données météo et/ou les statistiques de santé régionales n'ont pas encore été chargées.
+  </div>
+  {% endif %}
+
   {% if charts.profils %}
   <div class="card mt-4">
     <div class="card-header fw-semibold">Top 10 profils à risque</div>
