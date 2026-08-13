@@ -15,6 +15,11 @@ urlpatterns = [
     path("<int:client_id>/scorer/", views.client_score, name="score"),
     path("<int:client_id>/contrat/", views.contrat_create, name="contrat_create"),
     path(
+        "<int:client_id>/contrat/<int:contrat_id>/edit/",
+        views.contrat_update_type,
+        name="contrat_edit",
+    ),
+    path(
         "contrat/<int:contrat_id>/statut/",
         views.contrat_update_statut,
         name="contrat_statut",

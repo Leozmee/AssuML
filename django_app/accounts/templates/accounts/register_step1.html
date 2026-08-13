@@ -13,22 +13,24 @@
   <form method="post" novalidate>
     {% csrf_token %}
 
+    <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
+
     <div class="mb-3">
-      <label class="form-label">{{ form.email.label }}</label>
+      <label class="form-label" for="id_email">{{ form.email.label }} <span aria-hidden="true">*</span></label>
       {{ form.email }}
-      {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+      {% if form.email.errors %}<div class="text-danger small mt-1" id="error_email" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
     </div>
 
     <div class="mb-3">
-      <label class="form-label">{{ form.password1.label }}</label>
+      <label class="form-label" for="id_password1">{{ form.password1.label }} <span aria-hidden="true">*</span></label>
       {{ form.password1 }}
-      {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>{% endif %}
+      {% if form.password1.errors %}<div class="text-danger small mt-1" id="error_password1" role="alert">{{ form.password1.errors.0 }}</div>{% endif %}
     </div>
 
     <div class="mb-4">
-      <label class="form-label">{{ form.password2.label }}</label>
+      <label class="form-label" for="id_password2">{{ form.password2.label }} <span aria-hidden="true">*</span></label>
       {{ form.password2 }}
-      {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>{% endif %}
+      {% if form.password2.errors %}<div class="text-danger small mt-1" id="error_password2" role="alert">{{ form.password2.errors.0 }}</div>{% endif %}
     </div>
 
     {% if form.non_field_errors %}

@@ -33,15 +33,19 @@
   <div class="row g-4">
     <div class="col-md-6">
       {% include 'components/plotly_chart.html' with div_id="chart_region" chart_data=charts.par_region layout=layouts.par_region title="Coût moyen prédit par région" %}
+      {% include 'components/chart_table.html' with table=tables.par_region title="Coût moyen prédit par région" %}
     </div>
     <div class="col-md-6">
       {% include 'components/plotly_chart.html' with div_id="chart_fumeur" chart_data=charts.par_fumeur layout=layouts.par_fumeur title="Impact du tabac sur le coût moyen prédit" %}
+      {% include 'components/chart_table.html' with table=tables.par_fumeur title="Impact du tabac sur le coût moyen prédit" %}
     </div>
     <div class="col-md-6">
       {% include 'components/plotly_chart.html' with div_id="chart_dist" chart_data=charts.distribution layout=layouts.distribution title="Distribution des coûts prédits (tranches de 5 000 $)" %}
+      {% include 'components/chart_table.html' with table=tables.distribution title="Distribution des coûts prédits" %}
     </div>
     <div class="col-md-6">
       {% include 'components/plotly_chart.html' with div_id="chart_corr" chart_data=charts.correlation layout=layouts.correlation title="Coût moyen prédit par âge" %}
+      {% include 'components/chart_table.html' with table=tables.correlation title="Coût moyen prédit par âge" %}
     </div>
   </div>
 
@@ -51,10 +55,11 @@
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-sm mb-0">
+          <caption class="visually-hidden">Top 10 des profils assurés présentant le risque le plus élevé</caption>
           <thead class="table-light">
             <tr>
               {% for key in charts.profils.0.keys %}
-              <th>{{ key }}</th>
+              <th scope="col">{{ key }}</th>
               {% endfor %}
             </tr>
           </thead>

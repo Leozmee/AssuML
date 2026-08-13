@@ -348,6 +348,19 @@ def update_contrat_prime(
     return contrat
 
 
+def update_contrat_type(
+    db: Session, contrat_id: int, type_couverture: str
+) -> Optional[Contrat]:
+    """Met à jour le type de couverture d'un contrat existant."""
+    contrat = get_contrat(db, contrat_id)
+    if contrat is None:
+        return None
+    contrat.type_couverture = type_couverture
+    db.commit()
+    db.refresh(contrat)
+    return contrat
+
+
 # ── Article et DonneesMeteo (lecture seule) ───────────────────────────────────
 
 

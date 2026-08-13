@@ -37,20 +37,21 @@
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover mb-0">
+        <caption class="visually-hidden">Liste des clients du portefeuille, avec leur profil, catégorie de risque, statut de compte et de contrat</caption>
         <thead class="table-light">
           <tr>
-            <th>ID</th>
-            <th>Nom Prénom</th>
-            <th>Âge</th>
-            <th>Sexe</th>
-            <th>IMC</th>
-            <th>Fumeur</th>
-            <th>Enfants</th>
-            <th>Région</th>
-            <th>Risque</th>
-            <th>Compte</th>
-            <th>Contrat</th>
-            <th>Actions</th>
+            <th scope="col">ID</th>
+            <th scope="col">Nom Prénom</th>
+            <th scope="col">Âge</th>
+            <th scope="col">Sexe</th>
+            <th scope="col">IMC</th>
+            <th scope="col">Fumeur</th>
+            <th scope="col">Enfants</th>
+            <th scope="col">Région</th>
+            <th scope="col">Risque</th>
+            <th scope="col">Compte</th>
+            <th scope="col">Contrat</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -85,7 +86,7 @@
               {% endif %}
             </td>
             <td class="text-center">
-              {% if client.a_un_compte %}<span title="A un compte utilisateur">👤</span>{% else %}<span class="text-muted">—</span>{% endif %}
+              {% if client.a_un_compte %}<span role="img" aria-label="A un compte utilisateur">👤</span>{% else %}<span class="text-muted" aria-hidden="true">—</span>{% endif %}
             </td>
             <td>
               {% if client.contrat %}
@@ -97,22 +98,26 @@
               {% endif %}
             </td>
             <td class="table-actions">
-              <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">Fiche</a>
+              <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm"
+                 aria-label="Voir la fiche du client {{ client.identite }}">Fiche</a>
               {% if not client.contrat %}
-                <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm">+ Contrat</a>
+                <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm"
+                   aria-label="Créer un contrat pour le client {{ client.identite }}">+ Contrat</a>
               {% elif client.contrat.statut == 'actif' %}
                 <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
                   {% csrf_token %}
                   <input type="hidden" name="statut" value="resilie">
                   <input type="hidden" name="client_id" value="{{ client.client_id }}">
-                  <button type="submit" class="btn btn-outline-warning btn-sm">Résilier</button>
+                  <button type="submit" class="btn btn-outline-warning btn-sm"
+                          aria-label="Résilier le contrat du client {{ client.identite }}">Résilier</button>
                 </form>
               {% else %}
                 <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
                   {% csrf_token %}
                   <input type="hidden" name="statut" value="actif">
                   <input type="hidden" name="client_id" value="{{ client.client_id }}">
-                  <button type="submit" class="btn btn-outline-success btn-sm">Réactiver</button>
+                  <button type="submit" class="btn btn-outline-success btn-sm"
+                          aria-label="Réactiver le contrat du client {{ client.identite }}">Réactiver</button>
                 </form>
               {% endif %}
             </td>
