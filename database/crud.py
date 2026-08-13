@@ -15,7 +15,14 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from database.models import Article, Client, Contrat, DonneesMeteo, Prediction
+from database.models import (
+    Article,
+    Client,
+    Contrat,
+    DonneesMeteo,
+    Prediction,
+    StatsRegionales,
+)
 
 
 # ── Client ────────────────────────────────────────────────────────────────────
@@ -415,4 +422,29 @@ def get_donnees_meteo(
         query = query.join(Region).filter(Region.nom_region == region)
     if saison:
         query = query.filter(DonneesMeteo.saison == saison)
+    return query.offset(skip).limit(limit).all()
+
+
+def get_stats_regionales(
+    db: Session,
+    region: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[StatsRegionales]:
+    """Retourne les statistiques de santé régionales avec filtre optionnel.
+
+    Args:
+        db: Session SQLAlchemy active.
+        region: Filtre sur nom_region via jointure regions.
+        skip: Décalage pagination.
+        limit: Nombre maximum de résultats.
+
+    Returns:
+        Liste de StatsRegionales.
+    """
+    from database.models import Region
+
+    query = db.query(StatsRegionales)
+    if region:
+        query = query.join(Region).filter(Region.nom_region == region)
     return query.offset(skip).limit(limit).all()

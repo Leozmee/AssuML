@@ -73,6 +73,42 @@ class DuckDBAnalytics:
         """
         )
 
+    def imc_moyen_par_region(self) -> pd.DataFrame:
+        """IMC moyen agrégé par région (feature 016 — corrélé à la région
+        depuis la génération synthétique, cf. big_data/generate_synthetic.py).
+
+        Returns:
+            DataFrame avec colonnes : region, imc_moy. Trié par imc_moy DESC.
+        """
+        return self._q(
+            f"""
+            SELECT
+                region,
+                ROUND(AVG(imc), 2) AS imc_moy
+            FROM {self._src()}
+            GROUP BY region
+            ORDER BY imc_moy DESC
+        """
+        )
+
+    def effectif_fumeurs_par_region(self) -> pd.DataFrame:
+        """Nombre de fumeurs par région (effectif, pas un taux).
+
+        Returns:
+            DataFrame avec colonnes : region, nb_fumeurs. Trié par nb_fumeurs DESC.
+        """
+        return self._q(
+            f"""
+            SELECT
+                region,
+                COUNT(*) AS nb_fumeurs
+            FROM {self._src()}
+            WHERE fumeur = true
+            GROUP BY region
+            ORDER BY nb_fumeurs DESC
+        """
+        )
+
     def stats_par_tranche_age(self) -> pd.DataFrame:
         """Statistiques de cout_predit agrégées par tranche d'âge.
 
@@ -259,5 +295,62 @@ class DuckDBAnalytics:
                 ROUND(AVG(age), 1) AS age_moy,
                 ROUND(AVG(CAST(fumeur AS DOUBLE)) * 100, 2) AS pct_fumeurs
             FROM {self._src()}
+        """
+        )
+
+    def contexte_regional(
+        self, df_meteo: pd.DataFrame, df_stats: pd.DataFrame
+    ) -> pd.DataFrame:
+        """Contexte régional combiné : portefeuille Big Data + météo + santé.
+
+        Joint les agrégats du portefeuille (calculés sur les 5M lignes du
+        Parquet) avec deux petites tables de dimension fournies en
+        paramètre (météo et statistiques régionales, 4 lignes chacune,
+        récupérées côté appelant via l'API FastAPI — l'exception DuckDB de
+        la constitution ne concerne que la lecture du Parquet, jamais un
+        accès direct à PostgreSQL). Les DataFrames sont enregistrés comme
+        tables virtuelles DuckDB (zero-copy) puis joints contre le Parquet
+        sur region/nom_region.
+
+        Args:
+            df_meteo: DataFrame météo (colonne nom_region attendue), 4 lignes.
+            df_stats: DataFrame statistiques régionales (colonne nom_region
+                attendue), 4 lignes.
+
+        Returns:
+            DataFrame avec colonnes : region, nb, cout_moy, imc_moy,
+            taux_fumeurs, temperature_moy, humidite_moy, saison,
+            taux_obesite, taux_tabagisme, esperance_vie, taux_diabete,
+            medecins_pour_100k, taux_non_assures. Une ligne par région
+            présente dans les trois sources (jointure interne — une région
+            absente d'une des sources externes n'apparaît pas plutôt que
+            d'inventer une valeur de remplacement).
+        """
+        self._conn.register("meteo_df", df_meteo)
+        self._conn.register("stats_df", df_stats)
+        return self._q(
+            f"""
+            SELECT
+                p.region,
+                COUNT(*) AS nb,
+                ROUND(AVG(p.cout_predit), 2) AS cout_moy,
+                ROUND(AVG(p.imc), 2) AS imc_moy,
+                ROUND(AVG(CAST(p.fumeur AS DOUBLE)) * 100, 2) AS taux_fumeurs,
+                m.temperature_moy,
+                m.humidite_moy,
+                m.saison,
+                s.taux_obesite,
+                s.taux_tabagisme,
+                s.esperance_vie,
+                s.taux_diabete,
+                s.medecins_pour_100k,
+                s.taux_non_assures
+            FROM {self._src()} p
+            JOIN meteo_df m ON p.region = m.nom_region
+            JOIN stats_df s ON p.region = s.nom_region
+            GROUP BY p.region, m.temperature_moy, m.humidite_moy, m.saison,
+                     s.taux_obesite, s.taux_tabagisme, s.esperance_vie,
+                     s.taux_diabete, s.medecins_pour_100k, s.taux_non_assures
+            ORDER BY p.region
         """
         )

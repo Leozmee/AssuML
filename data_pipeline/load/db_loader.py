@@ -1,10 +1,11 @@
 """
 Couche de chargement générique — AssuML ETL.
 
-Fournit des fonctions d'insertion réutilisables pour les deux sources externes :
-  - insert_donnees_meteo() : insère des lignes dans la table donnees_meteo
-  - insert_articles()      : insère des articles avec gestion des doublons
-                             (url_source UNIQUE)
+Fournit des fonctions d'insertion réutilisables pour les sources externes :
+  - insert_donnees_meteo()     : insère des lignes dans la table donnees_meteo
+  - insert_stats_regionales()  : insère des lignes dans la table stats_regionales
+  - insert_articles()          : insère des articles avec gestion des doublons
+                                 (url_source UNIQUE)
 
 Les insertions utilisent les modèles ORM de database/models.py et la session
 SQLAlchemy de database/connection.py.
@@ -16,7 +17,7 @@ from typing import Optional
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from database.connection import SessionLocal
-from database.models import Article, DonneesMeteo
+from database.models import Article, DonneesMeteo, StatsRegionales
 
 
 def insert_donnees_meteo(records: list[dict]) -> int:
@@ -46,6 +47,46 @@ def insert_donnees_meteo(records: list[dict]) -> int:
                 humidite_moy=r["humidite_moy"],
                 precipitations=r["precipitations"],
                 saison=r["saison"],
+            )
+            for r in records
+        ]
+        db.add_all(objets)
+        db.commit()
+        return len(objets)
+    finally:
+        db.close()
+
+
+def insert_stats_regionales(records: list[dict]) -> int:
+    """Insère des enregistrements de statistiques régionales.
+
+    Chaque dict doit contenir les clés :
+      region_id (int), taux_obesite (float), taux_tabagisme (float),
+      esperance_vie (float), taux_diabete (float),
+      medecins_pour_100k (float), taux_non_assures (float)
+
+    La date_extraction est générée automatiquement (server_default).
+
+    Args:
+        records: Liste de dictionnaires représentant les lignes à insérer.
+
+    Returns:
+        int: Nombre de lignes insérées.
+    """
+    if not records:
+        return 0
+
+    db = SessionLocal()
+    try:
+        objets = [
+            StatsRegionales(
+                region_id=r["region_id"],
+                taux_obesite=r["taux_obesite"],
+                taux_tabagisme=r["taux_tabagisme"],
+                esperance_vie=r["esperance_vie"],
+                taux_diabete=r["taux_diabete"],
+                medecins_pour_100k=r["medecins_pour_100k"],
+                taux_non_assures=r["taux_non_assures"],
             )
             for r in records
         ]

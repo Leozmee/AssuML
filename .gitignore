@@ -38,7 +38,10 @@ mlruns/
 mlflow.db
 
 # Backups ETL (données externes brutes — non versionnées)
-data/external/
+data/external/*
+# Exception : BDD externe de référence (4 lignes statiques, source ETL
+# committée au même titre que insurance.csv — pas un backup généré)
+!data/external/stats_regionales.db
 
 .claude/
 

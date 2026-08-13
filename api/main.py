@@ -31,6 +31,7 @@ from api.routers import (  # noqa: E402
     meteo,
     ml,
     stats,
+    stats_regionales,
 )
 
 
@@ -61,7 +62,7 @@ app = FastAPI(
     description=(
         "API REST du système de prédiction d'assurance AssuML. "
         "Expose les endpoints CRUD clients, prédictions ML, "
-        "contrats, articles et données météo."
+        "contrats, articles, données météo et statistiques régionales."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -86,6 +87,7 @@ app.include_router(stats.router, prefix="/api", dependencies=_auth)
 # Routers publics — données de référence en lecture seule
 app.include_router(articles.router, prefix="/api")
 app.include_router(meteo.router, prefix="/api")
+app.include_router(stats_regionales.router, prefix="/api")
 app.include_router(health.router)
 
 
