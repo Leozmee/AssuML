@@ -1,0 +1,53 @@
+# Git
+.git/
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — ne jamais copier dans une image Docker
+.env
+.env.*
+
+# ML models (binaires non commités — constitution Principe IV)
+ml_models/saved_models/*.pkl
+data/big_data/
+
+# MLflow (tracking/registry local)
+mlruns/
+mlflow.db
+
+# Backups ETL (données externes brutes)
+data/external/
+
+# Specs et outillage interne (non nécessaires à l'image)
+specs/
+.specify/
+.claude/
+CLAUDE.md
+
+# Logs
+*.log

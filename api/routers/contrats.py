@@ -7,6 +7,8 @@ Préfixe monté sur /api dans api/main.py.
 Routes :
   GET /api/contrats                  — liste paginée (filtre ?client_id=)
   POST /api/contrats                 — créer un contrat
+  PUT /api/contrats/{id}/prime       — modifier la prime mensuelle
+  PUT /api/contrats/{id}/type        — modifier le type de couverture
   PUT /api/contrats/{id}/statut      — modifier le statut
 """
 
@@ -89,6 +91,22 @@ def modifier_prime_contrat(
     if contrat is None:
         from fastapi import HTTPException
 
+        raise HTTPException(status_code=404, detail="Contrat introuvable")
+    return contrat
+
+
+@router.put("/{contrat_id}/type", response_model=ContratRead)
+def modifier_type_contrat(
+    contrat_id: int,
+    body: dict,
+    db: Session = Depends(get_db),
+):
+    """Met à jour le type de couverture d'un contrat."""
+    type_couverture = body.get("type_couverture")
+    if type_couverture not in {"basique", "standard", "premium", "famille"}:
+        raise HTTPException(status_code=422, detail="type_couverture invalide")
+    contrat = crud.update_contrat_type(db, contrat_id, type_couverture)
+    if contrat is None:
         raise HTTPException(status_code=404, detail="Contrat introuvable")
     return contrat
 

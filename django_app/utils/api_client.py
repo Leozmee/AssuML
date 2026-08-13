@@ -231,6 +231,10 @@ def update_contrat_prime(contrat_id: int, prime_mensuelle: float):
     return _put(f"/contrats/{contrat_id}/prime", {"prime_mensuelle": prime_mensuelle})
 
 
+def update_contrat_type(contrat_id: int, type_couverture: str):
+    return _put(f"/contrats/{contrat_id}/type", {"type_couverture": type_couverture})
+
+
 # ── Articles ───────────────────────────────────────────────────────────────────
 
 

@@ -12,61 +12,73 @@
 </head>
 <body {% block body_attrs %}{% endblock %}>
 
+<a href="#main-content" class="visually-hidden-focusable">Aller au contenu principal</a>
+
 {% if user.is_authenticated %}
 <!-- Top bar -->
-<nav class="topbar">
+<header class="topbar">
   <div class="topbar-brand">
     <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="topbar-logo">
   </div>
 
-  <ul class="topbar-nav">
+  <nav class="topbar-nav" aria-label="Navigation principale">
+    <ul class="topbar-nav-list">
     {% if user.profil.role == 'admin' %}
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'scoring' %}active{% endif %}"
-           href="{% url 'scoring:index' %}">Simulation ML</a>
+           href="{% url 'scoring:index' %}"
+           {% if request.resolver_match.app_name == 'scoring' %}aria-current="page"{% endif %}>Simulation ML</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'gestion' %}active{% endif %}"
-           href="{% url 'gestion:list' %}">Gestion clients</a>
+           href="{% url 'gestion:list' %}"
+           {% if request.resolver_match.app_name == 'gestion' %}aria-current="page"{% endif %}>Gestion clients</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'analytics' %}active{% endif %}"
-           href="{% url 'analytics:dashboard' %}">Analytics</a>
+           href="{% url 'analytics:dashboard' %}"
+           {% if request.resolver_match.app_name == 'analytics' %}aria-current="page"{% endif %}>Analytics</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'monitoring' %}active{% endif %}"
-           href="{% url 'monitoring:dashboard' %}">Monitoring</a>
+           href="{% url 'monitoring:dashboard' %}"
+           {% if request.resolver_match.app_name == 'monitoring' %}aria-current="page"{% endif %}>Monitoring</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'actualites' %}active{% endif %}"
-           href="{% url 'actualites:list' %}">Actualités</a>
+           href="{% url 'actualites:list' %}"
+           {% if request.resolver_match.app_name == 'actualites' %}aria-current="page"{% endif %}>Actualités</a>
       </li>
     {% else %}
       <li>
         <a class="topbar-link {% if request.resolver_match.url_name == 'mon_compte' %}active{% endif %}"
-           href="{% url 'accounts:mon_compte' %}">Mon compte</a>
+           href="{% url 'accounts:mon_compte' %}"
+           {% if request.resolver_match.url_name == 'mon_compte' %}aria-current="page"{% endif %}>Mon compte</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.url_name == 'simulation' %}active{% endif %}"
-           href="{% url 'accounts:simulation' %}">Simulation</a>
+           href="{% url 'accounts:simulation' %}"
+           {% if request.resolver_match.url_name == 'simulation' %}aria-current="page"{% endif %}>Simulation</a>
       </li>
       <li>
         <a class="topbar-link {% if request.resolver_match.app_name == 'actualites' %}active{% endif %}"
-           href="{% url 'actualites:list' %}">Actualités</a>
+           href="{% url 'actualites:list' %}"
+           {% if request.resolver_match.app_name == 'actualites' %}aria-current="page"{% endif %}>Actualités</a>
       </li>
     {% endif %}
-  </ul>
+    </ul>
+  </nav>
 
   <div class="topbar-user">
     <span class="user-avatar">{{ user.email|slice:":1"|upper }}</span>
     <span class="user-email">{{ user.email }}</span>
     <a href="{% url 'accounts:logout' %}" class="btn-logout">Se déconnecter</a>
   </div>
-</nav>
+</header>
 <div class="topbar-spacer"></div>
 
 <!-- Contenu principal -->
-<main class="main-content">
+<main class="main-content" id="main-content">
   {% if messages %}
     <div class="main-content-messages">
       {% for message in messages %}
@@ -82,7 +94,7 @@
 
 {% else %}
 <!-- Pages sans top bar (login, register) -->
-<div class="auth-wrap">
+<main class="auth-wrap" id="main-content">
   <div class="auth-wrap-inner">
     {% if messages %}
       {% for message in messages %}
@@ -94,7 +106,7 @@
     {% endif %}
     {% block main_content %}{% endblock %}
   </div>
-</div>
+</main>
 {% endif %}
 
 <footer class="site-footer">

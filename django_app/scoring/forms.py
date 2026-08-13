@@ -1,6 +1,7 @@
 """Formulaire de scoring ML."""
 
 from django import forms
+from utils.forms import AccessibleFormMixin
 from django.core.exceptions import ValidationError
 
 REGIONS = [
@@ -18,7 +19,7 @@ SEXES = [
 ]
 
 
-class ScoringForm(forms.Form):
+class ScoringForm(AccessibleFormMixin, forms.Form):
     """Données assuré → scoring complet (coût + risque + prime + décision)."""
 
     age = forms.IntegerField(

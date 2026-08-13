@@ -14,7 +14,8 @@
   <div class="d-flex gap-2 align-items-center actions-align-cards">
     <form method="post" action="{% url 'gestion:score' client.client_id %}" class="me-2">
       {% csrf_token %}
-      <button type="submit" class="btn btn-rose fw-semibold">Simuler</button>
+      <button type="submit" class="btn btn-rose fw-semibold"
+              aria-label="Lancer une simulation de scoring pour le client {{ client.identite }}">Simuler</button>
     </form>
     <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
   </div>
@@ -25,8 +26,9 @@
   <div class="col-md-6">
     <div class="card h-100">
       <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
-        <span>👤 Profil assuré</span>
-        <a href="{% url 'gestion:edit' client.client_id %}" class="btn btn-outline-primary btn-sm">Modifier</a>
+        <span>Profil assuré</span>
+        <a href="{% url 'gestion:edit' client.client_id %}" class="btn btn-outline-primary btn-sm"
+           aria-label="Modifier le client {{ client.identite }}">Modifier</a>
       </div>
       <div class="card-body">
         <dl class="row mb-0">
@@ -37,7 +39,7 @@
           <dt class="col-sm-5 text-muted">Fumeur</dt><dd class="col-sm-7">{% if client.fumeur %}Oui{% else %}Non{% endif %}</dd>
           <dt class="col-sm-5 text-muted">Région</dt><dd class="col-sm-7">{{ client.region_nom|default:client.region_id }}</dd>
           <dt class="col-sm-5 text-muted">Email</dt><dd class="col-sm-7">{{ client.email|default:"—" }}</dd>
-          <dt class="col-sm-5 text-muted">Compte user</dt><dd class="col-sm-7">{% if client.a_un_compte %}👤 Oui{% else %}—{% endif %}</dd>
+          <dt class="col-sm-5 text-muted">Compte user</dt><dd class="col-sm-7">{% if client.a_un_compte %}<span aria-hidden="true">👤</span> Oui{% else %}—{% endif %}</dd>
         </dl>
       </div>
     </div>
@@ -46,31 +48,59 @@
   <!-- Contrats -->
   <div class="col-md-6">
     <div class="card h-100">
-      <div class="card-header fw-semibold">📋 Contrats</div>
+      <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span>Contrats</span>
+        {% if contrats %}
+        <div class="d-flex gap-2">
+          {% if predictions %}
+          <form method="post" action="{% url 'gestion:contrat_prime' contrats.0.contrat_id %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="client_id" value="{{ client.client_id }}">
+            <button type="submit" class="btn btn-outline-primary btn-sm"
+                    title="Met à jour la prime depuis la dernière prédiction ML ({{ predictions.0.prime_mensuelle }} €/mois)"
+                    aria-label="Mettre à jour la prime du client {{ client.identite }} depuis la dernière prédiction ML">
+              Mettre à jour la prime
+            </button>
+          </form>
+          {% endif %}
+          <a href="{% url 'gestion:contrat_edit' client.client_id contrats.0.contrat_id %}" class="btn btn-outline-primary btn-sm"
+             aria-label="Modifier le contrat du client {{ client.identite }}">Modifier</a>
+        </div>
+        {% endif %}
+      </div>
       <div class="card-body">
         {% if contrats %}
           {% for c in contrats %}
           <div class="mb-2">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <strong>{{ c.type_couverture|capfirst }}</strong>
               <span class="badge {% if c.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">{{ c.statut }}</span>
-              {% if predictions %}
-              <form method="post" action="{% url 'gestion:contrat_prime' c.contrat_id %}" class="d-inline">
+              {% if c.statut == 'actif' %}
+              <form method="post" action="{% url 'gestion:contrat_statut' c.contrat_id %}" class="d-inline">
                 {% csrf_token %}
+                <input type="hidden" name="statut" value="resilie">
                 <input type="hidden" name="client_id" value="{{ client.client_id }}">
-                <button type="submit" class="btn btn-outline-primary btn-sm"
-                        title="Met à jour la prime depuis la dernière prédiction ML ({{ predictions.0.prime_mensuelle }} €/mois)">
-                  🔄 Mettre à jour la prime
-                </button>
+                <button type="submit" class="btn btn-outline-warning btn-sm"
+                        aria-label="Résilier le contrat du client {{ client.identite }}">Résilier</button>
+              </form>
+              {% else %}
+              <form method="post" action="{% url 'gestion:contrat_statut' c.contrat_id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="statut" value="actif">
+                <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                <button type="submit" class="btn btn-outline-success btn-sm"
+                        aria-label="Réactiver le contrat du client {{ client.identite }}">Réactiver</button>
               </form>
               {% endif %}
             </div>
-            <div class="text-muted small mt-1">Prime : {{ c.prime_mensuelle|floatformat:2 }} €/mois · Début : {{ c.date_debut }}</div>
+            <div class="text-muted small mt-1">Prime : {{ c.prime_mensuelle|floatformat:2 }} €/mois</div>
+            <div class="text-muted small">Début : {{ c.date_debut }}</div>
+            <div class="text-muted small">Type de couverture : {{ c.type_couverture|capfirst }}</div>
           </div>
           {% endfor %}
         {% else %}
           <p class="text-muted mb-0">Aucun contrat.
-            <a href="{% url 'gestion:contrat_create' client.client_id %}" class="text-success">+ Créer</a>
+            <a href="{% url 'gestion:contrat_create' client.client_id %}" class="text-success"
+               aria-label="Créer un contrat pour le client {{ client.identite }}">+ Créer</a>
           </p>
         {% endif %}
       </div>
@@ -80,20 +110,21 @@
 
 <!-- Prédictions ML -->
 <div class="card">
-  <div class="card-header fw-semibold">🤖 Évaluations ML</div>
+  <div class="card-header fw-semibold">Évaluations ML</div>
   <div class="card-body">
     {% if predictions %}
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
+          <caption class="visually-hidden">Historique des évaluations ML du client {{ client.identite }}</caption>
           <thead class="table-light">
             <tr>
-              <th>Date</th>
-              <th>Coût prédit / an</th>
-              <th>Score risque</th>
-              <th>Catégorie</th>
-              <th>Prime / an</th>
-              <th>Prime / mois</th>
-              <th>Décision</th>
+              <th scope="col">Date</th>
+              <th scope="col">Coût prédit / an</th>
+              <th scope="col">Score risque</th>
+              <th scope="col">Catégorie</th>
+              <th scope="col">Prime / an</th>
+              <th scope="col">Prime / mois</th>
+              <th scope="col">Décision</th>
             </tr>
           </thead>
           <tbody>
@@ -123,7 +154,7 @@
         {{ predictions|length }} évaluation{{ predictions|length|pluralize }} enregistrée{{ predictions|length|pluralize }}
       </div>
     {% else %}
-      <p class="text-muted mb-0">Aucune évaluation. Cliquez sur <strong>🎯 Scorer</strong> pour lancer l'analyse ML.</p>
+      <p class="text-muted mb-0">Aucune évaluation. Cliquez sur <strong><span aria-hidden="true">🎯</span> Simuler</strong> pour lancer l'analyse ML.</p>
     {% endif %}
   </div>
 </div>

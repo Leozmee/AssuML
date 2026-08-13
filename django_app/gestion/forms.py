@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 from accounts.models import User
 from utils import capitaliser_nom
+from utils.forms import AccessibleFormMixin
 
 REGIONS = [
     ("", "— Sélectionner —"),
@@ -29,7 +30,7 @@ TYPES_COUVERTURE = [
 ]
 
 
-class ClientForm(forms.Form):
+class ClientForm(AccessibleFormMixin, forms.Form):
     """Formulaire création / modification client (admin). IMC calculé depuis poids/taille.
 
     nom/prenom sont obligatoires uniquement en création (require_identite=True) —
@@ -129,9 +130,17 @@ class ClientForm(forms.Form):
     )
 
     def __init__(self, *args, require_identite=False, **kwargs):
-        """require_identite=True force nom/prenom (utilisé à la création)."""
+        """require_identite=True force nom/prenom (utilisé à la création).
+
+        Répercuté sur field.required (pas seulement dans clean()) pour que
+        l'attribut HTML natif `required` — et donc l'astérisque visuel côté
+        template — reflète correctement la contrainte réelle.
+        """
         self.require_identite = require_identite
         super().__init__(*args, **kwargs)
+        if require_identite:
+            self.fields["nom"].required = True
+            self.fields["prenom"].required = True
 
     def clean_nom(self):
         return capitaliser_nom(self.cleaned_data.get("nom", ""))
@@ -176,7 +185,7 @@ class ClientForm(forms.Form):
         return cleaned
 
 
-class ContratForm(forms.Form):
+class ContratForm(AccessibleFormMixin, forms.Form):
     """Formulaire création contrat (admin)."""
 
     type_couverture = forms.ChoiceField(
@@ -193,4 +202,14 @@ class ContratForm(forms.Form):
     date_debut = forms.DateField(
         label="Date de début",
         widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+    )
+
+
+class ContratTypeForm(AccessibleFormMixin, forms.Form):
+    """Formulaire modification du type de couverture d'un contrat existant (admin)."""
+
+    type_couverture = forms.ChoiceField(
+        choices=TYPES_COUVERTURE,
+        label="Type de couverture",
+        widget=forms.Select(attrs={"class": "form-select"}),
     )

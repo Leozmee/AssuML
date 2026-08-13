@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 
 from accounts.models import User
 from utils import capitaliser_nom
+from utils.forms import AccessibleFormMixin
 
 REGIONS = [
     ("", "— Sélectionner —"),
@@ -22,7 +23,7 @@ SEXES = [
 ]
 
 
-class LoginForm(forms.Form):
+class LoginForm(AccessibleFormMixin, forms.Form):
     email = forms.EmailField(
         label="Adresse email",
         widget=forms.EmailInput(attrs={"class": "form-control", "autofocus": True}),
@@ -33,7 +34,7 @@ class LoginForm(forms.Form):
     )
 
 
-class RegisterStep1Form(UserCreationForm):
+class RegisterStep1Form(AccessibleFormMixin, UserCreationForm):
     """Inscription assuré — étape 1/2 : identifiants (email + mot de passe)."""
 
     class Meta:
@@ -47,7 +48,7 @@ class RegisterStep1Form(UserCreationForm):
         self.fields["password2"].widget.attrs["class"] = "form-control"
 
 
-class RegisterStep2Form(forms.Form):
+class RegisterStep2Form(AccessibleFormMixin, forms.Form):
     """Inscription assuré — étape 2/2 : profil médical (poids/taille → IMC)."""
 
     nom = forms.CharField(
@@ -119,7 +120,7 @@ class RegisterStep2Form(forms.Form):
         return cleaned
 
 
-class CreateAdminForm(forms.Form):
+class CreateAdminForm(AccessibleFormMixin, forms.Form):
     """Création d'un compte admin par un admin existant."""
 
     email = forms.EmailField(
@@ -144,7 +145,7 @@ class CreateAdminForm(forms.Form):
         return cleaned
 
 
-class MonCompteEditForm(forms.Form):
+class MonCompteEditForm(AccessibleFormMixin, forms.Form):
     """Modification des infos personnelles d'un assuré (poids/taille → IMC)."""
 
     age = forms.IntegerField(

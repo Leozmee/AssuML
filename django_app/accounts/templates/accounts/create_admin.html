@@ -13,20 +13,21 @@
       <div class="card-body p-4">
         <form method="post">
           {% csrf_token %}
+          <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
           <div class="mb-3">
-            <label class="form-label">{{ form.email.label }}</label>
+            <label class="form-label" for="id_email">{{ form.email.label }} <span aria-hidden="true">*</span></label>
             {{ form.email }}
-            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+            {% if form.email.errors %}<div class="text-danger small" id="error_email" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
           </div>
           <div class="mb-3">
-            <label class="form-label">{{ form.password.label }}</label>
+            <label class="form-label" for="id_password">{{ form.password.label }} <span aria-hidden="true">*</span></label>
             {{ form.password }}
-            {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors.0 }}</div>{% endif %}
+            {% if form.password.errors %}<div class="text-danger small" id="error_password" role="alert">{{ form.password.errors.0 }}</div>{% endif %}
           </div>
           <div class="mb-4">
-            <label class="form-label">{{ form.password2.label }}</label>
+            <label class="form-label" for="id_password2">{{ form.password2.label }} <span aria-hidden="true">*</span></label>
             {{ form.password2 }}
-            {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors.0 }}</div>{% endif %}
+            {% if form.password2.errors %}<div class="text-danger small" id="error_password2" role="alert">{{ form.password2.errors.0 }}</div>{% endif %}
           </div>
           {% if form.non_field_errors %}
             <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>

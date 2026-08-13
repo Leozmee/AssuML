@@ -5,9 +5,10 @@ from django.shortcuts import redirect, render
 
 from accounts.decorators import admin_required
 from accounts.models import ProfilUtilisateur, User
-from gestion.forms import ClientForm, ContratForm
+from gestion.forms import ClientForm, ContratForm, ContratTypeForm
 from utils import (
     api_client,
+    client_identite,
     client_to_predict_payload,
     region_id_to_nom,
     region_nom_to_id,
@@ -58,6 +59,7 @@ def client_list(request):
         client["contrat"] = contrats_map.get(client["client_id"])
         client["categorie_risque"] = risque_map.get(client["client_id"])
         client["region_nom"] = region_id_to_nom(client["region_id"])
+        client["identite"] = client_identite(client)
 
     # Recherche par ID/nom/prénom : filtrage instantané côté client (JS), pas ici.
 
@@ -103,6 +105,7 @@ def client_detail(request, client_id):
     try:
         client = api_client.get_client(client_id)
         client["region_nom"] = region_id_to_nom(client["region_id"])
+        client["identite"] = client_identite(client)
     except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
         messages.error(request, f"Client introuvable : {exc}")
         return redirect("gestion:list")
@@ -318,6 +321,49 @@ def contrat_create(request, client_id):
         request,
         "gestion/contrat_form.html",
         {"form": form, "client": client, "prime_initiale": prime_initiale},
+    )
+
+
+@admin_required
+def contrat_update_type(request, client_id, contrat_id):
+    """Modifier le type de couverture d'un contrat existant."""
+    client = None
+    try:
+        client = api_client.get_client(client_id)
+    except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+        messages.error(request, f"Client introuvable : {exc}")
+        return redirect("gestion:list")
+
+    contrat = None
+    try:
+        contrats = api_client.get_contrats(client_id=client_id) or []
+        contrat = next((c for c in contrats if c["contrat_id"] == contrat_id), None)
+    except (ApiUnavailableError, ApiTimeoutError, ApiError):
+        pass
+
+    if contrat is None:
+        messages.error(request, "Contrat introuvable.")
+        return redirect("gestion:detail", client_id=client_id)
+
+    form = ContratTypeForm(
+        request.POST or None,
+        initial={"type_couverture": contrat["type_couverture"]},
+    )
+
+    if request.method == "POST" and form.is_valid():
+        try:
+            api_client.update_contrat_type(
+                contrat_id, form.cleaned_data["type_couverture"]
+            )
+            messages.success(request, "Type de contrat mis à jour.")
+            return redirect("gestion:detail", client_id=client_id)
+        except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+            messages.error(request, f"Erreur : {exc}")
+
+    return render(
+        request,
+        "gestion/contrat_edit.html",
+        {"form": form, "client": client, "contrat": contrat},
     )
 
 

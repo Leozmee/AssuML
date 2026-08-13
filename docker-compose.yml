@@ -30,6 +30,20 @@ services:
       - DB_PASS=${DB_PASS}
       - DB_NAME=${DB_NAME}
 
+  # Entraîne les 2 modèles avant le démarrage de l'API : les .pkl sont
+  # gitignorés (principe IV), donc sur un déploiement à partir d'un clone
+  # frais (jamais entraîné en local avant le `docker compose up --build`),
+  # rien ne serait copié dans l'image et /predict/* resterait indisponible.
+  # Le volume partagé ml_models_saved rend le résultat visible à `api`, qui
+  # tourne dans un conteneur distinct (même image, filesystem séparé).
+  train:
+    build: .
+    command: >
+      sh -c "python -m ml_models.training.train_regression &&
+             python -m ml_models.training.train_classification"
+    volumes:
+      - ml_models_saved:/app/ml_models/saved_models
+
   api:
     build: .
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000
@@ -38,6 +52,10 @@ services:
     depends_on:
       seed:
         condition: service_completed_successfully
+      train:
+        condition: service_completed_successfully
+    volumes:
+      - ml_models_saved:/app/ml_models/saved_models
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -96,3 +114,4 @@ services:
 
 volumes:
   postgres_data:
+  ml_models_saved:
