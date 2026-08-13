@@ -8,9 +8,10 @@
 DROP TABLE IF EXISTS contrats       CASCADE;
 DROP TABLE IF EXISTS predictions    CASCADE;
 DROP TABLE IF EXISTS clients        CASCADE;
-DROP TABLE IF EXISTS donnees_meteo  CASCADE;
-DROP TABLE IF EXISTS articles       CASCADE;
-DROP TABLE IF EXISTS regions        CASCADE;
+DROP TABLE IF EXISTS donnees_meteo    CASCADE;
+DROP TABLE IF EXISTS stats_regionales CASCADE;
+DROP TABLE IF EXISTS articles         CASCADE;
+DROP TABLE IF EXISTS regions          CASCADE;
 
 -- ============================================================
 -- TABLE : regions (référentiel racine)
@@ -112,6 +113,28 @@ CREATE TABLE donnees_meteo (
 );
 
 -- ============================================================
+-- TABLE : stats_regionales (source externe — BDD SQLite data/external/stats_regionales.db)
+-- ============================================================
+CREATE TABLE stats_regionales (
+    stats_id            SERIAL PRIMARY KEY,
+    region_id           INTEGER NOT NULL
+                         REFERENCES regions(region_id) ON DELETE CASCADE,
+    taux_obesite        DECIMAL(5, 2)
+                         CHECK (taux_obesite BETWEEN 0 AND 100),
+    taux_tabagisme       DECIMAL(5, 2)
+                         CHECK (taux_tabagisme BETWEEN 0 AND 100),
+    esperance_vie        DECIMAL(5, 2)
+                         CHECK (esperance_vie > 0),
+    taux_diabete         DECIMAL(5, 2)
+                         CHECK (taux_diabete BETWEEN 0 AND 100),
+    medecins_pour_100k   DECIMAL(6, 2)
+                         CHECK (medecins_pour_100k > 0),
+    taux_non_assures     DECIMAL(5, 2)
+                         CHECK (taux_non_assures BETWEEN 0 AND 100),
+    date_extraction      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
 -- TABLE : articles (source externe — scraping)
 -- ============================================================
 CREATE TABLE articles (
@@ -126,7 +149,7 @@ CREATE TABLE articles (
 );
 
 -- ============================================================
--- INDEX (21 au total)
+-- INDEX (22 au total)
 -- ============================================================
 
 -- Index sur les clés étrangères (jointures)
@@ -134,6 +157,7 @@ CREATE INDEX idx_clients_region_id      ON clients(region_id);
 CREATE INDEX idx_predictions_client_id  ON predictions(client_id);
 CREATE INDEX idx_contrats_client_id     ON contrats(client_id);
 CREATE INDEX idx_meteo_region_id        ON donnees_meteo(region_id);
+CREATE INDEX idx_stats_regionales_region_id ON stats_regionales(region_id);
 
 -- Index sur les colonnes filtrées fréquemment (API + ETL)
 CREATE INDEX idx_clients_fumeur         ON clients(fumeur);

@@ -42,25 +42,36 @@ COUT_MAX = 63770.0
 def extraire_distributions(df: pd.DataFrame) -> dict:
     """Extrait les distributions statistiques du CSV source.
 
-    Pour age et imc on retient moyenne + écart-type (distribution normale).
-    Pour les variables catégorielles (enfants, sexe, fumeur, region) on retient
-    les valeurs brutes : np.random.choice les tirera en respectant les fréquences
+    Pour age on retient moyenne + écart-type globaux (distribution normale).
+    Pour les variables catégorielles (enfants, sexe, region) on retient les
+    valeurs brutes : np.random.choice les tirera en respectant les fréquences
     exactes du vrai dataset plutôt qu'une proportion théorique.
+
+    imc et fumeur sont calculés PAR RÉGION (et non globalement) : le vrai
+    dataset montre un écart régional réel (ex. southeast a un IMC moyen et
+    un taux de tabagisme nettement plus élevés que les 3 autres régions) —
+    une distribution globale unique effacerait cet écart dans le synthétique.
     """
+    dist_par_region = {}
+    for region in df["region"].unique():
+        sous_df = df[df["region"] == region]
+        dist_par_region[region] = {
+            "imc_moy": sous_df["bmi"].mean(),
+            "imc_std": sous_df["bmi"].std(),
+            "fumeur_vals": (sous_df["smoker"] == "yes").values,
+        }
+
     return {
         # Loi normale : age ~ N(moy, std), clippé ensuite entre 18 et 64
         "age_moy": df["age"].mean(),
         "age_std": df["age"].std(),
-        # Loi normale : imc ~ N(moy, std), clippé ensuite entre 15.96 et 53.13
-        "imc_moy": df["bmi"].mean(),
-        "imc_std": df["bmi"].std(),
         # Tirage avec remise depuis les valeurs réelles → fréquences automatiques
         "enfants_vals": df["children"].values,
         # Conversion male/female → homme/femme (convention BDD française)
         "sexe_vals": df["sex"].map({"male": "homme", "female": "femme"}).values,
-        # Conversion yes/no → True/False (booléen, comme la table clients)
-        "fumeur_vals": (df["smoker"] == "yes").values,
         "region_vals": df["region"].values,
+        # Distributions imc/fumeur indexées par région (cf. docstring)
+        "dist_par_region": dist_par_region,
     }
 
 
@@ -72,7 +83,11 @@ def generer_colonnes_clients(dist: dict, rng: np.random.Generator) -> dict:
 
     Toutes les opérations sont vectorisées (pas de boucle Python) :
     NumPy génère les 5M valeurs d'un coup, ce qui est ~100x plus rapide
-    qu'un appel ligne par ligne.
+    qu'un appel ligne par ligne. region est générée en premier ; imc et
+    fumeur sont ensuite tirés PAR SOUS-GROUPE RÉGION (masques booléens,
+    4 groupes — toujours vectorisé, pas de boucle ligne par ligne) pour
+    reproduire l'écart régional réel du dataset source (cf.
+    extraire_distributions).
     """
     print("  Génération colonnes clients...")
 
@@ -81,16 +96,23 @@ def generer_colonnes_clients(dist: dict, rng: np.random.Generator) -> dict:
     age = rng.normal(dist["age_moy"], dist["age_std"], N_LIGNES)
     age = np.clip(age, 18, 64).astype(np.int32)
 
-    imc = rng.normal(dist["imc_moy"], dist["imc_std"], N_LIGNES)
-    imc = np.round(np.clip(imc, 15.96, 53.13), 2).astype(np.float32)
-
     # np.random.choice tire avec remise depuis le tableau de valeurs réelles :
     # si le CSV a 427 lignes "0 enfant" sur 1338, la probabilité de tirer 0
     # sera automatiquement 427/1338 ≈ 31.9% — pas besoin de hardcoder les %
     enfants = rng.choice(dist["enfants_vals"], N_LIGNES).astype(np.int32)
     sexe = rng.choice(dist["sexe_vals"], N_LIGNES)
-    fumeur = rng.choice(dist["fumeur_vals"], N_LIGNES)
     region = rng.choice(dist["region_vals"], N_LIGNES)
+
+    imc = np.empty(N_LIGNES, dtype=np.float32)
+    fumeur = np.empty(N_LIGNES, dtype=bool)
+    for nom_region, dist_region in dist["dist_par_region"].items():
+        masque = region == nom_region
+        n_region = int(masque.sum())
+        imc[masque] = rng.normal(
+            dist_region["imc_moy"], dist_region["imc_std"], n_region
+        )
+        fumeur[masque] = rng.choice(dist_region["fumeur_vals"], n_region)
+    imc = np.round(np.clip(imc, 15.96, 53.13), 2).astype(np.float32)
 
     return {
         "age": age,

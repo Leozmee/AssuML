@@ -47,6 +47,9 @@ class Region(Base):
     # Relations
     clients: Mapped[List["Client"]] = relationship(back_populates="region")
     donnees_meteo: Mapped[List["DonneesMeteo"]] = relationship(back_populates="region")
+    stats_regionales: Mapped[List["StatsRegionales"]] = relationship(
+        back_populates="region"
+    )
 
 
 class Client(Base):
@@ -188,6 +191,51 @@ class DonneesMeteo(Base):
 
     # Relations
     region: Mapped["Region"] = relationship(back_populates="donnees_meteo")
+
+
+class StatsRegionales(Base):
+    """Statistiques de santé publique par région — BDD externe SQLite
+    (data/external/stats_regionales.db). Valeurs réelles (CDC, NCHS, KFF,
+    Census/ACS) de l'État représentatif de chaque région (même mapping
+    ville/État que api_extractor.py : southwest=Arizona, southeast=Géorgie,
+    northwest=Washington, northeast=Massachusetts) — pas une moyenne
+    régionale officielle, ce découpage en 4 régions n'existant dans
+    aucune source fédérale US."""
+
+    __tablename__ = "stats_regionales"
+    __table_args__ = (
+        CheckConstraint(
+            "taux_obesite BETWEEN 0 AND 100", name="chk_stats_taux_obesite"
+        ),
+        CheckConstraint(
+            "taux_tabagisme BETWEEN 0 AND 100", name="chk_stats_taux_tabagisme"
+        ),
+        CheckConstraint("esperance_vie > 0", name="chk_stats_esperance_vie"),
+        CheckConstraint(
+            "taux_diabete BETWEEN 0 AND 100", name="chk_stats_taux_diabete"
+        ),
+        CheckConstraint("medecins_pour_100k > 0", name="chk_stats_medecins_pour_100k"),
+        CheckConstraint(
+            "taux_non_assures BETWEEN 0 AND 100", name="chk_stats_taux_non_assures"
+        ),
+    )
+
+    stats_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    region_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("regions.region_id", ondelete="CASCADE"), nullable=False
+    )
+    taux_obesite: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    taux_tabagisme: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    esperance_vie: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    taux_diabete: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    medecins_pour_100k: Mapped[Optional[float]] = mapped_column(Numeric(6, 2))
+    taux_non_assures: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    date_extraction: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+    # Relations
+    region: Mapped["Region"] = relationship(back_populates="stats_regionales")
 
 
 class Article(Base):
