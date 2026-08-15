@@ -41,6 +41,7 @@ class ContratRead(BaseModel):
     date_fin: Optional[date] = None
     type_couverture: str
     date_creation: datetime
+    date_maj_prime: datetime
 
 
 class ContratUpdate(BaseModel):

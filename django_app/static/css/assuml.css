@@ -215,6 +215,9 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .page-header .actions-align-cards {
   margin-right: 0.75rem;
 }
+.page-header .btn-simuler-header {
+  margin-left: 8px;
+}
 
 /* Auto-padding after page-header */
 .main-content .page-header ~ .row,
@@ -438,6 +441,20 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .bg-light   { background: var(--card-alt) !important; color: var(--ink-soft) !important; }
 .text-dark  { color: var(--ink) !important; }
 
+.pastille-orange {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--orange);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.notice-prime {
+  font-size: 0.62rem;
+}
+
 /* ── Score sections ───────────────────────────────────────────────────────── */
 .score-section {
   background: var(--card);
@@ -559,6 +576,7 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .text-warning { color: var(--warning) !important; }
 .text-danger  { color: var(--danger) !important; }
 .text-primary { color: var(--primary) !important; }
+.text-orange  { color: var(--orange) !important; }
 
 .small { font-size: 0.82em; }
 .fs-4  { font-size: 1.4rem !important; }

@@ -1,5 +1,7 @@
 """Vues CRUD clients et contrats — admin uniquement."""
 
+from datetime import datetime
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
@@ -26,6 +28,25 @@ def _enrichir(res: dict) -> dict:
     res["marge_annuelle"] = round(res["prime"] - res["cout_predit"], 2)
     res["coefficient_marge"] = COEFFICIENTS.get(res["categorie_risque"], "—")
     return res
+
+
+def _prime_a_verifier(contrat: dict, client: dict) -> bool:
+    """Détecte une prime potentiellement obsolète face aux infos du client.
+
+    Le client (assuré ou assureur) a pu modifier le profil (âge, IMC,
+    tabagisme...) après la dernière synchronisation de la prime avec une
+    prédiction ML — la prime affichée n'est alors plus représentative du
+    risque actuel. Signalé uniquement pour les contrats actifs.
+    """
+    if not contrat or contrat.get("statut") != "actif":
+        return False
+    date_modif = client.get("date_modification")
+    if not date_modif:
+        return False
+    date_maj_prime = contrat.get("date_maj_prime")
+    if not date_maj_prime:
+        return True
+    return datetime.fromisoformat(date_modif) > datetime.fromisoformat(date_maj_prime)
 
 
 @admin_required
@@ -60,6 +81,7 @@ def client_list(request):
         client["categorie_risque"] = risque_map.get(client["client_id"])
         client["region_nom"] = region_id_to_nom(client["region_id"])
         client["identite"] = client_identite(client)
+        client["prime_a_verifier"] = _prime_a_verifier(client["contrat"], client)
 
     # Recherche par ID/nom/prénom : filtrage instantané côté client (JS), pas ici.
 
@@ -69,6 +91,19 @@ def client_list(request):
         clients = [c for c in clients if c.get("a_un_compte")]
     elif compte == "non":
         clients = [c for c in clients if not c.get("a_un_compte")]
+
+    # Filtre par contrat actif
+    contrat_filtre = request.GET.get("contrat", "")
+    if contrat_filtre == "oui":
+        clients = [
+            c for c in clients if c.get("contrat") and c["contrat"]["statut"] == "actif"
+        ]
+    elif contrat_filtre == "non":
+        clients = [
+            c
+            for c in clients
+            if not c.get("contrat") or c["contrat"]["statut"] != "actif"
+        ]
 
     # Tri
     RISQUE_ORDRE = {"faible": 1, "moyen": 2, "eleve": 3, "critique": 4}
@@ -91,7 +126,12 @@ def client_list(request):
     return render(
         request,
         "gestion/list.html",
-        {"clients": clients, "sort": sort, "compte": compte},
+        {
+            "clients": clients,
+            "sort": sort,
+            "compte": compte,
+            "contrat_filtre": contrat_filtre,
+        },
     )
 
 
@@ -120,10 +160,17 @@ def client_detail(request, client_id):
     except (ApiUnavailableError, ApiTimeoutError, ApiError):
         pass
 
+    prime_a_verifier = _prime_a_verifier(contrats[0] if contrats else None, client)
+
     return render(
         request,
         "gestion/detail.html",
-        {"client": client, "contrats": contrats, "predictions": predictions},
+        {
+            "client": client,
+            "contrats": contrats,
+            "predictions": predictions,
+            "prime_a_verifier": prime_a_verifier,
+        },
     )
 
 
@@ -263,10 +310,16 @@ def client_score(request, client_id):
         except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
             messages.error(request, f"Erreur de scoring : {exc}")
 
+    contrats = []
+    try:
+        contrats = api_client.get_contrats(client_id=client_id) or []
+    except (ApiUnavailableError, ApiTimeoutError, ApiError):
+        pass
+
     return render(
         request,
         "gestion/score.html",
-        {"client": client, "resultat": resultat},
+        {"client": client, "resultat": resultat, "contrats": contrats},
     )
 
 

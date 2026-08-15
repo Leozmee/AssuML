@@ -53,7 +53,8 @@ CREATE TABLE clients (
     email            VARCHAR(255) NULL,
     telephone        VARCHAR(20)  NULL,
     date_creation    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_suppression TIMESTAMP NULL  -- NULL = actif, valeur = supprimé logiquement
+    date_suppression TIMESTAMP NULL,  -- NULL = actif, valeur = supprimé logiquement
+    date_modification TIMESTAMP NULL  -- dernière modification des infos (client ou assureur)
 );
 
 -- ============================================================
@@ -91,6 +92,7 @@ CREATE TABLE contrats (
     type_couverture VARCHAR(50) NOT NULL
                     CHECK (type_couverture IN ('basique', 'standard', 'premium', 'famille')),
     date_creation   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_maj_prime  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- dernière synchro prime/prédiction ML
     CONSTRAINT chk_contrats_dates CHECK (date_fin IS NULL OR date_fin > date_debut)
 );
 

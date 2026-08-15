@@ -140,6 +140,7 @@ def update_client(
         return None
     for key, value in kwargs.items():
         setattr(client, key, value)
+    client.date_modification = datetime.now()
     db.commit()
     db.refresh(client)
     return client
@@ -350,6 +351,7 @@ def update_contrat_prime(
     if contrat is None:
         return None
     contrat.prime_mensuelle = prime_mensuelle
+    contrat.date_maj_prime = datetime.now()
     db.commit()
     db.refresh(contrat)
     return contrat

@@ -72,13 +72,23 @@
   </div>
 </div>
 
-{% if not client.contrat %}
+{% if not contrats %}
 <div class="mt-4">
   <a href="{% url 'gestion:contrat_create' client.client_id %}"
      class="btn btn-success"
      onclick="sessionStorage.setItem('prime_suggeree', '{{ resultat.prime_mensuelle|floatformat:2 }}')">
     Créer le contrat avec cette prime
   </a>
+</div>
+{% else %}
+<div class="mt-4">
+  <form method="post" action="{% url 'gestion:contrat_prime' contrats.0.contrat_id %}">
+    {% csrf_token %}
+    <input type="hidden" name="client_id" value="{{ client.client_id }}">
+    <button type="submit" class="btn btn-success">
+      Mettre à jour le contrat avec cette prime
+    </button>
+  </form>
 </div>
 {% endif %}
 {% endif %}
