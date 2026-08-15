@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Gestion clients{% endblock %}
 
@@ -41,7 +42,7 @@
 <div class="card">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover mb-0">
+      <table class="table table-hover table-clients-centered mb-0">
         <caption class="visually-hidden">Liste des clients du portefeuille, avec leur profil, catégorie de risque, statut de compte et de contrat</caption>
         <thead class="table-light">
           <tr>
@@ -90,26 +91,30 @@
                 <span class="text-muted small">—</span>
               {% endif %}
             </td>
-            <td class="text-center">
-              {% if client.a_un_compte %}<span role="img" aria-label="A un compte utilisateur">👤</span>{% else %}<span class="text-muted" aria-hidden="true">—</span>{% endif %}
+            <td>
+              {% if client.a_un_compte %}<img src="{% static 'img/icon-compte.png' %}" alt="A un compte utilisateur" width="20" height="20">{% else %}<span class="text-muted" aria-hidden="true">—</span>{% endif %}
             </td>
             <td>
               {% if client.contrat %}
-                <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
-                  {{ client.contrat.statut|capfirst }}
+                <span class="badge-wrap">
+                  <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
+                    {{ client.contrat.statut|capfirst }}
+                  </span>
+                  {% if client.prime_a_verifier %}
+                    <span class="pastille-orange" role="img"
+                          aria-label="Prime non mise à jour depuis la dernière modification du profil"
+                          title="Prime non mise à jour depuis la dernière modification du profil"></span>
+                  {% endif %}
                 </span>
-                {% if client.prime_a_verifier %}
-                  <span class="pastille-orange ms-1" role="img"
-                        aria-label="Prime non mise à jour depuis la dernière modification du profil"
-                        title="Prime non mise à jour depuis la dernière modification du profil"></span>
-                {% endif %}
               {% else %}
                 <span class="text-muted small">Aucun</span>
               {% endif %}
             </td>
             <td class="table-actions">
+              <span class="actions-row">
               <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm"
                  aria-label="Voir la fiche du client {{ client.identite }}">Fiche</a>
+              <span class="actions-slot">
               {% if not client.contrat %}
                 <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm"
                    aria-label="Créer un contrat pour le client {{ client.identite }}">+ Contrat</a>
@@ -130,6 +135,8 @@
                           aria-label="Réactiver le contrat du client {{ client.identite }}">Réactiver</button>
                 </form>
               {% endif %}
+              </span>
+              </span>
             </td>
           </tr>
           {% endif %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer {{ admin_user.email }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Supprimer un administrateur</h1>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card border-danger">
+      <div class="card-body">
+        <p class="mb-4">
+          Êtes-vous sûr de vouloir supprimer le compte admin <strong>{{ admin_user.email }}</strong> ?
+          <br><span class="text-muted small">Cette action est définitive.</span>
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+            <a href="{% url 'accounts:create_admin' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

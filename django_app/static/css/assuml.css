@@ -245,6 +245,12 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   padding: 13px 18px;
   border-radius: var(--radius) var(--radius) 0 0;
 }
+/* Aligne le texte du titre avec le texte du 1er en-tête de colonne du
+   tableau juste en dessous (mesuré via Range.getBoundingClientRect,
+   pas juste la boîte de padding, pour un alignement au pixel près). */
+.card-header-align-table {
+  padding-left: 14px;
+}
 .card-body { color: var(--ink); }
 .card-footer {
   background: var(--card-alt);
@@ -375,6 +381,30 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 }
 .table-actions .btn { padding: 0.22rem 0.6rem; font-size: 0.76rem; }
 
+/* "Fiche" doit rester à la même position quelle que soit la largeur du 2e
+   bouton ("Résilier" 65px vs "+ Contrat"/"Réactiver" 78px) : le 2e slot a
+   une largeur fixe, le bouton qu'il contient est centré dedans. */
+.actions-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.actions-slot {
+  display: inline-flex;
+  justify-content: center;
+  width: 84px;
+}
+.actions-slot .btn {
+  width: 100%;
+}
+
+/* Tableau "Gestion clients" — chaque colonne centrée (en-tête et cellules),
+   plutôt que tout aligné à gauche par défaut. */
+.table-clients-centered > thead th,
+.table-clients-centered > tbody td {
+  text-align: center;
+}
+
 /* Colonnes météo (tableau "Contexte régional") — teinte légèrement plus
    foncée que le reste du tableau pour les distinguer visuellement.
    !important nécessaire : .table-light applique déjà un !important sur
@@ -449,6 +479,21 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   background: var(--orange);
   vertical-align: middle;
   flex-shrink: 0;
+}
+
+/* Le badge (ex. "Actif") reste centré sur la même position que dans les
+   lignes sans pastille : la pastille est positionnée en absolu, en dehors
+   du flux, pour ne pas élargir le bloc centré et décaler le badge. */
+.badge-wrap {
+  position: relative;
+  display: inline-block;
+}
+.badge-wrap .pastille-orange {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 4px;
+  transform: translateY(-50%);
 }
 
 .notice-prime {
@@ -609,17 +654,38 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .site-footer-links a:hover { color: var(--primary); }
 
 /* ── Bouton rose (actions de simulation ML, mis en avant) ────────────────── */
+/* Base métallique = simple dégradé à 2 tons (pas de bande vive). Le reflet
+   est une lueur radiale diffuse, en couche séparée, dont la position glisse
+   doucement — plus proche d'un reflet de lumière sur métal que d'un effet
+   "shimmer" générique. Coupé pour prefers-reduced-motion. */
 .btn-rose {
-  background: var(--rose);
-  border-color: var(--rose);
+  background-image:
+    radial-gradient(55% 130% at 30% -15%, rgba(255,255,255,0.4), rgba(255,255,255,0) 65%),
+    linear-gradient(160deg, #c8407d 0%, var(--rose) 50%, var(--rose-dark) 100%);
+  background-repeat: no-repeat;
+  background-position: 0% 0%, 0 0;
+  background-size: 220% 220%, 100% 100%;
+  border-color: var(--rose-dark);
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(209, 73, 133, 0.35);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 6px rgba(209, 73, 133, 0.35), inset 0 1px 0 rgba(255,255,255,0.35);
 }
 .btn-rose:hover,
 .btn-rose:focus {
-  background: var(--rose-dark);
+  filter: brightness(0.93);
   border-color: var(--rose-dark);
   color: #ffffff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-rose {
+    animation: btn-rose-shimmer 9s ease-in-out infinite;
+  }
+}
+
+@keyframes btn-rose-shimmer {
+  0%, 100% { background-position: 0% 0%, 0 0; }
+  50% { background-position: 100% 0%, 0 0; }
 }
 
 /* ── Champ mot de passe (icône œil intégrée) ─────────────────────────────── */
