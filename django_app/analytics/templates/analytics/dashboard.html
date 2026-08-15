@@ -65,25 +65,29 @@
 <div class="card mt-4">
   <div class="card-header fw-semibold">Contexte régional</div>
   <div class="card-body p-0">
-    <div class="table-responsive">
+    <div class="table-responsive table-responsive-no-y">
       <table class="table table-sm mb-0">
         <caption class="visually-hidden">Contexte régional du portefeuille : volumétrie Big Data, météo actuelle et statistiques de santé publique par région</caption>
         <thead class="table-light">
           <tr>
-            <th scope="col">Région</th>
-            <th scope="col">Profils (Big Data)</th>
-            <th scope="col">Coût moyen prédit ($)</th>
-            <th scope="col">IMC moyen</th>
-            <th scope="col">% fumeurs</th>
-            <th scope="col">Température (°C)</th>
-            <th scope="col">Humidité (%)</th>
-            <th scope="col">Saison</th>
-            <th scope="col">Taux d'obésité (%)</th>
-            <th scope="col">Taux de tabagisme (%)</th>
-            <th scope="col">Espérance de vie (ans)</th>
-            <th scope="col">Taux de diabète (%)</th>
-            <th scope="col">Médecins / 100k hab.</th>
-            <th scope="col">Taux de non-assurés (%)</th>
+            <th scope="col" rowspan="2">Région</th>
+            <th scope="col" rowspan="2">Profils (Big Data)</th>
+            <th scope="col" rowspan="2">Coût moyen prédit ($)</th>
+            <th scope="col" rowspan="2">IMC moyen</th>
+            <th scope="col" rowspan="2">% fumeurs</th>
+            <th scope="col" rowspan="2">Taux d'obésité (%)</th>
+            <th scope="col" rowspan="2">Taux de tabagisme (%)</th>
+            <th scope="col" rowspan="2">Espérance de vie (ans)</th>
+            <th scope="col" rowspan="2">Taux de diabète (%)</th>
+            <th scope="col" rowspan="2">Médecins / 100k hab.</th>
+            <th scope="col" rowspan="2">Taux de non-assurés (%)</th>
+            <th scope="colgroup" colspan="4" class="col-meteo text-center">Météo</th>
+          </tr>
+          <tr>
+            <th scope="col" class="col-meteo">Température (°C)</th>
+            <th scope="col" class="col-meteo">Humidité (%)</th>
+            <th scope="col" class="col-meteo">Précipitations (mm/h)</th>
+            <th scope="col" class="col-meteo">Saison</th>
           </tr>
         </thead>
         <tbody>
@@ -94,15 +98,16 @@
             <td>{{ r.cout_moy|floatformat:2 }}</td>
             <td>{{ r.imc_moy|floatformat:2 }}</td>
             <td>{{ r.taux_fumeurs|floatformat:1 }}</td>
-            <td>{{ r.temperature_moy|floatformat:1|default:"—" }}</td>
-            <td>{{ r.humidite_moy|floatformat:1|default:"—" }}</td>
-            <td>{{ r.saison|default:"—"|capfirst }}</td>
             <td>{{ r.taux_obesite|floatformat:1 }}</td>
             <td>{{ r.taux_tabagisme|floatformat:1 }}</td>
             <td>{{ r.esperance_vie|floatformat:1 }}</td>
             <td>{{ r.taux_diabete|floatformat:1 }}</td>
             <td>{{ r.medecins_pour_100k|floatformat:1 }}</td>
             <td>{{ r.taux_non_assures|floatformat:1 }}</td>
+            <td class="col-meteo">{{ r.temperature_moy|floatformat:1|default:"—" }}</td>
+            <td class="col-meteo">{{ r.humidite_moy|floatformat:1|default:"—" }}</td>
+            <td class="col-meteo">{{ r.precipitations|floatformat:1|default:"—" }}</td>
+            <td class="col-meteo">{{ r.saison|default:"—"|capfirst }}</td>
           </tr>
           {% endfor %}
         </tbody>

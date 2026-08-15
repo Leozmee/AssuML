@@ -319,12 +319,12 @@ class DuckDBAnalytics:
 
         Returns:
             DataFrame avec colonnes : region, nb, cout_moy, imc_moy,
-            taux_fumeurs, temperature_moy, humidite_moy, saison,
-            taux_obesite, taux_tabagisme, esperance_vie, taux_diabete,
-            medecins_pour_100k, taux_non_assures. Une ligne par région
-            présente dans les trois sources (jointure interne — une région
-            absente d'une des sources externes n'apparaît pas plutôt que
-            d'inventer une valeur de remplacement).
+            taux_fumeurs, temperature_moy, humidite_moy, precipitations,
+            saison, taux_obesite, taux_tabagisme, esperance_vie,
+            taux_diabete, medecins_pour_100k, taux_non_assures. Une ligne
+            par région présente dans les trois sources (jointure interne —
+            une région absente d'une des sources externes n'apparaît pas
+            plutôt que d'inventer une valeur de remplacement).
         """
         self._conn.register("meteo_df", df_meteo)
         self._conn.register("stats_df", df_stats)
@@ -338,6 +338,7 @@ class DuckDBAnalytics:
                 ROUND(AVG(CAST(p.fumeur AS DOUBLE)) * 100, 2) AS taux_fumeurs,
                 m.temperature_moy,
                 m.humidite_moy,
+                m.precipitations,
                 m.saison,
                 s.taux_obesite,
                 s.taux_tabagisme,
@@ -348,9 +349,10 @@ class DuckDBAnalytics:
             FROM {self._src()} p
             JOIN meteo_df m ON p.region = m.nom_region
             JOIN stats_df s ON p.region = s.nom_region
-            GROUP BY p.region, m.temperature_moy, m.humidite_moy, m.saison,
-                     s.taux_obesite, s.taux_tabagisme, s.esperance_vie,
-                     s.taux_diabete, s.medecins_pour_100k, s.taux_non_assures
+            GROUP BY p.region, m.temperature_moy, m.humidite_moy,
+                     m.precipitations, m.saison, s.taux_obesite,
+                     s.taux_tabagisme, s.esperance_vie, s.taux_diabete,
+                     s.medecins_pour_100k, s.taux_non_assures
             ORDER BY p.region
         """
         )
