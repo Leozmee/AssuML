@@ -111,7 +111,17 @@ class ClientForm(AccessibleFormMixin, forms.Form):
     email = forms.EmailField(
         required=False,
         label="Email (optionnel)",
-        widget=forms.EmailInput(attrs={"class": "form-control"}),
+        widget=forms.EmailInput(
+            attrs={"class": "form-control", "autocomplete": "email"}
+        ),
+    )
+    telephone = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Téléphone (optionnel)",
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "type": "tel", "autocomplete": "off"}
+        ),
     )
     creer_compte = forms.BooleanField(
         required=False,

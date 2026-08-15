@@ -1,8 +1,14 @@
 """Vues d'authentification et de profil utilisateur AssuML."""
 
+import csv
+import io
+import json
+import zipfile
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from accounts.decorators import superuser_required
@@ -61,6 +67,7 @@ def register_step1_view(request):
         # validés en session le temps que l'étape 2 soit complétée.
         request.session["register_email"] = cd["email"]
         request.session["register_password"] = cd["password1"]
+        request.session["register_telephone"] = cd.get("telephone") or ""
         return redirect("accounts:register_step2")
 
     return render(request, "accounts/register_step1.html", {"form": form})
@@ -73,6 +80,7 @@ def register_step2_view(request):
 
     email = request.session.get("register_email")
     password = request.session.get("register_password")
+    telephone = request.session.get("register_telephone") or None
     if not email or not password:
         messages.warning(request, "Merci de renseigner d'abord vos identifiants.")
         return redirect("accounts:register")
@@ -97,6 +105,7 @@ def register_step2_view(request):
                     "fumeur": cd["fumeur"],
                     "region_id": region_nom_to_id(cd["region"]),
                     "email": email,
+                    "telephone": telephone,
                     "a_un_compte": True,
                 }
             )
@@ -112,6 +121,7 @@ def register_step2_view(request):
 
         del request.session["register_email"]
         del request.session["register_password"]
+        request.session.pop("register_telephone", None)
 
         login(request, user)
         messages.success(request, "Compte créé avec succès. Bienvenue !")
@@ -166,6 +176,8 @@ def mon_compte_view(request):
     if client:
         try:
             contrats = api_client.get_contrats(client_id=profil.client_id) or []
+            for contrat in contrats:
+                contrat["prime_annuelle"] = contrat["prime_mensuelle"] * 12
         except (ApiUnavailableError, ApiTimeoutError, ApiError):
             pass
         try:
@@ -178,6 +190,140 @@ def mon_compte_view(request):
         "accounts/mon_compte.html",
         {"client": client, "contrats": contrats, "predictions": predictions},
     )
+
+
+@login_required
+def export_donnees_view(request):
+    """Export des données personnelles de l'assuré, en JSON et en CSV.
+
+    Limité aux sections "Mes informations" et "Mon contrat" (pas
+    l'historique des évaluations ML, hors périmètre de cet export). Les
+    deux formats sont générés en une seule fois et livrés dans une
+    archive ZIP unique (un seul bouton, un seul téléchargement) : JSON
+    comme format structuré courant (cf. article 20 du RGPD), cohérent
+    avec le reste de l'application qui communique déjà en JSON ; CSV en
+    complément pour une ouverture directe dans un tableur.
+    """
+    try:
+        profil = request.user.profil
+    except ProfilUtilisateur.DoesNotExist:
+        messages.error(request, "Profil introuvable.")
+        return redirect("accounts:login")
+
+    if profil.role != "user":
+        return redirect("gestion:list")
+
+    try:
+        client = api_client.get_client(profil.client_id)
+        if client:
+            client["region_nom"] = region_id_to_nom(client["region_id"])
+    except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+        messages.warning(request, f"Impossible de charger vos informations : {exc}")
+        return redirect("accounts:mon_compte")
+
+    try:
+        contrats = api_client.get_contrats(client_id=profil.client_id) or []
+    except (ApiUnavailableError, ApiTimeoutError, ApiError):
+        contrats = []
+
+    mes_informations = {
+        "age": client.get("age"),
+        "sexe": client.get("sexe"),
+        "imc": client.get("imc"),
+        "enfants": client.get("enfants"),
+        "fumeur": client.get("fumeur"),
+        "region": client.get("region_nom"),
+        "email": client.get("email"),
+        "telephone": client.get("telephone"),
+    }
+    mon_contrat = [
+        {
+            "type_couverture": c.get("type_couverture"),
+            "statut": c.get("statut"),
+            "prime_mensuelle": c.get("prime_mensuelle"),
+            "prime_annuelle": (
+                c["prime_mensuelle"] * 12
+                if c.get("prime_mensuelle") is not None
+                else None
+            ),
+            "date_debut": c.get("date_debut"),
+        }
+        for c in contrats
+    ]
+
+    export = {"mes_informations": mes_informations, "mon_contrat": mon_contrat}
+    contenu_json = json.dumps(export, ensure_ascii=False, indent=2)
+
+    csv_buffer = io.StringIO()
+    writer = csv.writer(csv_buffer)
+    writer.writerow(["Mes informations"])
+    writer.writerow(list(mes_informations.keys()))
+    writer.writerow(list(mes_informations.values()))
+    writer.writerow([])
+    writer.writerow(["Mon contrat"])
+    writer.writerow(
+        ["type_couverture", "statut", "prime_mensuelle", "prime_annuelle", "date_debut"]
+    )
+    for contrat in mon_contrat:
+        writer.writerow(
+            [
+                contrat["type_couverture"],
+                contrat["statut"],
+                contrat["prime_mensuelle"],
+                contrat["prime_annuelle"],
+                contrat["date_debut"],
+            ]
+        )
+    contenu_csv = csv_buffer.getvalue()
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as archive:
+        archive.writestr("mes_donnees_assuml.json", contenu_json)
+        archive.writestr("mes_donnees_assuml.csv", contenu_csv)
+
+    reponse = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+    reponse["Content-Disposition"] = 'attachment; filename="mes_donnees_assuml.zip"'
+    return reponse
+
+
+@login_required
+def resilier_contrat_view(request, contrat_id):
+    """Résiliation d'un contrat par son titulaire (confirmation requise).
+
+    Sécurité : le contrat doit appartenir au client connecté — vérifié en
+    le recherchant parmi ses propres contrats plutôt qu'en faisant
+    confiance à contrat_id seul (un client ne doit pas pouvoir résilier
+    le contrat d'un autre en devinant un identifiant).
+    """
+    try:
+        profil = request.user.profil
+    except ProfilUtilisateur.DoesNotExist:
+        messages.error(request, "Profil introuvable.")
+        return redirect("accounts:login")
+
+    if profil.role != "user":
+        return redirect("gestion:list")
+
+    contrat = None
+    try:
+        contrats = api_client.get_contrats(client_id=profil.client_id) or []
+        contrat = next((c for c in contrats if c["contrat_id"] == contrat_id), None)
+    except (ApiUnavailableError, ApiTimeoutError, ApiError):
+        pass
+
+    if contrat is None:
+        messages.error(request, "Contrat introuvable.")
+        return redirect("accounts:mon_compte")
+
+    if request.method == "POST":
+        try:
+            api_client.update_contrat_statut(contrat_id, "resilie")
+            messages.success(request, "Votre contrat a été résilié.")
+        except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
+            messages.error(request, f"Erreur lors de la résiliation : {exc}")
+        return redirect("accounts:mon_compte")
+
+    return render(request, "accounts/resilier_contrat.html", {"contrat": contrat})
 
 
 @login_required

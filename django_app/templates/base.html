@@ -71,7 +71,6 @@
 
   <div class="topbar-user">
     <span class="user-avatar">{{ user.email|slice:":1"|upper }}</span>
-    <span class="user-email">{{ user.email }}</span>
     <a href="{% url 'accounts:logout' %}" class="btn-logout">Se déconnecter</a>
   </div>
 </header>

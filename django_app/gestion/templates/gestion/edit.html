@@ -57,17 +57,22 @@
             {% include 'components/imc_calculator.html' %}
 
             <div class="row g-3">
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label" for="id_enfants">{{ form.enfants.label }} <span aria-hidden="true">*</span></label>
                 {{ form.enfants }}
                 {% if form.enfants.errors %}<div class="text-danger small" id="error_enfants" role="alert">{{ form.enfants.errors.0 }}</div>{% endif %}
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label" for="id_email">{{ form.email.label }}</label>
                 {{ form.email }}
                 {% if form.email.errors %}<div class="text-danger small" id="error_email" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
               </div>
-              <div class="col-md-4 d-flex align-items-end">
+              <div class="col-md-3">
+                <label class="form-label" for="id_telephone">{{ form.telephone.label }}</label>
+                {{ form.telephone }}
+                {% if form.telephone.errors %}<div class="text-danger small" id="error_telephone" role="alert">{{ form.telephone.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
                 <div class="form-check">
                   {{ form.fumeur }}
                   <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>

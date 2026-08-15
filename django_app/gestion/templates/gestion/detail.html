@@ -39,6 +39,7 @@
           <dt class="col-sm-5 text-muted">Fumeur</dt><dd class="col-sm-7">{% if client.fumeur %}Oui{% else %}Non{% endif %}</dd>
           <dt class="col-sm-5 text-muted">Région</dt><dd class="col-sm-7">{{ client.region_nom|default:client.region_id }}</dd>
           <dt class="col-sm-5 text-muted">Email</dt><dd class="col-sm-7">{{ client.email|default:"—" }}</dd>
+          <dt class="col-sm-5 text-muted">Téléphone</dt><dd class="col-sm-7">{{ client.telephone|default:"—" }}</dd>
           <dt class="col-sm-5 text-muted">Compte user</dt><dd class="col-sm-7">{% if client.a_un_compte %}<span aria-hidden="true">👤</span> Oui{% else %}—{% endif %}</dd>
         </dl>
       </div>

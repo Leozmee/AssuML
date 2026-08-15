@@ -22,6 +22,12 @@
     </div>
 
     <div class="mb-3">
+      <label class="form-label" for="id_telephone">{{ form.telephone.label }}</label>
+      {{ form.telephone }}
+      {% if form.telephone.errors %}<div class="text-danger small mt-1" id="error_telephone" role="alert">{{ form.telephone.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="mb-3">
       <label class="form-label" for="id_password1">{{ form.password1.label }} <span aria-hidden="true">*</span></label>
       {{ form.password1 }}
       {% if form.password1.errors %}<div class="text-danger small mt-1" id="error_password1" role="alert">{{ form.password1.errors.0 }}</div>{% endif %}

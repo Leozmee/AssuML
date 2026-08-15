@@ -152,6 +152,7 @@ def client_create(request):
                     "fumeur": cd["fumeur"],
                     "region_id": region_nom_to_id(cd["region"]),
                     "email": cd.get("email") or None,
+                    "telephone": cd.get("telephone") or None,
                     "a_un_compte": bool(creer_compte),
                 }
             )
@@ -192,6 +193,7 @@ def client_update(request, client_id):
         "fumeur": client["fumeur"],
         "region": region_id_to_nom(client["region_id"]),
         "email": client.get("email") or "",
+        "telephone": client.get("telephone") or "",
         "imc_courant": client["imc"],
     }
     form = ClientForm(request.POST or None, initial=initial)
@@ -210,6 +212,7 @@ def client_update(request, client_id):
                     "fumeur": cd["fumeur"],
                     "region_id": region_nom_to_id(cd["region"]),
                     "email": cd.get("email") or None,
+                    "telephone": cd.get("telephone") or None,
                 },
             )
             messages.success(request, "Client mis à jour.")
