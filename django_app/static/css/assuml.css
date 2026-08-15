@@ -13,6 +13,7 @@
   --bg-body:       #eef2f5;
   --card:          #f9fafb;
   --card-alt:      #e6eff7;
+  --card-meteo:    #cfe0ef;
   --card-border:   #dbe6ee;
 
   --ink:           #1e3346;
@@ -379,6 +380,25 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   background: rgba(46,109,164,0.05);
 }
 .table-actions .btn { padding: 0.22rem 0.6rem; font-size: 0.76rem; }
+
+/* Colonnes météo (tableau "Contexte régional") — teinte légèrement plus
+   foncée que le reste du tableau pour les distinguer visuellement.
+   !important nécessaire : .table-light applique déjà un !important sur
+   thead, qui gagnerait sinon face à cette règle plus spécifique mais non
+   prioritaire. */
+.table > thead th.col-meteo {
+  background: var(--card-meteo) !important;
+}
+.table > tbody td.col-meteo {
+  background: var(--card-meteo) !important;
+}
+
+/* Tableau "Contexte régional" — défilement horizontal uniquement, jamais
+   vertical (le nombre de lignes est fixe à 4, aucune raison de scroller). */
+.table-responsive-no-y {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 
 /* ── Form fields ──────────────────────────────────────────────────────────── */
 .form-control, .form-select {
