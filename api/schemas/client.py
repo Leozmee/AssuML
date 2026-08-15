@@ -53,6 +53,7 @@ class ClientRead(BaseModel):
     a_un_compte: bool = False
     date_creation: datetime
     date_suppression: Optional[datetime] = None
+    date_modification: Optional[datetime] = None
 
 
 class ClientUpdate(BaseModel):

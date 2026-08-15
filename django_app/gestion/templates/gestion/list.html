@@ -28,8 +28,13 @@
     <option value="oui" {% if compte == 'oui' %}selected{% endif %}>Avec compte</option>
     <option value="non" {% if compte == 'non' %}selected{% endif %}>Sans compte</option>
   </select>
-  <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
-  {% if compte %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger">✕ Reset</a>{% endif %}
+  <select name="contrat" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+    <option value=""    {% if contrat_filtre == ''    %}selected{% endif %}>Tous les contrats</option>
+    <option value="oui" {% if contrat_filtre == 'oui' %}selected{% endif %}>Avec contrat</option>
+    <option value="non" {% if contrat_filtre == 'non' %}selected{% endif %}>Sans contrat</option>
+  </select>
+  <button type="submit" class="btn btn-sm btn-outline-secondary flex-shrink-0 text-nowrap">Filtrer</button>
+  {% if compte or contrat_filtre %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger flex-shrink-0 text-nowrap">✕ Reset</a>{% endif %}
 </form>
 </div>
 
@@ -93,6 +98,11 @@
                 <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
                   {{ client.contrat.statut|capfirst }}
                 </span>
+                {% if client.prime_a_verifier %}
+                  <span class="pastille-orange ms-1" role="img"
+                        aria-label="Prime non mise à jour depuis la dernière modification du profil"
+                        title="Prime non mise à jour depuis la dernière modification du profil"></span>
+                {% endif %}
               {% else %}
                 <span class="text-muted small">Aucun</span>
               {% endif %}

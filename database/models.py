@@ -83,6 +83,9 @@ class Client(Base):
     date_suppression: Mapped[Optional[datetime]] = mapped_column(
         DateTime, nullable=True
     )
+    date_modification: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
 
     # Relations
     region: Mapped["Region"] = relationship(back_populates="clients")
@@ -154,6 +157,9 @@ class Contrat(Base):
     date_fin: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     type_couverture: Mapped[str] = mapped_column(String(50), nullable=False)
     date_creation: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+    date_maj_prime: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
 
