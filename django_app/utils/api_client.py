@@ -138,17 +138,25 @@ def get_predictions_client(client_id: int):
 # ── Clients ────────────────────────────────────────────────────────────────────
 
 
-def get_clients(skip: int = 0, limit: int = 100):
-    return _get("/clients/", params={"skip": skip, "limit": limit})
+def get_clients(skip: int = 0, limit: int = 100, actifs_only: bool = True):
+    return _get(
+        "/clients/",
+        params={"skip": skip, "limit": limit, "actifs_only": actifs_only},
+    )
 
 
-def get_all_clients():
-    """Récupère tous les clients en gérant la pagination (limite API = 100)."""
+def get_all_clients(actifs_only: bool = True):
+    """Récupère tous les clients en gérant la pagination (limite API = 100).
+
+    actifs_only=False inclut aussi les clients désactivés (soft delete) —
+    utilisé par la purge RGPD différée (cf. gestion/management/commands/
+    purge_clients.py).
+    """
     all_clients = []
     skip = 0
     limit = 100
     while True:
-        data = get_clients(skip=skip, limit=limit)
+        data = get_clients(skip=skip, limit=limit, actifs_only=actifs_only)
         if not data:
             break
         all_clients.extend(data)

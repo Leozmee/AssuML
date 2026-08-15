@@ -136,7 +136,6 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 }
 .topbar.is-compact .topbar-link { padding: 3px 12px; font-size: 0.76rem; }
 .topbar.is-compact .user-avatar { width: 20px; height: 20px; font-size: 0.65rem; }
-.topbar.is-compact .user-email,
 .topbar.is-compact .btn-logout { padding-top: 3px; padding-bottom: 3px; font-size: 0.74rem; }
 .topbar-link:hover {
   background: var(--topbar-hover);
@@ -168,14 +167,6 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-.user-email {
-  color: #ffffff;
-  font-size: 0.8rem;
-  background: rgba(255,255,255,0.14);
-  padding: 6px 12px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 .btn-logout {
   background: #ffffff;

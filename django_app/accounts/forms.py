@@ -37,10 +37,27 @@ class LoginForm(AccessibleFormMixin, forms.Form):
 class RegisterStep1Form(AccessibleFormMixin, UserCreationForm):
     """Inscription assuré — étape 1/2 : identifiants (email + mot de passe)."""
 
+    # telephone n'est pas un champ du modèle User (Meta.fields) — c'est un
+    # attribut du Client FastAPI/PostgreSQL, déclaré ici comme champ
+    # additionnel du formulaire, au même titre qu'un ModelForm peut porter
+    # des champs hors modèle.
+    telephone = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Téléphone (optionnel)",
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "type": "tel", "autocomplete": "off"}
+        ),
+    )
+
     class Meta:
         model = User
         fields = ("email", "password1", "password2")
-        widgets = {"email": forms.EmailInput(attrs={"class": "form-control"})}
+        widgets = {
+            "email": forms.EmailInput(
+                attrs={"class": "form-control", "autocomplete": "email"}
+            )
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

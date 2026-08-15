@@ -5,7 +5,8 @@ Endpoints CRUD pour la gestion des clients assurés.
 Préfixe monté sur /api/clients dans api/main.py.
 
 Routes :
-  GET    /api/clients           — liste paginée des clients actifs
+  GET    /api/clients           — liste paginée (?actifs_only=false pour
+                                   inclure les clients désactivés)
   GET    /api/clients/{id}      — détail d'un client
   POST   /api/clients           — créer un client
   PUT    /api/clients/{id}      — modifier un client
@@ -28,19 +29,26 @@ router = APIRouter(prefix="/clients", tags=["clients"])
 def lister_clients(
     skip: int = 0,
     limit: int = 100,
+    actifs_only: bool = True,
     db: Session = Depends(get_db),
 ):
-    """Retourne la liste paginée des clients actifs (non supprimés).
+    """Retourne la liste paginée des clients.
 
     Args:
         skip: Décalage pagination.
         limit: Nombre maximum de résultats (max 100).
+        actifs_only: Si True (défaut), exclut les clients avec
+            date_suppression définie. À False, renvoie aussi les clients
+            désactivés (soft delete) — utilisé notamment par la purge RGPD
+            différée (cf. gestion/management/commands/purge_clients.py).
         db: Session SQLAlchemy injectée.
 
     Returns:
         Liste de ClientRead.
     """
-    return crud.get_clients(db, skip=skip, limit=min(limit, 100))
+    return crud.get_clients(
+        db, skip=skip, limit=min(limit, 100), actifs_only=actifs_only
+    )
 
 
 @router.get("/{client_id}", response_model=ClientRead)

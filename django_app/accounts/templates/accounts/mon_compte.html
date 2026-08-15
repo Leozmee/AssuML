@@ -5,8 +5,8 @@
 {% block content %}
 <div class="page-header">
   <h1>Mon compte</h1>
-  <a href="{% url 'accounts:mon_compte_edit' %}" class="btn btn-outline-primary btn-sm">
-    ✏️ Modifier mes informations
+  <a href="{% url 'accounts:export_donnees' %}" class="btn btn-outline-secondary btn-sm">
+    Télécharger mes données
   </a>
 </div>
 
@@ -18,7 +18,12 @@
 
 <!-- Section 1 — Mes informations -->
 <div class="card mb-4">
-  <div class="card-header fw-semibold">👤 Mes informations</div>
+  <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+    <span>Mes informations</span>
+    <a href="{% url 'accounts:mon_compte_edit' %}" class="btn btn-outline-primary btn-sm">
+      Modifier mes informations
+    </a>
+  </div>
   <div class="card-body">
     <div class="row g-3">
       <div class="col-md-4">
@@ -51,7 +56,7 @@
 
 <!-- Section 2 — Mon contrat -->
 <div class="card mb-4">
-  <div class="card-header fw-semibold">📋 Mon contrat</div>
+  <div class="card-header fw-semibold">Mon contrat</div>
   <div class="card-body">
     {% if contrats %}
       {% with contrat=contrats.0 %}
@@ -71,12 +76,20 @@
         <div class="col-md-4">
           <div class="text-muted small">Prime mensuelle</div>
           <div class="fw-semibold">{{ contrat.prime_mensuelle|floatformat:2 }} €</div>
+          <div class="text-muted small">{{ contrat.prime_annuelle|floatformat:2 }} €/an</div>
         </div>
         <div class="col-md-4">
           <div class="text-muted small">Date de début</div>
           <div class="fw-semibold">{{ contrat.date_debut }}</div>
         </div>
       </div>
+      {% if contrat.statut == 'actif' %}
+      <div class="mt-3">
+        <a href="{% url 'accounts:resilier_contrat' contrat.contrat_id %}" class="btn btn-outline-danger btn-sm">
+          Résilier mon contrat
+        </a>
+      </div>
+      {% endif %}
       {% endwith %}
     {% else %}
       <p class="text-muted mb-0">Aucun contrat souscrit. Contactez votre assureur.</p>
@@ -86,7 +99,7 @@
 
 <!-- Section 3 — Mes prédictions -->
 <div class="card">
-  <div class="card-header fw-semibold">🤖 Mes évaluations ML</div>
+  <div class="card-header fw-semibold">Mes évaluations ML</div>
   <div class="card-body">
     {% if predictions %}
       <div class="table-responsive">
@@ -99,7 +112,6 @@
               <th>Catégorie</th>
               <th>Prime assureur / an</th>
               <th>Prime / mois</th>
-              <th>Décision</th>
             </tr>
           </thead>
           <tbody>
@@ -115,7 +127,6 @@
               </td>
               <td class="fw-semibold">{{ pred.prime|floatformat:2 }} €</td>
               <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|floatformat:2 }} €</td>
-              <td>{% include 'components/badge.html' with decision=pred.decision %}</td>
             </tr>
             {% endfor %}
           </tbody>
