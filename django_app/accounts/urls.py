@@ -12,6 +12,11 @@ urlpatterns = [
     path("register/", views.register_step1_view, name="register"),
     path("register/profil/", views.register_step2_view, name="register_step2"),
     path("create-admin/", views.create_admin_view, name="create_admin"),
+    path(
+        "create-admin/<int:user_id>/supprimer/",
+        views.delete_admin_view,
+        name="delete_admin",
+    ),
     path("mon-compte/", views.mon_compte_view, name="mon_compte"),
     path("mon-compte/export/", views.export_donnees_view, name="export_donnees"),
     path(

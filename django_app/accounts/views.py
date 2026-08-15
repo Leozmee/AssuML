@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.decorators import superuser_required
 from accounts.forms import (
@@ -145,9 +145,34 @@ def create_admin_view(request):
             )
             ProfilUtilisateur.objects.create(user=user, role="admin")
             messages.success(request, f"Compte admin créé pour {cd['email']}.")
-            return redirect("gestion:list")
+            return redirect("accounts:create_admin")
 
-    return render(request, "accounts/create_admin.html", {"form": form})
+    admins = (
+        User.objects.filter(profil__role="admin")
+        .select_related("profil")
+        .order_by("email")
+    )
+    return render(
+        request, "accounts/create_admin.html", {"form": form, "admins": admins}
+    )
+
+
+@superuser_required
+def delete_admin_view(request, user_id):
+    """Suppression d'un compte admin (réservé au super-admin)."""
+    admin_user = get_object_or_404(User, pk=user_id, profil__role="admin")
+
+    if admin_user == request.user:
+        messages.error(request, "Vous ne pouvez pas supprimer votre propre compte.")
+        return redirect("accounts:create_admin")
+
+    if request.method == "POST":
+        email = admin_user.email
+        admin_user.delete()
+        messages.success(request, f"Compte admin {email} supprimé.")
+        return redirect("accounts:create_admin")
+
+    return render(request, "accounts/delete_admin.html", {"admin_user": admin_user})
 
 
 @login_required
