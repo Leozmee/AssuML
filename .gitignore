@@ -40,8 +40,10 @@ mlflow.db
 # Backups ETL (données externes brutes — non versionnées)
 data/external/*
 # Exception : BDD externe de référence (4 lignes statiques, source ETL
-# committée au même titre que insurance.csv — pas un backup généré)
+# committée au même titre que insurance.csv — pas un backup généré) + le
+# script qui la régénère (référencé par tests/unit/test_generer_stats_regionales.py)
 !data/external/stats_regionales.db
+!data/external/generer_stats_regionales.py
 
 .claude/
 
