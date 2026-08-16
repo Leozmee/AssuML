@@ -64,7 +64,7 @@ Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directe
 ## Stack technique
 
 | Couche | Technologies |
-|---|---|
+| --- | --- |
 | **Backend / API** | Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2.0, Uvicorn |
 | **Frontend principal** | Django 5.2, Bootstrap 5, Plotly.js |
 | **Frontend POC** | Streamlit, Plotly Express |
@@ -75,7 +75,8 @@ Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directe
 | **Tests** | pytest, pytest-django, pytest-asyncio, httpx |
 | **Qualité** | flake8, black |
 | **CI/CD** | GitHub Actions (5 jobs), Docker, Docker Compose |
-| **Monitoring** | Prometheus, Grafana, panneau Monitoring intégré à Django |
+| **Déploiement** | Railway |
+| **Monitoring** | Panneau Monitoring intégré à Django (santé API, métriques modèles, KPIs) + observabilité infra native Railway (logs, métriques CPU/RAM, historique de déploiement) |
 
 ## Fonctionnalités
 
@@ -91,17 +92,24 @@ Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directe
 ```bash
 git clone https://github.com/Leozmee/AssuML.git
 cd AssuML
-cp .env.example .env   # renseigner les valeurs (voir tableau ci-dessous)
+
+# 1. Config : copie du modèle .env.example vers .env (à éditer avec vos
+#    propres valeurs — voir le tableau "Variables d'environnement" plus bas)
+cp .env.example .env
+
+# 2. Build + démarrage : construit les images de tous les services à partir
+#    de leurs Dockerfile (équivalent de `docker compose build` +
+#    `docker compose up` en une seule commande), puis démarre les conteneurs
 docker compose up --build
 ```
 
-Services démarrés (dans l'ordre de dépendance) : `postgres` → `seed` (peuple `regions`/`clients` depuis `data/small_data/insurance.csv`) → `train` (entraîne les 2 modèles ML, car les `.pkl` ne sont jamais commités) → `api` / `django` / `streamlit` / `etl_scheduler`.
+Au démarrage, les conteneurs s'enchaînent dans cet ordre de dépendance (`depends_on` dans `docker-compose.yml`) : `postgres` → `seed` (peuple `regions`/`clients` depuis `data/small_data/insurance.csv`) → `train` (entraîne les 2 modèles ML, car les `.pkl` ne sont jamais commités) → `api` / `django` / `streamlit` / `etl_scheduler`.
 
 | Service | URL |
-|---|---|
-| Django (interface principale) | http://localhost:8001 |
-| API FastAPI (docs Swagger) | http://localhost:8000/docs |
-| Streamlit (POC) | http://localhost:8501 |
+| --- | --- |
+| Django (interface principale) | <http://localhost:8001> |
+| API FastAPI (docs Swagger) | <http://localhost:8000/docs> |
+| Streamlit (POC) | <http://localhost:8501> |
 
 > La table `predictions` démarre volontairement vide : les modèles ML doivent tourner en direct depuis l'interface (aucune prédiction n'est pré-calculée par un script).
 
@@ -125,7 +133,7 @@ Voir [`CLAUDE.md`](./CLAUDE.md) pour l'ensemble des commandes (entraînement des
 Copier [`.env.example`](./.env.example) en `.env` :
 
 | Variable | Description |
-|---|---|
+| --- | --- |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` | Connexion PostgreSQL |
 | `API_KEY` | Clé partagée entre Django/Streamlit et l'API (header `X-API-Key`) |
 | `OPENWEATHER_API_KEY` | Source météo de l'ETL (`data_pipeline/extract/api_extractor.py`) |
@@ -159,7 +167,7 @@ black --check .
 Deux modèles entraînés sur `data/small_data/insurance.csv` (dataset Kaggle Medical Cost Personal, 1 338 lignes) :
 
 | Modèle | Algorithme | Métrique |
-|---|---|---|
+| --- | --- | --- |
 | Régression (coût médical) | GradientBoostingRegressor | R² ≈ 0.88 |
 | Classification (risque) | GradientBoostingClassifier | Accuracy ≈ 0.89 |
 
@@ -187,24 +195,21 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db   # http://localhost:5000
 
 ```text
 AssuML/
-├── api/                  # FastAPI — routers, schémas Pydantic, ORM
-├── business/              # Règles métier (calcul de prime, scoring risque)
-├── data_pipeline/         # ETL — extract / transform / load (4 sources)
-├── data/                  # Datasets (small_data committé, big_data généré)
-├── database/               # DDL PostgreSQL, seed
-├── django_app/             # Frontend principal (accounts, scoring, gestion, analytics, monitoring, actualites)
-├── ml_models/               # Entraînement, modèles sauvegardés, prédiction, MLflow gate
-├── streamlit_app/            # Frontend POC
-├── big_data/                  # Génération du dataset synthétique 5M lignes
-├── tests/                      # Tests unitaires / intégration / contrats
-├── specs/                       # Spécifications par feature (spec-driven development)
+├── api/               # FastAPI — routers, schémas Pydantic, ORM
+├── business/          # Règles métier (calcul de prime, scoring risque)
+├── data_pipeline/      # ETL — extract / transform / load (4 sources)
+├── data/               # Datasets (small_data committé, big_data généré)
+├── database/            # DDL PostgreSQL, seed
+├── django_app/          # Frontend principal (accounts, scoring, gestion, analytics, monitoring, actualites)
+├── ml_models/            # Entraînement, modèles sauvegardés, prédiction, MLflow gate
+├── notebooks/             # Exploration, feature engineering, entraînement, évaluation (Jupyter)
+├── streamlit_app/          # Frontend POC
+├── big_data/                # Génération du dataset synthétique 5M lignes
+├── scripts/                  # Scripts d'exploitation (ETL hebdo, setup BDD)
+├── docs/                       # Documentation complémentaire (audit accessibilité)
+├── tests/                       # Tests unitaires / intégration / contrats
+├── specs/                        # Spécifications par feature (spec-driven development)
 └── docker-compose.yml
 ```
 
-Détail complet de l'architecture, des conventions de code et des commandes : voir [`CLAUDE.md`](./CLAUDE.md).
 
-## Documentation complémentaire
-
-- [`CLAUDE.md`](./CLAUDE.md) — architecture détaillée, conventions, historique des évolutions.
-- `specs/` — spécifications, plans et checklists de chaque feature (spec-driven development). Volontairement non versionné sur ce dépôt (voir `.gitignore`) : présent en local, disponible sur demande.
-- [`docs/accessibilite.md`](./docs/accessibilite.md) — audit WCAG/RGAA.
