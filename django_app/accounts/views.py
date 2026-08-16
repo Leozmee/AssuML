@@ -182,7 +182,18 @@ def mon_compte_view(request):
     try:
         profil = request.user.profil
     except ProfilUtilisateur.DoesNotExist:
-        messages.error(request, "Profil introuvable.")
+        if request.user.is_superuser:
+            messages.info(
+                request,
+                "Compte super-admin sans profil métier — créez un compte admin "
+                "ci-dessous pour accéder au reste de l'application.",
+            )
+            return redirect("accounts:create_admin")
+        # Un utilisateur authentifié sans profil ne doit jamais être renvoyé
+        # vers login (login_view le redirigerait ici indéfiniment) : on le
+        # déconnecte pour casser la boucle.
+        logout(request)
+        messages.error(request, "Profil introuvable. Veuillez vous reconnecter.")
         return redirect("accounts:login")
 
     if profil.role != "user":
@@ -456,5 +467,6 @@ def _redirect_by_role(user):
         if user.profil.role == "admin":
             return redirect("gestion:list")
     except ProfilUtilisateur.DoesNotExist:
-        pass
+        if user.is_superuser:
+            return redirect("accounts:create_admin")
     return redirect("accounts:mon_compte")
