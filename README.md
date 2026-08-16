@@ -202,7 +202,7 @@ AssuML/
 ├── database/            # DDL PostgreSQL, seed
 ├── django_app/          # Frontend principal (accounts, scoring, gestion, analytics, monitoring, actualites)
 ├── ml_models/            # Entraînement, modèles sauvegardés, prédiction, MLflow gate
-├── notebooks/             # Exploration, feature engineering, entraînement, évaluation (Jupyter)
+├── notebooks/             # Exploration, feature engineering, entraînement et évaluation (Jupyter)
 ├── streamlit_app/          # Frontend POC
 ├── big_data/                # Génération du dataset synthétique 5M lignes
 ├── scripts/                  # Scripts d'exploitation (ETL hebdo, setup BDD)
