@@ -37,6 +37,9 @@ data/big_data/
 mlruns/
 mlflow.db
 
+# Django — fichiers statiques collectés (générés au build, non versionnés)
+django_app/staticfiles/
+
 # Backups ETL (données externes brutes — non versionnées)
 data/external/*
 # Exception : BDD externe de référence (4 lignes statiques, source ETL
