@@ -204,6 +204,12 @@ jobs:
       - name: Installer les dépendances Django
         run: pip install -r django_app/requirements.txt
 
+      # tests/test_analytics.py lit le Parquet Big Data réellement (pas de
+      # mock DuckDB) — le fichier est gitignored (Principe IV), donc absent
+      # sur un runner fraîchement checkouté sans cette étape.
+      - name: Générer le Parquet Big Data (tests/test_analytics.py)
+        run: python big_data/generate_synthetic.py
+
       - name: Pytest (django_app)
         working-directory: django_app
         env:
