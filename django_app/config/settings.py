@@ -21,6 +21,17 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Railway (et tout reverse-proxy) termine le TLS en amont : sans ces deux
+# réglages, Django voit une requête HTTP et rejette le POST de login avec
+# une erreur CSRF (l'Origin envoyée par le navigateur est en https, mais
+# Django calcule l'origine de la requête en http → mismatch).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}"
+    for host in ALLOWED_HOSTS
+    if host not in ("localhost", "127.0.0.1")
+]
+
 # AUTH_USER_MODEL DOIT être défini avant toute migration
 AUTH_USER_MODEL = "accounts.User"
 
