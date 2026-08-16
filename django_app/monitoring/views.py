@@ -51,8 +51,8 @@ def refresh_api(request):
 
     try:
         kpis = get_stats_kpis() or {}
-        data["total_clients"] = kpis.get("total_clients", "—")
-        data["total_predictions"] = kpis.get("total_predictions", "—")
+        data["total_clients"] = kpis.get("nb_clients_actifs", "—")
+        data["total_predictions"] = kpis.get("nb_predictions", "—")
     except (ApiUnavailableError, ApiTimeoutError, ApiError):
         pass
 

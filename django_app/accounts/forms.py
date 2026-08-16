@@ -1,6 +1,7 @@
 """Formulaires d'authentification et de profil utilisateur."""
 
 from django import forms
+from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
@@ -32,6 +33,16 @@ class LoginForm(AccessibleFormMixin, forms.Form):
         label="Mot de passe",
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
     )
+
+
+class PasswordChangeForm(AccessibleFormMixin, DjangoPasswordChangeForm):
+    """Modification du mot de passe — utilisateur déjà connecté (admin ou assuré)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("old_password", "new_password1", "new_password2"):
+            self.fields[name].widget.attrs["class"] = "form-control"
+        self.fields["old_password"].widget.attrs["autofocus"] = True
 
 
 class RegisterStep1Form(AccessibleFormMixin, UserCreationForm):

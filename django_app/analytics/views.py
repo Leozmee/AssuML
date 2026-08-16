@@ -110,7 +110,7 @@ def dashboard(request):
             ),
             "distribution": json.dumps(
                 {
-                    "xaxis": {"title": "Tranche de coût prédit ($, pas de 5 000)"},
+                    "xaxis": {"title": "Tranche de coût prédit"},
                     "yaxis": {"title": "Nombre de profils"},
                 }
             ),

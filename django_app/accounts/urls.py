@@ -26,4 +26,5 @@ urlpatterns = [
     ),
     path("mon-compte/simulation/", views.simulation_view, name="simulation"),
     path("mon-compte/edit/", views.mon_compte_edit_view, name="mon_compte_edit"),
+    path("mot-de-passe/", views.password_change_view, name="password_change"),
 ]

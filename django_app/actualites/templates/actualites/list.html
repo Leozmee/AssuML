@@ -7,29 +7,11 @@
   <h1>Actualités santé</h1>
 </div>
 
-<!-- Filtre -->
-<div class="card mb-4">
-  <div class="card-body">
-    <form method="get" class="row g-3 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label">Source</label>
-        <select name="source" class="form-select">
-          {% for val, label in sources %}
-          <option value="{{ val }}" {% if val == source_sel %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 {% if articles %}
-  <div class="d-flex flex-column gap-3" style="max-width: 760px;">
+  <div class="row g-3 align-items-start">
     {% for art in articles %}
-    <details class="card article-card">
+    <div class="col-md-6 col-xl-4">
+    <details class="card article-card h-100">
       <summary class="d-flex align-items-center gap-3 p-3">
         {% if art.image_url %}
           <img src="{{ art.image_url }}" alt="" class="rounded flex-shrink-0" style="width: 64px; height: 64px; object-fit: cover;">
@@ -51,6 +33,7 @@
         </div>
       </div>
     </details>
+    </div>
     {% endfor %}
   </div>
 {% else %}

@@ -10,6 +10,8 @@ Routes :
   POST /api/predict/complet  — orchestration complète + scoring business
 """
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -31,6 +33,30 @@ def _encoder_inputs(body: PredictRequest) -> str:
         f"v1|{body.age}|{body.sexe}|{body.imc:.2f}"
         f"|{body.enfants}|{body.fumeur}|{body.region}"
     )
+
+
+def _decoder_version(version: Optional[str]) -> Optional[dict]:
+    """Décode version_modele en inputs ML typés — inverse de _encoder_inputs.
+
+    Permet à Django de comparer le profil actuel d'un client aux inputs
+    utilisés lors de sa dernière prédiction, pour ne signaler une prime à
+    vérifier que si un champ ayant un impact sur le scoring a changé
+    (âge, sexe, IMC, enfants, tabagisme, région) — pas nom/prénom/coordonnées.
+    """
+    if not version or not version.startswith("v1|"):
+        return None
+    try:
+        _, age, sexe, imc, enfants, fumeur, region = version.split("|")
+        return {
+            "age": int(age),
+            "sexe": int(sexe),
+            "imc": float(imc),
+            "enfants": int(enfants),
+            "fumeur": int(fumeur),
+            "region": region,
+        }
+    except ValueError:
+        return None
 
 
 def _extraire_features(body: PredictRequest) -> dict:
@@ -188,6 +214,7 @@ def predictions_par_client(client_id: int, db: Session = Depends(get_db)) -> lis
             "prime_mensuelle": round(float(p.prime) / 12, 2) if p.prime else None,
             "decision": p.decision,
             "date_prediction": p.date_prediction.isoformat(),
+            "inputs": _decoder_version(p.version_modele),
         }
         for p in reversed(preds)
     ]

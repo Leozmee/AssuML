@@ -117,7 +117,22 @@ def _delete(endpoint: str):
 
 
 def get_health():
-    return _get("/health")
+    """GET /health — hors préfixe /api (convention infra standard : health
+    check à la racine, cf. api/main.py), contrairement à tous les autres
+    endpoints. On ne peut donc pas passer par `_get()`/`_base_url()`."""
+    try:
+        r = requests.get(
+            f"{settings.API_BASE_URL.rstrip('/')}/health",
+            headers=_headers(),
+            timeout=10,
+        )
+        return _handle_response(r)
+    except requests.exceptions.ConnectionError as e:
+        raise ApiUnavailableError(
+            "API indisponible — vérifiez que FastAPI tourne sur le port 8000."
+        ) from e
+    except requests.exceptions.Timeout as e:
+        raise ApiTimeoutError("La requête vers FastAPI a expiré (timeout 10s).") from e
 
 
 # ── Stats ──────────────────────────────────────────────────────────────────────

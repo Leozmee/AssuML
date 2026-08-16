@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load format_extras %}
 
 {% block title %}Simulation{% endblock %}
 
@@ -14,7 +15,7 @@
 {% else %}
 
 <div class="card mb-4">
-  <div class="card-header fw-semibold">👤 Profil utilisé pour la simulation</div>
+  <div class="card-header fw-semibold">Profil utilisé pour la simulation</div>
   <div class="card-body">
     <div class="row g-3">
       <div class="col-md-4">
@@ -43,33 +44,29 @@
       </div>
     </div>
     <div class="form-text mt-2">
-      Ces informations viennent de votre profil et ne sont pas modifiables ici —
-      rendez-vous sur <a href="{% url 'accounts:mon_compte_edit' %}">Mon compte</a> pour les mettre à jour.
+      <a href="{% url 'accounts:mon_compte_edit' %}">Mon compte</a> pour les mettre à jour les informations.
     </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header fw-semibold">💶 Simulation</div>
-  <div class="card-body">
-    <form method="post">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-rose">Simuler</button>
-    </form>
-
-    {% if montant %}
-      <div class="alert alert-success mt-4 mb-0">
-        <div class="text-muted small">Ce que vous auriez à payer</div>
-        <div class="fs-3 fw-bold">{{ montant.annuel|floatformat:2 }} € / an</div>
-        <div class="text-muted">soit {{ montant.mensuel|floatformat:2 }} € / mois</div>
-      </div>
-      <div class="form-text mt-2">
-        Cette simulation n'est pas enregistrée — seules les évaluations réalisées
-        par votre assureur apparaissent dans vos évaluations ML.
-      </div>
-    {% endif %}
-  </div>
+<div class="text-center">
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-rose">Simuler</button>
+  </form>
 </div>
+
+{% if montant %}
+  <div class="alert alert-success mt-4 mb-0">
+    <div class="text-muted small">Ce que vous auriez à payer</div>
+    <div class="fs-3 fw-bold">{{ montant.annuel|format_fr:2 }} € / an</div>
+    <div class="text-muted">soit {{ montant.mensuel|format_fr:2 }} € / mois</div>
+  </div>
+  <div class="form-text mt-2">
+    Cette simulation n'est pas enregistrée, seules les évaluations réalisées
+    par votre assureur apparaissent dans vos évaluations ML.
+  </div>
+{% endif %}
 
 {% endif %}
 {% endblock %}

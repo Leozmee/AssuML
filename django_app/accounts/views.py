@@ -6,7 +6,7 @@ import json
 import zipfile
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,6 +16,7 @@ from accounts.forms import (
     CreateAdminForm,
     LoginForm,
     MonCompteEditForm,
+    PasswordChangeForm,
     RegisterStep1Form,
     RegisterStep2Form,
 )
@@ -428,6 +429,22 @@ def mon_compte_edit_view(request):
             messages.error(request, f"Erreur lors de la mise à jour : {exc}")
 
     return render(request, "accounts/mon_compte_edit.html", {"form": form})
+
+
+@login_required
+def password_change_view(request):
+    """Modification du mot de passe — admin ou assuré, utilisateur déjà connecté."""
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Mot de passe modifié avec succès.")
+            return _redirect_by_role(user)
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, "accounts/password_change.html", {"form": form})
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

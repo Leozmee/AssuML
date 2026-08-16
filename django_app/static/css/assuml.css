@@ -156,6 +156,7 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   flex-shrink: 0;
 }
 .user-avatar {
+  position: relative;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -167,7 +168,28 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: box-shadow .15s ease;
 }
+.user-avatar:hover {
+  box-shadow: 0 0 0 3px var(--topbar-hover);
+  text-decoration: none;
+}
+.user-avatar-letter,
+.user-avatar-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s ease;
+}
+.user-avatar-icon { opacity: 0; }
+.user-avatar:hover .user-avatar-letter { opacity: 0; }
+.user-avatar:hover .user-avatar-icon { opacity: 1; }
 .btn-logout {
   background: #ffffff;
   color: var(--primary-dark);
@@ -191,6 +213,7 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 
 /* ── Page header ──────────────────────────────────────────────────────────── */
 .page-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -215,8 +238,14 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .page-header .actions-align-cards {
   margin-right: 0.75rem;
 }
+/* Centré sur le header lui-même (position absolue) plutôt que par
+   justify-content: space-between — sinon sa position dépend de la largeur
+   du titre (h1) et se décale selon la longueur du nom du client. */
 .page-header .btn-simuler-header {
-  margin-left: 8px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Auto-padding after page-header */
@@ -285,6 +314,14 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   letter-spacing: 0.08em;
   font-weight: 600;
   margin-top: 6px;
+}
+/* Unité accolée à la valeur (ex. "13 454,00 $", "20,5 %") — plus fine et
+   plus claire que le chiffre, pour rester secondaire visuellement. */
+.kpi-card .kpi-value .kpi-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  vertical-align: middle;
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
@@ -394,12 +431,13 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   justify-content: center;
   width: 84px;
 }
-.actions-slot .btn {
-  width: 100%;
+.actions-slot .btn-outline-warning {
+  min-width: 78px;
 }
 
-/* Tableau "Gestion clients" — chaque colonne centrée (en-tête et cellules),
-   plutôt que tout aligné à gauche par défaut. */
+/* Tableaux "Gestion clients", sélecteur de client (Simulation ML) et
+   historique des évaluations ("Mon compte") — chaque colonne centrée
+   (en-tête et cellules), plutôt que tout aligné à gauche par défaut. */
 .table-clients-centered > thead th,
 .table-clients-centered > tbody td {
   text-align: center;
@@ -417,11 +455,20 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
   background: var(--card-meteo) !important;
 }
 
-/* Tableau "Contexte régional" — défilement horizontal uniquement, jamais
-   vertical (le nombre de lignes est fixe à 4, aucune raison de scroller). */
+/* Tableaux "Contexte régional" et "Top 10 profils à risque" (Analytics) —
+   nombre de lignes fixe (4 et 10), aucune raison de scroller verticalement.
+   Défilement horizontal conservé (beaucoup de colonnes pour "Contexte
+   régional"). */
 .table-responsive-no-y {
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+/* Aligne le titre de la carte "Top 10 profils à risque" avec le début du
+   texte de la première colonne du tableau (padding par défaut du header
+   de carte légèrement plus large que celui des cellules du tableau). */
+.card-header-align-table {
+  padding-left: 0.875rem;
 }
 
 /* ── Form fields ──────────────────────────────────────────────────────────── */
@@ -501,6 +548,14 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 }
 
 /* ── Score sections ───────────────────────────────────────────────────────── */
+/* grid (pas row/col Bootstrap) : les fractions 1fr s'égalisent sur la plus
+   grande carte de tout le bloc, pas seulement au sein d'une même ligne. */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+}
 .score-section {
   background: var(--card);
   border: 1px solid var(--card-border);

@@ -5,6 +5,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Créer un compte administrateur</h1>
+  <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
 </div>
 
 <div class="row">
@@ -63,7 +64,8 @@
                     {% if admin_user == request.user %}
                       <span class="text-muted small">Vous</span>
                     {% else %}
-                      <a href="{% url 'accounts:delete_admin' admin_user.pk %}" class="btn btn-outline-danger btn-sm">Supprimer</a>
+                      <a href="{% url 'accounts:delete_admin' admin_user.pk %}" class="btn btn-outline-danger btn-sm"
+                         aria-label="Supprimer le compte administrateur {{ admin_user.email }}">Supprimer</a>
                     {% endif %}
                   </td>
                 </tr>
