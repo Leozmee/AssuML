@@ -40,8 +40,11 @@ data/big_data/
 mlruns/
 mlflow.db
 
-# Backups ETL (données externes brutes)
-data/external/
+# Backups ETL (données externes brutes) — sauf la BDD externe de référence,
+# committée au même titre que insurance.csv (voir .gitignore)
+data/external/*
+!data/external/stats_regionales.db
+!data/external/generer_stats_regionales.py
 
 # Specs et outillage interne (non nécessaires à l'image)
 specs/
