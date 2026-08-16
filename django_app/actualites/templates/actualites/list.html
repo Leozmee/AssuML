@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Actualités{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Actualités santé</h1>
+</div>
+
+{% if articles %}
+  <div class="row g-3 align-items-start">
+    {% for art in articles %}
+    <div class="col-md-6 col-xl-4">
+    <details class="card article-card h-100">
+      <summary class="d-flex align-items-center gap-3 p-3">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" alt="" class="rounded flex-shrink-0" style="width: 64px; height: 64px; object-fit: cover;">
+        {% endif %}
+        <span class="fw-semibold">{{ art.titre|default:"Sans titre" }}</span>
+      </summary>
+      <div class="card-body border-top">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" alt="{{ art.titre }}" class="img-fluid rounded mb-3" style="max-height: 320px; width: 100%; object-fit: cover;">
+        {% endif %}
+        {% if art.resume %}
+          <p class="mb-0" style="white-space: pre-line; line-height: 1.8; text-align: justify;">{{ art.resume }}</p>
+        {% endif %}
+        <div class="text-muted small d-flex justify-content-between align-items-center border-top pt-2 mt-3">
+          <span>{{ art.date_publication|date:"d/m/Y"|default:"Date inconnue" }}</span>
+          {% if art.url_source %}
+            <a href="{{ art.url_source }}" target="_blank" rel="noopener">Source : {{ art.nom_source }} →</a>
+          {% endif %}
+        </div>
+      </div>
+    </details>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-light">Aucun article disponible.</div>
+{% endif %}
+
+<style>
+  .article-card summary { cursor: pointer; list-style: none; }
+  .article-card summary::-webkit-details-marker { display: none; }
+</style>
+{% endblock %}

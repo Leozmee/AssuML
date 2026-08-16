@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block main_content %}
+<div class="auth-card">
+  <div class="auth-head">
+    <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="auth-logo">
+  </div>
+  <div class="auth-subtitle">Connectez-vous à votre espace</div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label" for="id_email">{{ form.email.label }} <span aria-hidden="true">*</span></label>
+      {{ form.email }}
+      {% if form.email.errors %}
+        <div class="text-danger small mt-1" id="error_email" role="alert">{{ form.email.errors.0 }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-4">
+      <label class="form-label" for="id_password">{{ form.password.label }} <span aria-hidden="true">*</span></label>
+      {{ form.password }}
+      {% if form.password.errors %}
+        <div class="text-danger small mt-1" id="error_password" role="alert">{{ form.password.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2 mb-3">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100 auth-submit">Se connecter</button>
+
+    <div class="auth-footer-note">
+      Pas de compte ? <a href="{% url 'accounts:register' %}" class="fw-semibold">Créer un compte</a>
+    </div>
+  </form>
+</div>
+{% endblock main_content %}

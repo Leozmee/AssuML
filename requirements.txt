@@ -1,0 +1,64 @@
+# AssuML — Dépendances Python
+# Installer avec : pip install -r requirements.txt
+
+# --- Manipulation de données ---
+pandas>=2.0.0
+numpy>=1.24.0
+
+# --- Visualisation ---
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# --- Machine Learning ---
+scikit-learn>=1.4.0
+joblib>=1.3.0
+
+# --- Big Data ---
+duckdb>=0.10.0
+pyarrow>=14.0.0
+
+# --- Notebooks ---
+jupyter>=1.0.0
+ipykernel>=6.0.0
+nbformat>=5.0.0
+
+# --- API Backend ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# --- Frontend ---
+streamlit>=1.32.0
+
+# --- ETL sources externes ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# --- Monitoring ---
+prometheus-client>=0.19.0
+
+# --- Modèles statistiques ---
+statsmodels>=0.14.0
+
+# --- Configuration ---
+python-dotenv>=1.0.0
+
+# --- MLOps / Tracking d'expériences ---
+mlflow>=2.10.0
+
+# --- Tests ---
+pytest==8.4.2
+pytest-asyncio==1.2.0
+httpx==0.28.1
+
+# --- Qualité du code ---
+# Versions figées (==) : Black/Flake8 changent parfois leurs règles de
+# formatage/lint entre versions majeures, ce qui désynchronise le hook
+# pre-commit local (utilise la version installée sur la machine) et la CI
+# (installerait sinon la dernière version disponible). Le figeage garantit
+# un résultat identique local/CI (cf. specs/010-cicd-github-actions, SC-005).
+flake8==7.3.0
+black==25.11.0

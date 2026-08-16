@@ -1,0 +1,784 @@
+/* ============================================================================
+   Actuavie — Light Theme (top bar)
+   ============================================================================ */
+
+:root {
+  color-scheme: light;
+  /* Assombri pour un contraste AA (>= 4.5:1) en texte normal (liens,
+     .text-primary) — l'origine #3a80b8 ne mesurait que 4.05-4.23:1. */
+  --primary:       #2f6a9c;
+  --primary-dark:  #1e3a5f;
+  --primary-soft:  #5ba3c9;
+
+  --bg-body:       #eef2f5;
+  --card:          #f9fafb;
+  --card-alt:      #e6eff7;
+  --card-meteo:    #cfe0ef;
+  --card-border:   #dbe6ee;
+
+  --ink:           #1e3346;
+  --ink-soft:      #5c7893;
+  --muted:         #516980;
+  --line:          #eaf1f7;
+
+  /* Assombries pour un contraste AA (>= 4.5:1) sur --success-bg/--warning-bg/
+     --danger-bg/--orange-bg (badges) et en texte blanc sur fond plein
+     (.btn-success) — les teintes d'origine, plus claires, ne passaient pas
+     WCAG 2.1 AA (mesuré ~2.9-4.0:1 selon la combinaison). */
+  --success:       #0f7535;
+  --success-bg:    #e3f8ea;
+  --warning:       #975304;
+  --warning-bg:    #fef1dc;
+  --danger:        #b41f1f;
+  --danger-bg:     #fde4e4;
+  --orange:        #a83f08;
+  --orange-bg:     #fee8db;
+  --rose:        #d14985;
+  --rose-dark:   #b83a70;
+
+  --radius:        8px;
+  --radius-sm:     6px;
+
+  --info-bg:       #dbeafe;
+
+  --topbar-height:         104px;
+  --topbar-height-compact: 40px;
+  --topbar-start:  #5ba3c9;
+  --topbar-end:    #1e3a5f;
+  --topbar-ink:    #eaf4fb;
+  --topbar-line:   rgba(255,255,255,0.16);
+  --topbar-hover:  rgba(255,255,255,0.14);
+  --topbar-active-bg: #ffffff;
+  --topbar-active-ink: #1e3a5f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg-body);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  margin: 0;
+  overflow-anchor: none;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--primary-dark); }
+
+/* ── Top bar ──────────────────────────────────────────────────────────────── */
+/* position: fixed — totalement hors du flux, pour que son changement de
+   taille (compact/pleine) n'affecte jamais la hauteur de page ni le scroll.
+   .topbar-spacer (hauteur fixe) réserve la place dans le flux à sa place. */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 24px;
+  height: var(--topbar-height);
+  background: linear-gradient(90deg, var(--topbar-start) 0%, var(--topbar-end) 100%);
+  border-bottom: 1px solid var(--topbar-line);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: height .18s ease, padding .18s ease;
+  overflow-anchor: none;
+}
+
+.topbar-spacer {
+  height: var(--topbar-height);
+}
+.topbar.is-compact {
+  height: var(--topbar-height-compact);
+  padding: 0 18px;
+  gap: 14px;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.topbar-logo {
+  height: 82px;
+  width: auto;
+  display: block;
+  border-radius: 12px;
+  transition: height .18s ease;
+}
+.topbar.is-compact .topbar-logo { height: 24px; }
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.topbar-nav-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.topbar-link {
+  display: block;
+  color: var(--topbar-ink);
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: background .12s, color .12s, padding .18s ease;
+}
+.topbar.is-compact .topbar-link { padding: 3px 12px; font-size: 0.76rem; }
+.topbar.is-compact .user-avatar { width: 20px; height: 20px; font-size: 0.65rem; }
+.topbar.is-compact .btn-logout { padding-top: 3px; padding-bottom: 3px; font-size: 0.74rem; }
+.topbar-link:hover {
+  background: var(--topbar-hover);
+  color: #ffffff;
+  text-decoration: none;
+}
+.topbar-link.active {
+  background: var(--topbar-active-bg);
+  color: var(--topbar-active-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.user-avatar {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: box-shadow .15s ease;
+}
+.user-avatar:hover {
+  box-shadow: 0 0 0 3px var(--topbar-hover);
+  text-decoration: none;
+}
+.user-avatar-letter,
+.user-avatar-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s ease;
+}
+.user-avatar-icon { opacity: 0; }
+.user-avatar:hover .user-avatar-letter { opacity: 0; }
+.user-avatar:hover .user-avatar-icon { opacity: 1; }
+.btn-logout {
+  background: #ffffff;
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.btn-logout:hover {
+  background: var(--card-alt);
+  color: var(--primary-dark);
+  text-decoration: none;
+}
+
+/* ── Main content ─────────────────────────────────────────────────────────── */
+.main-content {
+  min-height: calc(100vh - var(--topbar-height));
+  padding: 0;
+}
+
+/* ── Page header ──────────────────────────────────────────────────────────── */
+.page-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 32px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+.page-header .subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+/* Aligne le bord droit d'un groupe de boutons du header avec les cartes
+   en dessous — compense le demi-gutter Bootstrap (12px) des col-md-*. */
+.page-header .actions-align-cards {
+  margin-right: 0.75rem;
+}
+/* Centré sur le header lui-même (position absolue) plutôt que par
+   justify-content: space-between — sinon sa position dépend de la largeur
+   du titre (h1) et se décale selon la longueur du nom du client. */
+.page-header .btn-simuler-header {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Auto-padding after page-header */
+.main-content .page-header ~ .row,
+.main-content .page-header ~ .card,
+.main-content .page-header ~ form,
+.main-content .page-header ~ div:not(.page-header) {
+  margin-left: 32px;
+  margin-right: 32px;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(30,51,70,0.05);
+  color: var(--ink);
+}
+.card-header {
+  background: var(--card-alt);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 13px 18px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+/* Aligne le texte du titre avec le texte du 1er en-tête de colonne du
+   tableau juste en dessous (mesuré via Range.getBoundingClientRect,
+   pas juste la boîte de padding, pour un alignement au pixel près). */
+.card-header-align-table {
+  padding-left: 14px;
+}
+.card-body { color: var(--ink); }
+.card-footer {
+  background: var(--card-alt);
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+
+/* Colored left-border variants */
+.card.border-success { border-left: 3px solid var(--success) !important; }
+.card.border-danger  { border-left: 3px solid var(--danger) !important; }
+.card.border-warning { border-left: 3px solid var(--warning) !important; }
+
+/* ── KPI Cards ────────────────────────────────────────────────────────────── */
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  height: 100%;
+}
+.kpi-card .kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 6px;
+  line-height: 1.1;
+}
+.kpi-card .kpi-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-top: 6px;
+}
+/* Unité accolée à la valeur (ex. "13 454,00 $", "20,5 %") — plus fine et
+   plus claire que le chiffre, pour rester secondaire visuellement. */
+.kpi-card .kpi-value .kpi-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+.btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn-success:hover { background: #128a3e; border-color: #128a3e; color: #fff; }
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: rgba(46,109,164,0.4);
+  background: transparent;
+}
+.btn-outline-primary:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-outline-secondary {
+  color: var(--ink-soft);
+  border-color: rgba(30,51,70,0.18);
+  background: transparent;
+}
+.btn-outline-secondary:hover {
+  background: var(--card-alt);
+  color: var(--ink);
+  border-color: rgba(30,51,70,0.28);
+}
+.btn-outline-success {
+  color: var(--success);
+  border-color: rgba(22,163,74,0.4);
+  background: transparent;
+}
+.btn-outline-success:hover { background: var(--success-bg); color: var(--success); }
+.btn-outline-warning {
+  color: var(--warning);
+  border-color: rgba(217,119,6,0.4);
+  background: transparent;
+}
+.btn-outline-warning:hover { background: var(--warning-bg); color: var(--warning); }
+.btn-outline-danger {
+  color: var(--danger);
+  border-color: rgba(220,38,38,0.4);
+  background: transparent;
+}
+.btn-outline-danger:hover { background: var(--danger-bg); color: var(--danger); }
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+.table {
+  color: var(--ink);
+  font-size: 0.84rem;
+  margin: 0;
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: transparent;
+  --bs-table-hover-bg: rgba(46,109,164,0.05);
+}
+.table > thead,
+.table-light,
+.table > thead.table-light {
+  background: var(--card-alt) !important;
+  color: var(--muted);
+  --bs-table-bg: transparent;
+}
+.table > thead th {
+  font-weight: 600;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+  color: var(--primary-dark);
+  background: var(--card-alt);
+}
+.table > tbody td {
+  border-top: 1px solid var(--line);
+  padding: 11px 14px;
+  vertical-align: middle;
+  background: transparent;
+}
+.table-hover > tbody > tr:hover > * {
+  background: rgba(46,109,164,0.05);
+}
+.table-actions .btn { padding: 0.22rem 0.6rem; font-size: 0.76rem; }
+
+/* "Fiche" doit rester à la même position quelle que soit la largeur du 2e
+   bouton ("Résilier" 65px vs "+ Contrat"/"Réactiver" 78px) : le 2e slot a
+   une largeur fixe, le bouton qu'il contient est centré dedans. */
+.actions-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.actions-slot {
+  display: inline-flex;
+  justify-content: center;
+  width: 84px;
+}
+.actions-slot .btn-outline-warning {
+  min-width: 78px;
+}
+
+/* Tableaux "Gestion clients", sélecteur de client (Simulation ML) et
+   historique des évaluations ("Mon compte") — chaque colonne centrée
+   (en-tête et cellules), plutôt que tout aligné à gauche par défaut. */
+.table-clients-centered > thead th,
+.table-clients-centered > tbody td {
+  text-align: center;
+}
+
+/* Colonnes météo (tableau "Contexte régional") — teinte légèrement plus
+   foncée que le reste du tableau pour les distinguer visuellement.
+   !important nécessaire : .table-light applique déjà un !important sur
+   thead, qui gagnerait sinon face à cette règle plus spécifique mais non
+   prioritaire. */
+.table > thead th.col-meteo {
+  background: var(--card-meteo) !important;
+}
+.table > tbody td.col-meteo {
+  background: var(--card-meteo) !important;
+}
+
+/* Tableaux "Contexte régional" et "Top 10 profils à risque" (Analytics) —
+   nombre de lignes fixe (4 et 10), aucune raison de scroller verticalement.
+   Défilement horizontal conservé (beaucoup de colonnes pour "Contexte
+   régional"). */
+.table-responsive-no-y {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Aligne le titre de la carte "Top 10 profils à risque" avec le début du
+   texte de la première colonne du tableau (padding par défaut du header
+   de carte légèrement plus large que celui des cellules du tableau). */
+.card-header-align-table {
+  padding-left: 0.875rem;
+}
+
+/* ── Form fields ──────────────────────────────────────────────────────────── */
+.form-control, .form-select {
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+.form-control:focus, .form-select:focus {
+  background: #ffffff;
+  border-color: var(--primary-soft);
+  box-shadow: 0 0 0 3px rgba(46,109,164,.15);
+  color: var(--ink);
+}
+.form-control::placeholder { color: var(--muted); }
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.form-check-input {
+  background-color: #ffffff;
+  border-color: var(--card-border);
+}
+.form-check-input:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.form-check-label { color: var(--ink); }
+.form-control-sm, .form-select-sm { font-size: 0.82rem; }
+
+/* ── Badges ───────────────────────────────────────────────────────────────── */
+.badge { font-weight: 600; border-radius: 999px; padding: 3px 10px; }
+
+.badge-accepter { background: var(--success-bg); color: var(--success); }
+.badge-examiner { background: var(--warning-bg); color: var(--warning); }
+.badge-refuser  { background: var(--danger-bg);  color: var(--danger); }
+
+.bg-success { background: var(--success-bg) !important; color: var(--success) !important; }
+.bg-warning { background: var(--warning-bg) !important; color: var(--warning) !important; }
+.bg-danger  { background: var(--danger-bg)  !important; color: var(--danger)  !important; }
+.bg-orange  { background: var(--orange-bg)  !important; color: var(--orange)  !important; }
+.bg-secondary { background: var(--card-alt) !important; color: var(--ink-soft) !important; }
+.bg-light   { background: var(--card-alt) !important; color: var(--ink-soft) !important; }
+.text-dark  { color: var(--ink) !important; }
+
+.pastille-orange {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--orange);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Le badge (ex. "Actif") reste centré sur la même position que dans les
+   lignes sans pastille : la pastille est positionnée en absolu, en dehors
+   du flux, pour ne pas élargir le bloc centré et décaler le badge. */
+.badge-wrap {
+  position: relative;
+  display: inline-block;
+}
+.badge-wrap .pastille-orange {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 4px;
+  transform: translateY(-50%);
+}
+
+.notice-prime {
+  font-size: 0.62rem;
+}
+
+/* ── Score sections ───────────────────────────────────────────────────────── */
+/* grid (pas row/col Bootstrap) : les fractions 1fr s'égalisent sur la plus
+   grande carte de tout le bloc, pas seulement au sein d'une même ligne. */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+}
+.score-section {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--primary);
+  padding: 18px 20px;
+}
+.score-section.faible   { border-left-color: var(--success); }
+.score-section.moyen    { border-left-color: var(--warning); }
+.score-section.eleve    { border-left-color: var(--orange); }
+.score-section.critique { border-left-color: var(--danger); }
+
+/* ── Alerts ───────────────────────────────────────────────────────────────── */
+.alert {
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  border: 1px solid transparent;
+}
+.alert-success {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: rgba(22,163,74,.2);
+}
+.alert-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: rgba(217,119,6,.2);
+}
+.alert-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: rgba(220,38,38,.2);
+}
+.alert-info {
+  background: var(--info-bg);
+  color: var(--primary-dark);
+  border-color: rgba(46,109,164,.2);
+}
+.btn-close { filter: none; }
+
+/* ── IMC calculator box ───────────────────────────────────────────────────── */
+#imc-resultat {
+  display: block;
+  background: var(--info-bg);
+  border: 1px solid rgba(91,155,209,0.4);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-size: 0.88rem;
+  color: var(--primary-dark);
+  margin-top: 4px;
+  width: 100%;
+}
+
+/* ── Auth pages ───────────────────────────────────────────────────────────── */
+.auth-wrap-inner {
+  width: 100%;
+  max-width: 460px;
+}
+.main-content-messages {
+  padding: 16px 32px 0;
+}
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-body);
+  padding: 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(30,51,70,0.08);
+}
+.auth-card.auth-card--wide { max-width: 520px; }
+.auth-card .auth-head {
+  background: linear-gradient(135deg, var(--topbar-start) 0%, var(--topbar-end) 100%);
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+.auth-card .auth-logo {
+  height: 100px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+.auth-card .auth-subtitle {
+  text-align: center;
+  padding: 12px 24px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  background: var(--card-alt);
+}
+.auth-card form { padding: 24px; }
+.auth-submit { padding: 0.65rem; }
+.auth-footer-note {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ── Pages légales (RGPD, Contact) ────────────────────────────────────────── */
+.legal-card {
+  max-width: 520px;
+  margin-left: 32px;
+}
+.legal-card.legal-card--wide { max-width: 760px; }
+
+/* ── Misc overrides ───────────────────────────────────────────────────────── */
+.text-muted  { color: var(--muted) !important; }
+.text-success { color: var(--success) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-danger  { color: var(--danger) !important; }
+.text-primary { color: var(--primary) !important; }
+.text-orange  { color: var(--orange) !important; }
+
+.small { font-size: 0.82em; }
+.fs-4  { font-size: 1.4rem !important; }
+.fs-5  { font-size: 1.1rem !important; }
+
+/* Monitoring colored metric values */
+.metric-green  { color: var(--success); font-weight: 700; font-size: 1.4rem; }
+.metric-blue   { color: var(--primary); font-weight: 700; font-size: 1.4rem; }
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  background: var(--card-alt);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.site-footer-links a {
+  color: var(--ink-soft);
+  margin-left: 18px;
+  font-weight: 600;
+}
+.site-footer-links a:first-child { margin-left: 0; }
+.site-footer-links a:hover { color: var(--primary); }
+
+/* ── Bouton rose (actions de simulation ML, mis en avant) ────────────────── */
+/* Base métallique = simple dégradé à 2 tons (pas de bande vive). Le reflet
+   est une lueur radiale diffuse, en couche séparée, dont la position glisse
+   doucement — plus proche d'un reflet de lumière sur métal que d'un effet
+   "shimmer" générique. Coupé pour prefers-reduced-motion. */
+.btn-rose {
+  background-image:
+    radial-gradient(55% 130% at 30% -15%, rgba(255,255,255,0.4), rgba(255,255,255,0) 65%),
+    linear-gradient(160deg, #c8407d 0%, var(--rose) 50%, var(--rose-dark) 100%);
+  background-repeat: no-repeat;
+  background-position: 0% 0%, 0 0;
+  background-size: 220% 220%, 100% 100%;
+  border-color: var(--rose-dark);
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 6px rgba(209, 73, 133, 0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.btn-rose:hover,
+.btn-rose:focus {
+  filter: brightness(0.93);
+  border-color: var(--rose-dark);
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-rose {
+    animation: btn-rose-shimmer 9s ease-in-out infinite;
+  }
+}
+
+@keyframes btn-rose-shimmer {
+  0%, 100% { background-position: 0% 0%, 0 0; }
+  50% { background-position: 100% 0%, 0 0; }
+}
+
+/* ── Champ mot de passe (icône œil intégrée) ─────────────────────────────── */
+.password-field {
+  position: relative;
+}
+.password-field .form-control {
+  padding-right: 2.5rem;
+}
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+.password-toggle-icon:hover {
+  color: var(--ink-soft);
+}
+.password-toggle-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .topbar { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 12px; }
+  .topbar-nav { order: 3; width: 100%; }
+  .topbar-nav-list { flex-wrap: wrap; }
+  .page-header { padding: 16px 18px; }
+  .main-content .page-header ~ .row,
+  .main-content .page-header ~ .card,
+  .main-content .page-header ~ form { margin-left: 18px; margin-right: 18px; }
+}

@@ -1,0 +1,14 @@
+{# Usage: {% include 'components/plotly_chart.html' with div_id="chart1" chart_data=data_json layout=layout_json title="Titre" %} #}
+<div class="card mb-4">
+  {% if title %}
+  <div class="card-header fw-semibold">{{ title }}</div>
+  {% endif %}
+  <div class="card-body p-2">
+    <div id="{{ div_id }}" style="min-height: 300px;"></div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    assumlPlot("{{ div_id }}", {{ chart_data|safe }}, {{ layout|default:"{}"|safe }});
+  });
+</script>

@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% load format_extras %}
+
+{% block title %}Scoring ML{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Scoring ML</h1>
+</div>
+
+<div class="row g-4">
+  <!-- Formulaire -->
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header fw-semibold">Données assuré</div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="client_id" id="id_client_id" value="{% if resultat.client_id %}{{ resultat.client_id }}{% endif %}">
+          <input type="hidden" name="client_imc_exact" id="id_client_imc_exact" value="{% if resultat.client_imc_exact %}{{ resultat.client_imc_exact|unlocalize }}{% endif %}">
+
+          <div id="client-selectionne" class="alert alert-success py-2 px-3 small {% if not resultat.client_id %}d-none{% endif %}">
+            <span id="client-selectionne-label">
+              {% if resultat.client_id %}{{ resultat.client_banner }}{% endif %}
+            </span>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label" for="id_age">{{ form.age.label }} <span aria-hidden="true">*</span></label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="text-danger small" id="error_age" role="alert">{{ form.age.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="id_sexe">{{ form.sexe.label }} <span aria-hidden="true">*</span></label>
+              {{ form.sexe }}
+              {% if form.sexe.errors %}<div class="text-danger small" id="error_sexe" role="alert">{{ form.sexe.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          {% include 'components/imc_calculator.html' %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label" for="id_enfants">{{ form.enfants.label }} <span aria-hidden="true">*</span></label>
+              {{ form.enfants }}
+              {% if form.enfants.errors %}<div class="text-danger small" id="error_enfants" role="alert">{{ form.enfants.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="id_region">{{ form.region.label }} <span aria-hidden="true">*</span></label>
+              {{ form.region }}
+              {% if form.region.errors %}<div class="text-danger small" id="error_region" role="alert">{{ form.region.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check">
+              {{ form.fumeur }}
+              <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-rose w-100">Calculer la prime</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    {% if resultat %}
+    <div class="row g-3 mt-1">
+
+      <!-- Section 1 — Estimation ML -->
+      <div class="col-12">
+        <div class="score-section">
+          <div class="text-muted small text-uppercase mb-2">Estimation ML</div>
+          <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} € / an</div>
+          <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} € / mois</div>
+        </div>
+      </div>
+
+      <!-- Section 2 — Profil de risque -->
+      <div class="col-12">
+        <div class="score-section {{ resultat.categorie_risque }}">
+          <div class="text-muted small text-uppercase mb-2">Profil de risque</div>
+          <div class="fs-5 fw-bold">{{ resultat.categorie_risque|capfirst }}</div>
+          <div>Score : <strong>{{ resultat.score_risque|floatformat:3 }}</strong></div>
+          <div class="text-muted small">Coefficient : ×{{ resultat.coefficient_marge }}</div>
+        </div>
+      </div>
+
+      <!-- Section 3 — Prime assureur -->
+      <div class="col-12">
+        <div class="score-section">
+          <div class="text-muted small text-uppercase mb-2">Prime assureur (avec marge)</div>
+          <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} € / an</div>
+          <div class="text-muted small">
+            {{ resultat.prime_mensuelle|format_fr:2 }} € / mois
+            · Marge : {{ resultat.marge_annuelle|format_fr:2 }} €
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4 — Décision -->
+      <div class="col-12">
+        <div class="score-section d-flex align-items-center gap-3">
+          <div class="text-muted small text-uppercase">Décision finale</div>
+          {% include 'components/badge.html' with decision=resultat.decision sans_emoji=True %}
+        </div>
+      </div>
+
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sélection d'un client existant -->
+  <div class="col-md-7">
+    <!-- Sélection d'un client existant pour préremplir le formulaire -->
+    <div class="card">
+      <div class="card-header fw-semibold">Préremplir depuis un client existant</div>
+      <div class="card-body p-0">
+        <div class="p-3 border-bottom d-flex gap-2 align-items-end flex-wrap">
+          <div>
+            <label for="client-picker-search" class="form-label small mb-1">Rechercher un client</label>
+            <input type="search" id="client-picker-search" placeholder="Rechercher id, nom, prénom"
+                   class="form-control form-control-sm" style="width:225px">
+          </div>
+          <form method="get" class="d-flex gap-2 align-items-end flex-wrap">
+            <div>
+              <label for="id_scoring_sort" class="visually-hidden">Trier les clients</label>
+              <select name="sort" id="id_scoring_sort" class="form-select form-select-sm" style="max-width:180px" onchange="this.form.submit()">
+                <option value="id_asc"     {% if sort == 'id_asc'     %}selected{% endif %}>ID croissant</option>
+                <option value="id_desc"    {% if sort == 'id_desc'    %}selected{% endif %}>ID décroissant</option>
+                <option value="risque_asc" {% if sort == 'risque_asc' %}selected{% endif %}>Risque croissant</option>
+                <option value="risque_desc"{% if sort == 'risque_desc'%}selected{% endif %}>Risque décroissant</option>
+              </select>
+            </div>
+            <div>
+              <label for="id_scoring_contrat" class="visually-hidden">Filtrer par statut de contrat</label>
+              <select name="contrat" id="id_scoring_contrat" class="form-select form-select-sm" style="max-width:160px" onchange="this.form.submit()">
+                <option value=""    {% if contrat_filtre == ''    %}selected{% endif %}>Tous les contrats</option>
+                <option value="oui" {% if contrat_filtre == 'oui' %}selected{% endif %}>Avec contrat</option>
+                <option value="non" {% if contrat_filtre == 'non' %}selected{% endif %}>Sans contrat</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-secondary flex-shrink-0 text-nowrap">Filtrer</button>
+            {% if contrat_filtre %}<a href="{% url 'scoring:index' %}" class="btn btn-sm btn-outline-danger flex-shrink-0 text-nowrap"><span aria-hidden="true">✕</span> Reset</a>{% endif %}
+          </form>
+        </div>
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="table table-hover table-clients-centered mb-0" id="client-picker-table">
+            <caption class="visually-hidden">Liste des clients existants, filtrable et triable, avec statut de contrat et bouton pour développer leur profil complet, pour préremplir le formulaire de scoring</caption>
+            <thead class="table-light sticky-top">
+              <tr>
+                <th scope="col"><span class="visually-hidden">Développer</span></th>
+                <th scope="col">ID</th>
+                <th scope="col">Nom Prénom</th>
+                <th scope="col">Contrat</th>
+                <th scope="col"><span class="visually-hidden">Sélectionner</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for client in clients %}
+              <tr data-search="{{ client.client_id }} {{ client.nom|default:'' }} {{ client.prenom|default:'' }}"
+                  data-client-id="{{ client.client_id }}" data-identite="{{ client.identite }}"
+                  data-age="{{ client.age }}" data-sexe="{{ client.sexe }}" data-imc="{{ client.imc|unlocalize }}"
+                  data-enfants="{{ client.enfants }}" data-region="{{ client.region_nom }}"
+                  data-fumeur="{% if client.fumeur %}1{% else %}0{% endif %}">
+                <td>
+                  <button type="button" class="btn btn-outline-secondary btn-sm fw-bold"
+                          aria-expanded="false" aria-controls="client-details-{{ client.client_id }}"
+                          data-identite="{{ client.identite }}"
+                          onclick="toggleDetails(this)"
+                          aria-label="Développer le profil du client {{ client.identite }}"><span aria-hidden="true" style="font-size:1rem; display:inline-block; transition: transform 0.15s;">⤷</span></button>
+                </td>
+                <td>{{ client.client_id }}</td>
+                <td>
+                  {% if client.nom or client.prenom %}{{ client.prenom }} {{ client.nom }}
+                  {% else %}<span class="text-muted small">—</span>{% endif %}
+                </td>
+                <td>
+                  {% if client.contrat %}
+                    <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">{{ client.contrat.statut|capfirst }}</span>
+                  {% else %}
+                    <span class="text-muted small">Aucun</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline-success btn-sm"
+                          onclick="selectionnerClient(this)"
+                          aria-label="Préremplir le formulaire avec le profil du client {{ client.identite }}">Sélectionner</button>
+                </td>
+              </tr>
+              <tr id="client-details-{{ client.client_id }}" class="client-picker-details d-none">
+                <td colspan="5">
+                  <div class="d-flex flex-nowrap gap-4 py-2">
+                    <div><span class="text-muted small text-uppercase d-block">Âge</span>{{ client.age }}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Sexe</span>{{ client.sexe|capfirst }}</div>
+                    <div><span class="text-muted small text-uppercase d-block">IMC</span>{{ client.imc }}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Fumeur</span>{% if client.fumeur %}Oui{% else %}Non{% endif %}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Enfants</span>{{ client.enfants }}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Région</span>{{ client.region_nom }}</div>
+                    {% if client.contrat %}
+                      <div><span class="text-muted small text-uppercase d-block">Type de couverture</span>{{ client.contrat.type_couverture|capfirst }}</div>
+                      <div><span class="text-muted small text-uppercase d-block">Prime mensuelle</span>{{ client.contrat.prime_mensuelle|format_fr:2 }} €</div>
+                      <div><span class="text-muted small text-uppercase d-block">Début</span>{{ client.contrat.date_debut }}</div>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center text-muted py-4">Aucun client</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  // Le formulaire ne stocke pas l'IMC directement (poids/taille séparés) : on
+  // fixe une taille de référence et on dérive le poids correspondant, pour que
+  // l'IMC recalculé côté client corresponde exactement à celui du profil choisi.
+  const TAILLE_REF_CM = 170;
+
+  window.selectionnerClient = function (btn) {
+    const row = btn.closest("tr");
+    const d = row.dataset;
+
+    document.getElementById("id_age").value = d.age;
+    document.getElementById("id_sexe").value = d.sexe;
+    document.getElementById("id_enfants").value = d.enfants;
+    document.getElementById("id_region").value = d.region;
+    document.getElementById("id_fumeur").checked = d.fumeur === "1";
+    document.getElementById("id_client_id").value = d.clientId;
+    // Tant que poids/taille ne sont pas retouchés manuellement, l'IMC exact du
+    // client est envoyé tel quel au serveur — poids/taille ne servent qu'à
+    // l'affichage, leur arrondi à 0.1 kg ne doit pas altérer l'IMC utilisé pour
+    // le scoring (sinon le score de risque peut légèrement varier d'une
+    // simulation à l'autre pour un même profil, l'arrondi faisant parfois
+    // basculer une séparation d'arbre du classifieur).
+    document.getElementById("id_client_imc_exact").value = d.imc;
+
+    // "client N" (identité de repli sans nom/prénom) contient déjà le mot
+    // "client" — éviter "du client client N" en ne le préfixant que si
+    // l'identité réelle (nom/prénom) ne l'a pas déjà.
+    const sujet = d.identite.indexOf("client ") === 0 ? d.identite : "client " + d.identite;
+    document.getElementById("client-selectionne-label").textContent =
+      "Simulation basée sur le profil du " + sujet;
+    document.getElementById("client-selectionne").classList.remove("d-none");
+
+    const imc = parseFloat(d.imc);
+    if (!isNaN(imc)) {
+      const poids = imc * Math.pow(TAILLE_REF_CM / 100, 2);
+      document.getElementById("id_taille").value = TAILLE_REF_CM;
+      document.getElementById("id_poids").value = poids.toFixed(1);
+      document.getElementById("id_taille").dispatchEvent(new Event("change"));
+    }
+
+    document.querySelector(".page-header").scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("id_age").focus();
+  };
+
+  // Si l'utilisateur modifie poids/taille après une sélection, on abandonne
+  // l'IMC exact mémorisé : c'est désormais un scénario hypothétique volontaire.
+  document.addEventListener("DOMContentLoaded", function () {
+    ["id_poids", "id_taille"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", function () {
+        document.getElementById("id_client_imc_exact").value = "";
+      });
+    });
+  });
+
+  window.toggleDetails = function (btn) {
+    const details = document.getElementById(btn.getAttribute("aria-controls"));
+    if (!details) return;
+    const expanded = btn.getAttribute("aria-expanded") === "true";
+    details.classList.toggle("d-none", expanded);
+    btn.setAttribute("aria-expanded", String(!expanded));
+    btn.querySelector("span").style.transform = expanded ? "" : "rotate(90deg)";
+    btn.setAttribute(
+      "aria-label",
+      (expanded ? "Développer" : "Réduire") + " le profil du client " + btn.dataset.identite
+    );
+  };
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("client-picker-search");
+    if (!search) return;
+    search.addEventListener("input", function () {
+      const q = search.value.trim().toLowerCase();
+      document.querySelectorAll("#client-picker-table tbody > tr[data-search]").forEach(function (row) {
+        const match = row.dataset.search.toLowerCase().includes(q);
+        row.style.display = match ? "" : "none";
+        const toggle = row.querySelector("[aria-controls]");
+        const details = toggle && document.getElementById(toggle.getAttribute("aria-controls"));
+        if (details) details.style.display = match ? "" : "none";
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

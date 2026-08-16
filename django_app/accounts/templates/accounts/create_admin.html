@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer un admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Créer un compte administrateur</h1>
+  <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
+          <div class="mb-3">
+            <label class="form-label" for="id_email">{{ form.email.label }} <span aria-hidden="true">*</span></label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small" id="error_email" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_password">{{ form.password.label }} <span aria-hidden="true">*</span></label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="text-danger small" id="error_password" role="alert">{{ form.password.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="id_password2">{{ form.password2.label }} <span aria-hidden="true">*</span></label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}<div class="text-danger small" id="error_password2" role="alert">{{ form.password2.errors.0 }}</div>{% endif %}
+          </div>
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Créer l'admin</button>
+            <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header fw-semibold card-header-align-table">Administrateurs existants</div>
+      <div class="card-body p-0">
+        {% if admins %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <caption class="visually-hidden">Liste des comptes administrateurs</caption>
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Email</th>
+                  <th scope="col" class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for admin_user in admins %}
+                <tr>
+                  <td>{{ admin_user.email }}</td>
+                  <td class="text-end">
+                    {% if admin_user == request.user %}
+                      <span class="text-muted small">Vous</span>
+                    {% else %}
+                      <a href="{% url 'accounts:delete_admin' admin_user.pk %}" class="btn btn-outline-danger btn-sm"
+                         aria-label="Supprimer le compte administrateur {{ admin_user.email }}">Supprimer</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted p-3 mb-0">Aucun compte administrateur pour le moment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -28,3 +28,26 @@ Thumbs.db
 # Project specific
 *.log
 .env
+
+# ML models (binaires non commités — constitution Principe IV)
+ml_models/saved_models/*.pkl
+data/big_data/
+
+# MLflow (tracking/registry — artefacts générés localement, non versionnés)
+mlruns/
+mlflow.db
+
+# Backups ETL (données externes brutes — non versionnées)
+data/external/*
+# Exception : BDD externe de référence (4 lignes statiques, source ETL
+# committée au même titre que insurance.csv — pas un backup généré) + le
+# script qui la régénère (référencé par tests/unit/test_generer_stats_regionales.py)
+!data/external/stats_regionales.db
+!data/external/generer_stats_regionales.py
+
+.claude/
+
+# Specs (documentation interne, non versionnée)
+specs/
+.specify/
+CLAUDE.md

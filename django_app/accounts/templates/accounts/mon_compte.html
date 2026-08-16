@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load format_extras %}
+
+{% block title %}Mon compte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Mon compte</h1>
+</div>
+
+{% if not client %}
+  <div class="alert alert-warning">
+    Impossible de charger vos informations. L'API est peut-être indisponible.
+  </div>
+{% else %}
+
+<!-- Section 1 — Mes informations -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+    <span>Mes informations</span>
+    <div class="d-flex gap-2">
+      <a href="{% url 'accounts:export_donnees' %}" class="btn btn-outline-secondary btn-sm">
+        Télécharger mes données
+      </a>
+      <a href="{% url 'accounts:mon_compte_edit' %}" class="btn btn-outline-primary btn-sm">
+        Modifier mes informations
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">Âge</div>
+        <div class="fw-semibold">{{ client.age }} ans</div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">Sexe</div>
+        <div class="fw-semibold">{{ client.sexe|capfirst }}</div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">IMC</div>
+        <div class="fw-semibold">{{ client.imc }}</div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">Enfants à charge</div>
+        <div class="fw-semibold">{{ client.enfants }}</div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">Fumeur</div>
+        <div class="fw-semibold">{% if client.fumeur %}Oui{% else %}Non{% endif %}</div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="text-muted small">Région</div>
+        <div class="fw-semibold">{{ client.region_nom|default:client.region_id }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 2 — Mon contrat -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+    <span>Mon contrat</span>
+    {% if contrats and contrats.0.statut == 'actif' %}
+    <a href="{% url 'accounts:resilier_contrat' contrats.0.contrat_id %}" class="btn btn-outline-danger btn-sm">
+      Résilier mon contrat
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if contrats %}
+      {% with contrat=contrats.0 %}
+      <div class="row g-3">
+        <div class="col-md-4 text-center">
+          <div class="text-muted small">Type de couverture</div>
+          <div class="fw-semibold">{{ contrat.type_couverture|capfirst }}</div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="text-muted small">Statut</div>
+          <div class="fw-semibold">
+            <span class="badge {% if contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ contrat.statut|capfirst }}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="text-muted small">Prime en cours</div>
+          <div class="fw-semibold">{{ contrat.prime_mensuelle|format_fr:2 }} €</div>
+          <div class="text-muted small">{{ contrat.prime_annuelle|format_fr:2 }} €/an</div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="text-muted small">Date de début</div>
+          <div class="fw-semibold">{{ contrat.date_debut }}</div>
+        </div>
+      </div>
+      {% endwith %}
+    {% else %}
+      <p class="text-muted mb-0">Aucun contrat souscrit. Contactez votre assureur.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 3 — Mes prédictions -->
+<div class="card">
+  <div class="card-header fw-semibold">Historique de mes évaluations</div>
+  <div class="card-body">
+    {% if predictions %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle table-clients-centered">
+          <caption class="visually-hidden">Historique de mes évaluations ML, avec coût prédit, score et catégorie de risque, et prime associée</caption>
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Coût prédit / an</th>
+              <th scope="col">Score risque</th>
+              <th scope="col">Catégorie</th>
+              <th scope="col">Prime assureur / an</th>
+              <th scope="col">Prime / mois</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pred in predictions %}
+            <tr>
+              <td class="text-muted small">{{ pred.date_prediction|slice:":10" }}</td>
+              <td>{{ pred.cout_predit|format_fr:2 }} €</td>
+              <td>{{ pred.score_risque|floatformat:3 }}</td>
+              <td>
+                <span class="badge {% if pred.categorie_risque == 'faible' %}bg-success{% elif pred.categorie_risque == 'moyen' %}bg-warning text-dark{% elif pred.categorie_risque == 'eleve' %}bg-orange{% else %}bg-danger{% endif %}">
+                  {{ pred.categorie_risque|capfirst }}
+                </span>
+              </td>
+              <td class="fw-semibold">{{ pred.prime|format_fr:2 }} €</td>
+              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|format_fr:2 }} €</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">Pas encore évalué. Votre assureur effectuera un scoring prochainement.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

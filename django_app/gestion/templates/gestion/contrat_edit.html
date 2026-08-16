@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier le contrat — Client {{ client.client_id }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Modifier le contrat — Client {{ client.client_id }}</h1>
+  <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
+
+          <div class="mb-4">
+            <label class="form-label" for="id_type_couverture">{{ form.type_couverture.label }} <span aria-hidden="true">*</span></label>
+            {{ form.type_couverture }}
+            {% if form.type_couverture.errors %}<div class="text-danger small" id="error_type_couverture" role="alert">{{ form.type_couverture.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">Enregistrer</button>
+            <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{# Usage: {% include 'components/kpi_card.html' with label="KPI" value="42" color="accent" %} #}
+<div class="kpi-card h-100" style="{% if color %}border-left-color: var(--{{ color }});{% endif %}">
+  <div class="kpi-value">{{ value }}{% if sublabel %} <span class="kpi-unit">{{ sublabel }}</span>{% endif %}</div>
+  <div class="kpi-label">{{ label }}</div>
+</div>

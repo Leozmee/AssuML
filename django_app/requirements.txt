@@ -1,0 +1,25 @@
+# Django — Interface web principale AssuML (port 8001)
+django>=5.2
+gunicorn>=21.0
+
+# HTTP vers FastAPI
+requests>=2.31
+
+# PostgreSQL
+psycopg2-binary>=2.9
+
+# Variables d'environnement
+python-dotenv>=1.0
+
+# Big Data (Analytics — import direct DuckDB, exception à la règle FastAPI)
+duckdb>=1.0
+pyarrow>=14.0
+pandas>=2.0.0
+
+# Tests
+pytest-django>=4.8
+pytest>=8.0
+
+# Qualité
+flake8==7.3.0
+black==25.11.0

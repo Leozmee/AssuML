@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouveau client{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Nouveau client</h1>
+  <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+</div>
+
+<div class="row">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
+
+          <fieldset class="mb-3">
+            <legend class="h6">Identité</legend>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="id_nom">{{ form.nom.label }}{% if form.nom.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                {{ form.nom }}
+                {% if form.nom.errors %}<div class="text-danger small" id="error_nom" role="alert">{{ form.nom.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="id_prenom">{{ form.prenom.label }}{% if form.prenom.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                {{ form.prenom }}
+                {% if form.prenom.errors %}<div class="text-danger small" id="error_prenom" role="alert">{{ form.prenom.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-3">
+            <legend class="h6">Profil médical</legend>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label" for="id_age">{{ form.age.label }} <span aria-hidden="true">*</span></label>
+                {{ form.age }}
+                {% if form.age.errors %}<div class="text-danger small" id="error_age" role="alert">{{ form.age.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="id_sexe">{{ form.sexe.label }} <span aria-hidden="true">*</span></label>
+                {{ form.sexe }}
+                {% if form.sexe.errors %}<div class="text-danger small" id="error_sexe" role="alert">{{ form.sexe.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="id_region">{{ form.region.label }} <span aria-hidden="true">*</span></label>
+                {{ form.region }}
+                {% if form.region.errors %}<div class="text-danger small" id="error_region" role="alert">{{ form.region.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+
+            {% include 'components/imc_calculator.html' %}
+
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label" for="id_enfants">{{ form.enfants.label }} <span aria-hidden="true">*</span></label>
+                {{ form.enfants }}
+                {% if form.enfants.errors %}<div class="text-danger small" id="error_enfants" role="alert">{{ form.enfants.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="id_email" id="label_email">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger small" id="error_email" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="id_telephone">{{ form.telephone.label }}</label>
+                {{ form.telephone }}
+                {% if form.telephone.errors %}<div class="text-danger small" id="error_telephone" role="alert">{{ form.telephone.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <div class="form-check">
+                  {{ form.fumeur }}
+                  <label class="form-check-label" for="id_fumeur">{{ form.fumeur.label }}</label>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-3">
+            <legend class="h6">Compte de connexion</legend>
+            <div class="form-check mb-3">
+              {{ form.creer_compte }}
+              <label class="form-check-label" for="id_creer_compte">{{ form.creer_compte.label }}</label>
+            </div>
+
+            <div id="compte-fields" class="row g-3" style="display: none;">
+              <div class="col-md-6">
+                <label class="form-label" for="id_password1">{{ form.password1.label }}</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}<div class="text-danger small" id="error_password1" role="alert">{{ form.password1.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="id_password2">{{ form.password2.label }}</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}<div class="text-danger small" id="error_password2" role="alert">{{ form.password2.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <div class="form-text">L'email ci-dessus devient obligatoire et servira d'identifiant de connexion.</div>
+              </div>
+            </div>
+          </fieldset>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Créer le client</button>
+            <a href="{% url 'gestion:list' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const checkbox = document.getElementById("id_creer_compte");
+    const fields = document.getElementById("compte-fields");
+    const emailLabel = document.getElementById("label_email");
+    const emailInput = document.getElementById("id_email");
+    if (!checkbox || !fields) return;
+    const sync = () => {
+      fields.style.display = checkbox.checked ? "" : "none";
+      if (emailLabel) {
+        emailLabel.textContent = checkbox.checked ? "Email (nécessaire)" : "Email (optionnel)";
+      }
+      if (emailInput) {
+        emailInput.required = checkbox.checked;
+      }
+    };
+    checkbox.addEventListener("change", sync);
+    sync();
+  })();
+</script>
+{% endblock %}

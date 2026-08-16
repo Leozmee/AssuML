@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestion clients{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Gestion clients</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'gestion:create' %}" class="btn btn-primary btn-sm">+ Nouveau client</a>
+    {% if user.is_superuser %}
+      <a href="{% url 'accounts:create_admin' %}" class="btn btn-outline-secondary btn-sm">+ Admin</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+  <label for="client-search" class="visually-hidden">Rechercher un client par ID, nom ou prénom</label>
+  <input type="search" id="client-search" placeholder="Rechercher id, nom, prénom"
+         class="form-control form-control-sm" style="max-width:220px">
+<form method="get" class="d-flex gap-2 align-items-center">
+  <label for="id_sort" class="visually-hidden">Trier les clients</label>
+  <select name="sort" id="id_sort" class="form-select form-select-sm" style="max-width:240px" onchange="this.form.submit()">
+    <option value="id_asc"    {% if sort == 'id_asc'    %}selected{% endif %}>ID croissant</option>
+    <option value="id_desc"   {% if sort == 'id_desc'   %}selected{% endif %}>ID décroissant</option>
+    <option value="risque_asc" {% if sort == 'risque_asc' %}selected{% endif %}>Risque croissant</option>
+    <option value="risque_desc"{% if sort == 'risque_desc'%}selected{% endif %}>Risque décroissant</option>
+  </select>
+  <label for="id_compte" class="visually-hidden">Filtrer par statut de compte</label>
+  <select name="compte" id="id_compte" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+    <option value=""    {% if compte == ''    %}selected{% endif %}>Tous les comptes</option>
+    <option value="oui" {% if compte == 'oui' %}selected{% endif %}>Avec compte</option>
+    <option value="non" {% if compte == 'non' %}selected{% endif %}>Sans compte</option>
+  </select>
+  <label for="id_contrat" class="visually-hidden">Filtrer par statut de contrat</label>
+  <select name="contrat" id="id_contrat" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+    <option value=""    {% if contrat_filtre == ''    %}selected{% endif %}>Tous les contrats</option>
+    <option value="oui" {% if contrat_filtre == 'oui' %}selected{% endif %}>Avec contrat</option>
+    <option value="non" {% if contrat_filtre == 'non' %}selected{% endif %}>Sans contrat</option>
+  </select>
+  <button type="submit" class="btn btn-sm btn-outline-secondary flex-shrink-0 text-nowrap">Filtrer</button>
+  {% if compte or contrat_filtre %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger flex-shrink-0 text-nowrap"><span aria-hidden="true">✕</span> Reset</a>{% endif %}
+</form>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive table-responsive-no-y">
+      <table class="table table-hover table-clients-centered mb-0">
+        <caption class="visually-hidden">Liste des clients du portefeuille, avec leur profil, catégorie de risque, statut de compte et de contrat</caption>
+        <thead class="table-light">
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nom Prénom</th>
+            <th scope="col">Âge</th>
+            <th scope="col">Sexe</th>
+            <th scope="col">IMC</th>
+            <th scope="col">Fumeur</th>
+            <th scope="col">Enfants</th>
+            <th scope="col">Région</th>
+            <th scope="col">Risque</th>
+            <th scope="col">Compte</th>
+            <th scope="col">Contrat</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+          {% if not client.date_suppression %}
+          <tr data-search="{{ client.client_id }} {{ client.nom|default:'' }} {{ client.prenom|default:'' }}">
+            <td>{{ client.client_id }}</td>
+            <td>
+              {% if client.nom or client.prenom %}
+                {{ client.prenom }} {{ client.nom }}
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>{{ client.age }}</td>
+            <td>{{ client.sexe|capfirst }}</td>
+            <td>{{ client.imc }}</td>
+            <td>{% if client.fumeur %}<span class="badge bg-danger">Oui</span>{% else %}<span class="badge bg-light text-dark">Non</span>{% endif %}</td>
+            <td>{{ client.enfants }}</td>
+            <td>{{ client.region_nom }}</td>
+            <td>
+              {% if client.categorie_risque %}
+                <span class="badge
+                  {% if client.categorie_risque == 'faible' %}bg-success
+                  {% elif client.categorie_risque == 'moyen' %}bg-warning text-dark
+                  {% elif client.categorie_risque == 'eleve' %}bg-orange
+                  {% else %}bg-danger{% endif %}">
+                  {{ client.categorie_risque|capfirst }}
+                </span>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if client.a_un_compte %}<img src="{% static 'img/icon-compte.png' %}" alt="A un compte utilisateur" width="20" height="20">{% else %}<span class="text-muted" aria-hidden="true">—</span>{% endif %}
+            </td>
+            <td>
+              {% if client.contrat %}
+                <span class="badge-wrap">
+                  <span class="badge {% if client.contrat.statut == 'actif' %}bg-success{% else %}bg-secondary{% endif %}">
+                    {{ client.contrat.statut|capfirst }}
+                  </span>
+                  {% if client.prime_a_verifier %}
+                    <span class="pastille-orange" role="img"
+                          aria-label="Prime non mise à jour depuis la dernière modification du profil"
+                          title="Prime non mise à jour depuis la dernière modification du profil"></span>
+                  {% endif %}
+                </span>
+              {% else %}
+                <span class="text-muted small">Aucun</span>
+              {% endif %}
+            </td>
+            <td class="table-actions">
+              <span class="actions-row">
+              <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm"
+                 aria-label="Voir la fiche du client {{ client.identite }}">Fiche</a>
+              <span class="actions-slot">
+              {% if not client.contrat %}
+                <a href="{% url 'gestion:contrat_create' client.client_id %}" class="btn btn-outline-success btn-sm"
+                   aria-label="Créer un contrat pour le client {{ client.identite }}">+ Contrat</a>
+              {% elif client.contrat.statut == 'actif' %}
+                <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="statut" value="resilie">
+                  <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                  <button type="submit" class="btn btn-outline-warning btn-sm"
+                          aria-label="Résilier le contrat du client {{ client.identite }}">Résilier</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'gestion:contrat_statut' client.contrat.contrat_id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="statut" value="actif">
+                  <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                  <button type="submit" class="btn btn-outline-success btn-sm"
+                          aria-label="Réactiver le contrat du client {{ client.identite }}">Réactiver</button>
+                </form>
+              {% endif %}
+              </span>
+              </span>
+            </td>
+          </tr>
+          {% endif %}
+          {% empty %}
+          <tr><td colspan="12" class="text-center text-muted py-4">Aucun client</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const input = document.getElementById("client-search");
+    const rows = document.querySelectorAll("tbody tr[data-search]");
+    if (!input) return;
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      rows.forEach((row) => {
+        const match = row.dataset.search.toLowerCase().includes(q);
+        row.style.display = match ? "" : "none";
+      });
+    });
+  })();
+</script>
+{% endblock %}
