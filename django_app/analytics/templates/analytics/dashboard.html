@@ -1,23 +1,21 @@
 {% extends 'base.html' %}
+{% load format_extras %}
 
 {% block title %}Analytics{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <div>
-    <h1>Analytics Big Data</h1>
-    <div class="subtitle">5 000 000 lignes — DuckDB</div>
-  </div>
+  <h1>Analytics Big Data</h1>
 </div>
 
 <!-- KPIs -->
 {% if kpis %}
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    {% include 'components/kpi_card.html' with label="Clients analysés" value=kpis.nb_clients|default:"—" %}
+    {% include 'components/kpi_card.html' with label="Clients analysés" value=kpis.nb_clients|format_fr|default:"—" %}
   </div>
   <div class="col-md-3">
-    {% include 'components/kpi_card.html' with label="Coût moyen" value=kpis.cout_moyen|floatformat:2|default:"—" sublabel="USD/an" %}
+    {% include 'components/kpi_card.html' with label="Coût moyen" value=kpis.cout_moyen|format_fr:2|default:"—" sublabel="$" %}
   </div>
   <div class="col-md-3">
     {% include 'components/kpi_card.html' with label="Taux fumeurs" value=kpis.taux_fumeurs|floatformat:1|default:"—" sublabel="%" %}
@@ -115,7 +113,7 @@
     </div>
   </div>
   <div class="card-footer text-muted small">
-    Statistiques de santé régionales : CDC, NCHS, KFF, Census/ACS, pour l'État représentatif de chaque région (même ville que la météo) — pas une moyenne régionale officielle, ce découpage en 4 régions n'existant dans aucune source fédérale US.
+    Sources : CDC, NCHS, KFF, Census/ACS.
   </div>
 </div>
   {% else %}
@@ -126,9 +124,9 @@
 
   {% if charts.profils %}
   <div class="card mt-4">
-    <div class="card-header fw-semibold">Top 10 profils à risque</div>
+    <div class="card-header fw-semibold card-header-align-table">Top 10 profils à risque</div>
     <div class="card-body p-0">
-      <div class="table-responsive">
+      <div class="table-responsive table-responsive-no-y">
         <table class="table table-sm mb-0">
           <caption class="visually-hidden">Top 10 des profils assurés présentant le risque le plus élevé</caption>
           <thead class="table-light">
@@ -157,8 +155,4 @@
     Analytics DuckDB indisponibles. Vérifiez que le fichier Parquet est présent.
   </div>
 {% endif %}
-
-<div class="text-muted small mt-4 text-end">
-  5 000 000 lignes analysées via DuckDB
-</div>
 {% endblock %}

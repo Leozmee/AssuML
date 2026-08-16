@@ -15,6 +15,7 @@ Ce document couvre la démarche d'accessibilité de l'application Django (`djang
 4. `aria-required` et légende visuelle ("* champ obligatoire") sur les champs obligatoires.
 5. Messages d'erreur de validation liés au champ concerné (`aria-describedby` + `role="alert"`).
 6. `aria-label` sur tous les boutons représentés par une icône seule (liste des clients, fiche client).
+6bis. Icônes emoji strictement décoratives ou redondantes avec un texte adjacent masquées aux technologies d'assistance (`<span aria-hidden="true">`) — badges de décision, statuts de monitoring, libellés de carte.
 7. `aria-live="polite"` sur les zones à mise à jour dynamique (IMC calculé, indicateurs de monitoring).
 8. Contraste texte/fond ≥ 4.5:1 (niveau AA) sur les combinaisons vérifiées.
 9. Navigation complète au clavier (Tab, Maj+Tab, Entrée), focus toujours visible.
@@ -37,7 +38,14 @@ Ce document couvre la démarche d'accessibilité de l'application Django (`djang
 | Contraste des couleurs avec un outil en ligne dédié (ex. WebAIM Contrast Checker) | Test manuel dans un navigateur | ⏳ À réaliser — substitué par la vérification programmatique ci-dessus (même formule de contraste WCAG que ces outils), à confirmer visuellement |
 | Lecteur d'écran (VoiceOver, macOS) | Test manuel | ⏳ À réaliser — nécessite une session macOS avec VoiceOver actif, non disponible dans l'environnement d'exécution de cette implémentation |
 
-39 tests automatisés passent dans `django_app/tests/` (dont 9 dédiés à l'accessibilité), sans régression sur les tests existants des features 013/014.
+42 tests automatisés passent dans `django_app/tests/` (dont 9 dédiés à l'accessibilité), sans régression sur les tests existants des features 013/014.
+
+**Dernière vérification** (2026-08-16) : relecture indépendante de l'ensemble des 8 user stories sur le code réel de
+`django_app/` (landmarks de `base.html`, liaison erreur/champ via `AccessibleFormMixin`, `aria-live` du monitoring,
+absence d'`outline: none` dans `assuml.css`, structure des tableaux, `fieldset`/`legend`) — `manage.py check` clean,
+`pytest tests/` 42/42, `flake8` clean. Deux corrections supplémentaires apportées à cette occasion : masquage
+`aria-hidden` d'emoji décoratifs jusque-là non masqués (mesure 6bis ci-dessus), et mise à jour des couleurs de repli
+obsolètes dans `static/js/charts.js`. Détail dans `specs/015-accessibilite-wcag-rgaa/tasks.md` (T024a, T031a).
 
 ## Limites connues
 

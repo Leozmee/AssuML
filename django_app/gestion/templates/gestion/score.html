@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load format_extras %}
 
 {% block title %}Scoring client {{ client.client_id }}{% endblock %}
 
@@ -31,49 +32,41 @@
   <button type="submit" class="btn btn-rose">Lancer le scoring ML</button>
 </form>
 {% else %}
-<div class="row g-3">
+<div class="score-grid">
   <!-- Section 1 — Estimation ML -->
-  <div class="col-md-6">
-    <div class="score-section">
-      <div class="text-muted small text-uppercase mb-2">Estimation ML</div>
-      <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|floatformat:2 }} € / an</div>
-      <div class="text-muted small">{{ resultat.cout_mensuel|floatformat:2 }} € / mois</div>
-    </div>
+  <div class="score-section">
+    <div class="text-muted small text-uppercase mb-2">Estimation ML</div>
+    <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} € / an</div>
+    <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} € / mois</div>
   </div>
 
   <!-- Section 2 — Profil de risque -->
-  <div class="col-md-6">
-    <div class="score-section {{ resultat.categorie_risque }}">
-      <div class="text-muted small text-uppercase mb-2">Profil de risque</div>
-      <div class="fs-5 fw-bold">{{ resultat.categorie_risque|capfirst }}</div>
-      <div>Score : <strong>{{ resultat.score_risque|floatformat:3 }}</strong></div>
-      <div class="text-muted small">Coefficient : ×{{ resultat.coefficient_marge }}</div>
-    </div>
+  <div class="score-section {{ resultat.categorie_risque }}">
+    <div class="text-muted small text-uppercase mb-2">Profil de risque</div>
+    <div class="fs-5 fw-bold">{{ resultat.categorie_risque|capfirst }}</div>
+    <div>Score : <strong>{{ resultat.score_risque|floatformat:3 }}</strong></div>
+    <div class="text-muted small">Coefficient : ×{{ resultat.coefficient_marge }}</div>
   </div>
 
   <!-- Section 3 — Prime assureur -->
-  <div class="col-md-6">
-    <div class="score-section">
-      <div class="text-muted small text-uppercase mb-2">Prime assureur (avec marge)</div>
-      <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|floatformat:2 }} € / an</div>
-      <div class="text-muted small">
-        {{ resultat.prime_mensuelle|floatformat:2 }} € / mois
-        · Marge : {{ resultat.marge_annuelle|floatformat:2 }} €
-      </div>
+  <div class="score-section">
+    <div class="text-muted small text-uppercase mb-2">Prime assureur (avec marge)</div>
+    <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} € / an</div>
+    <div class="text-muted small">
+      {{ resultat.prime_mensuelle|format_fr:2 }} € / mois
+      · Marge : {{ resultat.marge_annuelle|format_fr:2 }} €
     </div>
   </div>
 
   <!-- Section 4 — Décision -->
-  <div class="col-md-6">
-    <div class="score-section d-flex flex-column justify-content-center align-items-center">
-      <div class="text-muted small text-uppercase mb-3">Décision finale</div>
-      {% include 'components/badge.html' with decision=resultat.decision %}
-    </div>
+  <div class="score-section d-flex flex-column justify-content-center align-items-center">
+    <div class="text-muted small text-uppercase mb-3">Décision finale</div>
+    {% include 'components/badge.html' with decision=resultat.decision sans_emoji=True %}
   </div>
 </div>
 
 {% if not contrats %}
-<div class="mt-4">
+<div class="mt-4 text-center">
   <a href="{% url 'gestion:contrat_create' client.client_id %}"
      class="btn btn-success"
      onclick="sessionStorage.setItem('prime_suggeree', '{{ resultat.prime_mensuelle|floatformat:2 }}')">
@@ -81,7 +74,7 @@
   </a>
 </div>
 {% else %}
-<div class="mt-4">
+<div class="mt-4 text-center">
   <form method="post" action="{% url 'gestion:contrat_prime' contrats.0.contrat_id %}">
     {% csrf_token %}
     <input type="hidden" name="client_id" value="{{ client.client_id }}">

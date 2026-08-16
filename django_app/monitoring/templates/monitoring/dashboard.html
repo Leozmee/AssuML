@@ -6,26 +6,25 @@
 
 {% block content %}
 <div class="page-header">
-  <div>
-    <h1>Monitoring système</h1>
-    <div class="subtitle">Auto-refresh 10s</div>
-  </div>
-  <span style="font-size:.78rem;color:var(--success);">● Auto-refresh 10s</span>
+  <h1>Monitoring système</h1>
+  <span style="font-size:.78rem;color:var(--success);"><span aria-hidden="true">●</span> Auto-refresh 10s</span>
 </div>
 
 <!-- Santé API -->
 <div class="row g-3 mb-4" aria-live="polite" aria-atomic="true">
   <div class="col-md-4">
     <div class="card h-100 {% if health and health.status == 'ok' %}border-success{% else %}border-danger{% endif %}">
-      <div class="card-body text-center">
+      <div class="card-body text-center h-100 d-flex flex-column justify-content-center align-items-center">
         {% if health and health.status == 'ok' %}
-          <div class="fs-1">✅</div>
+          <div class="text-success mb-1" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"></polyline></svg>
+          </div>
           <div class="fw-bold text-success">API opérationnelle</div>
         {% elif health %}
-          <div class="fs-1">⚠️</div>
+          <div class="fs-1" aria-hidden="true">⚠️</div>
           <div class="fw-bold text-warning">API dégradée</div>
         {% else %}
-          <div class="fs-1">❌</div>
+          <div class="fs-1" aria-hidden="true">❌</div>
           <div class="fw-bold text-danger" data-refresh-key="api_status">Indisponible</div>
         {% endif %}
       </div>
@@ -51,53 +50,16 @@
 
 <!-- KPIs -->
 <div class="row g-3 mb-4" aria-live="polite" aria-atomic="true">
-  <div class="col-md-3">
+  <div class="col-md-6">
     <div class="kpi-card">
-      <div class="kpi-value" data-refresh-key="total_clients">{{ kpis.total_clients|default:"—" }}</div>
+      <div class="kpi-value" data-refresh-key="total_clients">{{ kpis.nb_clients_actifs|default:"—" }}</div>
       <div class="kpi-label">Clients actifs</div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-6">
     <div class="kpi-card">
-      <div class="kpi-value" data-refresh-key="total_predictions">{{ kpis.total_predictions|default:"—" }}</div>
+      <div class="kpi-value" data-refresh-key="total_predictions">{{ kpis.nb_predictions|default:"—" }}</div>
       <div class="kpi-label">Prédictions totales</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpis.cout_moyen_predit|floatformat:2|default:"—" }}</div>
-      <div class="kpi-label">Coût moyen prédit</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpis.taux_fumeurs|floatformat:1|default:"—" }}%</div>
-      <div class="kpi-label">Taux fumeurs</div>
-    </div>
-  </div>
-</div>
-
-<!-- Métriques ML fixes -->
-<div class="card">
-  <div class="card-header fw-semibold">Métriques ML (entraînement)</div>
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-3 text-center">
-        <div class="metric-blue">0.783</div>
-        <div class="text-muted small">R² Régression</div>
-      </div>
-      <div class="col-md-3 text-center">
-        <div class="metric-blue">4 812 $</div>
-        <div class="text-muted small">RMSE Régression</div>
-      </div>
-      <div class="col-md-3 text-center">
-        <div class="metric-green">87.3%</div>
-        <div class="text-muted small">Accuracy Classification</div>
-      </div>
-      <div class="col-md-3 text-center">
-        <div class="metric-green">0.871</div>
-        <div class="text-muted small">F1-Score Classification</div>
-      </div>
     </div>
   </div>
 </div>

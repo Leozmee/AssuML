@@ -1,7 +1,5 @@
 """Vues CRUD clients et contrats — admin uniquement."""
 
-from datetime import datetime
-
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
@@ -12,41 +10,43 @@ from utils import (
     api_client,
     client_identite,
     client_to_predict_payload,
+    enrichir_resultat_scoring,
+    filtrer_trier_clients,
+    imc_vers_poids_taille,
     region_id_to_nom,
     region_nom_to_id,
 )
 from utils.api_client import ApiError, ApiTimeoutError, ApiUnavailableError
 
-COEFFICIENTS = {"faible": 1.20, "moyen": 1.35, "eleve": 1.50, "critique": 1.80}
 
+def _prime_a_verifier(contrat: dict, client: dict, last_inputs: dict | None) -> bool:
+    """Détecte une prime potentiellement obsolète face au profil ML du client.
 
-def _enrichir(res: dict) -> dict:
-    """Ajoute les champs dérivés au résultat de predict_complet."""
-    res["cout_mensuel"] = round(res["cout_predit"] / 12, 2)
-    res["prime_annuelle"] = res["prime"]
-    res["prime_mensuelle"] = round(res["prime"] / 12, 2)
-    res["marge_annuelle"] = round(res["prime"] - res["cout_predit"], 2)
-    res["coefficient_marge"] = COEFFICIENTS.get(res["categorie_risque"], "—")
-    return res
-
-
-def _prime_a_verifier(contrat: dict, client: dict) -> bool:
-    """Détecte une prime potentiellement obsolète face aux infos du client.
-
-    Le client (assuré ou assureur) a pu modifier le profil (âge, IMC,
-    tabagisme...) après la dernière synchronisation de la prime avec une
-    prédiction ML — la prime affichée n'est alors plus représentative du
-    risque actuel. Signalé uniquement pour les contrats actifs.
+    Compare uniquement les champs qui influencent le scoring (âge, sexe, IMC,
+    enfants, tabagisme, région) à ceux de la dernière prédiction — modifier le
+    nom, prénom, email ou téléphone n'a aucun impact sur la prédiction et ne
+    doit donc pas déclencher l'alerte. Signalé uniquement pour les contrats
+    actifs. `last_inputs` vient du décodage de `version_modele` (API), None si
+    le client n'a jamais été scoré.
     """
     if not contrat or contrat.get("statut") != "actif":
         return False
-    date_modif = client.get("date_modification")
-    if not date_modif:
-        return False
-    date_maj_prime = contrat.get("date_maj_prime")
-    if not date_maj_prime:
+    if not last_inputs:
         return True
-    return datetime.fromisoformat(date_modif) > datetime.fromisoformat(date_maj_prime)
+    try:
+        imc_client = round(float(client.get("imc")), 2)
+    except (TypeError, ValueError):
+        return True
+    sexe_code = 0 if client.get("sexe") == "homme" else 1
+    fumeur_code = 1 if client.get("fumeur") else 0
+    return (
+        client.get("age") != last_inputs.get("age")
+        or sexe_code != last_inputs.get("sexe")
+        or imc_client != last_inputs.get("imc")
+        or client.get("enfants") != last_inputs.get("enfants")
+        or fumeur_code != last_inputs.get("fumeur")
+        or client.get("region_nom") != last_inputs.get("region")
+    )
 
 
 @admin_required
@@ -72,56 +72,28 @@ def client_list(request):
     risque_map = {}
     try:
         dernieres = api_client.get_dernieres_predictions() or []
-        risque_map = {p["client_id"]: p["categorie_risque"] for p in dernieres}
+        risque_map = {p["client_id"]: p for p in dernieres}
     except (ApiUnavailableError, ApiTimeoutError, ApiError):
         pass
 
     for client in clients:
         client["contrat"] = contrats_map.get(client["client_id"])
-        client["categorie_risque"] = risque_map.get(client["client_id"])
+        derniere = risque_map.get(client["client_id"])
+        client["categorie_risque"] = (
+            derniere.get("categorie_risque") if derniere else None
+        )
         client["region_nom"] = region_id_to_nom(client["region_id"])
         client["identite"] = client_identite(client)
-        client["prime_a_verifier"] = _prime_a_verifier(client["contrat"], client)
+        client["prime_a_verifier"] = _prime_a_verifier(
+            client["contrat"], client, derniere.get("inputs") if derniere else None
+        )
 
     # Recherche par ID/nom/prénom : filtrage instantané côté client (JS), pas ici.
 
-    # Filtre par statut de compte utilisateur
     compte = request.GET.get("compte", "")
-    if compte == "oui":
-        clients = [c for c in clients if c.get("a_un_compte")]
-    elif compte == "non":
-        clients = [c for c in clients if not c.get("a_un_compte")]
-
-    # Filtre par contrat actif
     contrat_filtre = request.GET.get("contrat", "")
-    if contrat_filtre == "oui":
-        clients = [
-            c for c in clients if c.get("contrat") and c["contrat"]["statut"] == "actif"
-        ]
-    elif contrat_filtre == "non":
-        clients = [
-            c
-            for c in clients
-            if not c.get("contrat") or c["contrat"]["statut"] != "actif"
-        ]
-
-    # Tri
-    RISQUE_ORDRE = {"faible": 1, "moyen": 2, "eleve": 3, "critique": 4}
     sort = request.GET.get("sort", "id_asc")
-    if sort == "id_asc":
-        clients.sort(key=lambda c: c["client_id"])
-    elif sort == "id_desc":
-        clients.sort(key=lambda c: c["client_id"], reverse=True)
-    elif sort in ("risque_asc", "risque_desc"):
-        # Les clients non scorés n'ont pas de valeur comparable : ils restent
-        # toujours en fin de liste, quel que soit le sens du tri.
-        scores = [c for c in clients if c.get("categorie_risque")]
-        non_scores = [c for c in clients if not c.get("categorie_risque")]
-        scores.sort(
-            key=lambda c: RISQUE_ORDRE.get(c["categorie_risque"], 0),
-            reverse=(sort == "risque_desc"),
-        )
-        clients = scores + non_scores
+    clients = filtrer_trier_clients(clients, sort, compte, contrat_filtre)
 
     return render(
         request,
@@ -160,7 +132,11 @@ def client_detail(request, client_id):
     except (ApiUnavailableError, ApiTimeoutError, ApiError):
         pass
 
-    prime_a_verifier = _prime_a_verifier(contrats[0] if contrats else None, client)
+    prime_a_verifier = _prime_a_verifier(
+        contrats[0] if contrats else None,
+        client,
+        predictions[0].get("inputs") if predictions else None,
+    )
 
     return render(
         request,
@@ -231,6 +207,7 @@ def client_update(request, client_id):
         messages.error(request, f"Client introuvable : {exc}")
         return redirect("gestion:list")
 
+    taille_reconstruite, poids_reconstruit = imc_vers_poids_taille(client["imc"])
     initial = {
         "nom": client.get("nom") or "",
         "prenom": client.get("prenom") or "",
@@ -242,6 +219,11 @@ def client_update(request, client_id):
         "email": client.get("email") or "",
         "telephone": client.get("telephone") or "",
         "imc_courant": client["imc"],
+        # Ni l'un ni l'autre n'est la vraie taille/poids du client (jamais
+        # stockés en base) — reconstruits pour préremplir le formulaire avec
+        # des valeurs cohérentes avec l'IMC actuel, éditables si besoin.
+        "taille": taille_reconstruite,
+        "poids": poids_reconstruit,
     }
     form = ClientForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
@@ -306,7 +288,7 @@ def client_score(request, client_id):
             payload = client_to_predict_payload(client)
             payload["client_id"] = client["client_id"]
             raw = api_client.predict_complet(payload)
-            resultat = _enrichir(raw)
+            resultat = enrichir_resultat_scoring(raw)
         except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
             messages.error(request, f"Erreur de scoring : {exc}")
 

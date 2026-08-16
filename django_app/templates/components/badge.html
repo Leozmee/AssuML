@@ -1,11 +1,11 @@
 {# Usage: {% include 'components/badge.html' with decision=decision %} #}
 {# Ajouter sans_emoji=True pour un affichage compact sans emoji (ex. historique). #}
 {% if decision == 'accepter' %}
-  <span class="badge badge-accepter px-3 py-2 rounded-pill">{% if not sans_emoji %}✅ {% endif %}Accepter</span>
+  <span class="badge badge-accepter px-3 py-2 rounded-pill">{% if not sans_emoji %}<span aria-hidden="true">✅</span> {% endif %}Accepter</span>
 {% elif decision == 'examiner' %}
-  <span class="badge badge-examiner px-3 py-2 rounded-pill">{% if not sans_emoji %}⚠️ {% endif %}Examiner</span>
+  <span class="badge badge-examiner px-3 py-2 rounded-pill">{% if not sans_emoji %}<span aria-hidden="true">⚠️</span> {% endif %}Examiner</span>
 {% elif decision == 'refuser' %}
-  <span class="badge badge-refuser px-3 py-2 rounded-pill">{% if not sans_emoji %}❌ {% endif %}Refuser</span>
+  <span class="badge badge-refuser px-3 py-2 rounded-pill">{% if not sans_emoji %}<span aria-hidden="true">❌</span> {% endif %}Refuser</span>
 {% else %}
   <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ decision }}</span>
 {% endif %}

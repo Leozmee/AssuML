@@ -15,6 +15,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from api.dependencies import get_db
+from api.routers.ml import _decoder_version
 from database.models import Client, Contrat, Prediction
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -97,7 +98,12 @@ def dernieres_predictions_par_client(db: Session = Depends(get_db)):
         .subquery()
     )
     rows = (
-        db.query(Prediction.client_id, Prediction.categorie_risque, Prediction.prime)
+        db.query(
+            Prediction.client_id,
+            Prediction.categorie_risque,
+            Prediction.prime,
+            Prediction.version_modele,
+        )
         .join(latest, Prediction.prediction_id == latest.c.latest_id)
         .all()
     )
@@ -106,6 +112,7 @@ def dernieres_predictions_par_client(db: Session = Depends(get_db)):
             "client_id": r.client_id,
             "categorie_risque": r.categorie_risque,
             "prime": float(r.prime) if r.prime is not None else None,
+            "inputs": _decoder_version(r.version_modele),
         }
         for r in rows
     ]

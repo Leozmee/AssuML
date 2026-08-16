@@ -15,33 +15,37 @@
 </div>
 
 <div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+  <label for="client-search" class="visually-hidden">Rechercher un client par ID, nom ou prénom</label>
   <input type="search" id="client-search" placeholder="Rechercher id, nom, prénom"
          class="form-control form-control-sm" style="max-width:220px">
 <form method="get" class="d-flex gap-2 align-items-center">
-  <select name="sort" class="form-select form-select-sm" style="max-width:240px" onchange="this.form.submit()">
+  <label for="id_sort" class="visually-hidden">Trier les clients</label>
+  <select name="sort" id="id_sort" class="form-select form-select-sm" style="max-width:240px" onchange="this.form.submit()">
     <option value="id_asc"    {% if sort == 'id_asc'    %}selected{% endif %}>ID croissant</option>
     <option value="id_desc"   {% if sort == 'id_desc'   %}selected{% endif %}>ID décroissant</option>
     <option value="risque_asc" {% if sort == 'risque_asc' %}selected{% endif %}>Risque croissant</option>
     <option value="risque_desc"{% if sort == 'risque_desc'%}selected{% endif %}>Risque décroissant</option>
   </select>
-  <select name="compte" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+  <label for="id_compte" class="visually-hidden">Filtrer par statut de compte</label>
+  <select name="compte" id="id_compte" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
     <option value=""    {% if compte == ''    %}selected{% endif %}>Tous les comptes</option>
     <option value="oui" {% if compte == 'oui' %}selected{% endif %}>Avec compte</option>
     <option value="non" {% if compte == 'non' %}selected{% endif %}>Sans compte</option>
   </select>
-  <select name="contrat" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
+  <label for="id_contrat" class="visually-hidden">Filtrer par statut de contrat</label>
+  <select name="contrat" id="id_contrat" class="form-select form-select-sm" style="max-width:200px" onchange="this.form.submit()">
     <option value=""    {% if contrat_filtre == ''    %}selected{% endif %}>Tous les contrats</option>
     <option value="oui" {% if contrat_filtre == 'oui' %}selected{% endif %}>Avec contrat</option>
     <option value="non" {% if contrat_filtre == 'non' %}selected{% endif %}>Sans contrat</option>
   </select>
   <button type="submit" class="btn btn-sm btn-outline-secondary flex-shrink-0 text-nowrap">Filtrer</button>
-  {% if compte or contrat_filtre %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger flex-shrink-0 text-nowrap">✕ Reset</a>{% endif %}
+  {% if compte or contrat_filtre %}<a href="{% url 'gestion:list' %}" class="btn btn-sm btn-outline-danger flex-shrink-0 text-nowrap"><span aria-hidden="true">✕</span> Reset</a>{% endif %}
 </form>
 </div>
 
 <div class="card">
   <div class="card-body p-0">
-    <div class="table-responsive">
+    <div class="table-responsive table-responsive-no-y">
       <table class="table table-hover table-clients-centered mb-0">
         <caption class="visually-hidden">Liste des clients du portefeuille, avec leur profil, catégorie de risque, statut de compte et de contrat</caption>
         <thead class="table-light">

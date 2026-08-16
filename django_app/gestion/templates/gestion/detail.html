@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load format_extras %}
 
 {% block title %}Client {{ client.client_id }}{% endblock %}
 
@@ -64,7 +65,7 @@
             {% csrf_token %}
             <input type="hidden" name="client_id" value="{{ client.client_id }}">
             <button type="submit" class="btn btn-outline-primary btn-sm"
-                    title="Met à jour la prime depuis la dernière prédiction ML ({{ predictions.0.prime_mensuelle }} €/mois)"
+                    title="Met à jour la prime depuis la dernière prédiction ML ({{ predictions.0.prime_mensuelle|format_fr:2 }} €/mois)"
                     aria-label="Mettre à jour la prime du client {{ client.identite }} depuis la dernière prédiction ML">
               Mettre à jour la prime
             </button>
@@ -99,7 +100,7 @@
               </form>
               {% endif %}
             </div>
-            <div class="text-muted small mt-1">Prime : {{ c.prime_mensuelle|floatformat:2 }} €/mois</div>
+            <div class="text-muted small mt-1">Prime : {{ c.prime_mensuelle|format_fr:2 }} €/mois</div>
             <div class="text-muted small">Début : {{ c.date_debut }}</div>
             <div class="text-muted small">Type de couverture : {{ c.type_couverture|capfirst }}</div>
           </div>
@@ -138,7 +139,7 @@
             {% for pred in predictions %}
             <tr>
               <td class="text-muted small">{{ pred.date_prediction|slice:":10" }}</td>
-              <td>{{ pred.cout_predit|floatformat:2 }} €</td>
+              <td>{{ pred.cout_predit|format_fr:2 }} €</td>
               <td>{{ pred.score_risque|floatformat:3 }}</td>
               <td>
                 <span class="badge
@@ -149,8 +150,8 @@
                   {{ pred.categorie_risque|capfirst }}
                 </span>
               </td>
-              <td class="fw-semibold">{{ pred.prime|floatformat:2 }} €</td>
-              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|floatformat:2 }} €</td>
+              <td class="fw-semibold">{{ pred.prime|format_fr:2 }} €</td>
+              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|format_fr:2 }} €</td>
               <td>{% include 'components/badge.html' with decision=pred.decision sans_emoji=True %}</td>
             </tr>
             {% endfor %}
