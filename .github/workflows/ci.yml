@@ -210,6 +210,16 @@ jobs:
       - name: Générer le Parquet Big Data (tests/test_analytics.py)
         run: python big_data/generate_synthetic.py
 
+      # whitenoise (CompressedManifestStaticFilesStorage) exige un manifest
+      # staticfiles.json — sans collectstatic, tout rendu de template avec
+      # {% static %} lève "Missing staticfiles manifest entry" (le Dockerfile
+      # le fait déjà au build, ce step reproduit la même chose pour les tests).
+      - name: Collectstatic (manifest whitenoise)
+        working-directory: django_app
+        env:
+          DJANGO_SECRET_KEY: dummy_secret_ci
+        run: python manage.py collectstatic --noinput
+
       - name: Pytest (django_app)
         working-directory: django_app
         env:
