@@ -124,6 +124,18 @@ def main() -> None:
     print("ETL BDD externe — SQLite → stats_regionales")
     print("=" * 50)
 
+    # Idempotent : insert_stats_regionales() ne gère pas les doublons
+    # (contrairement à insert_articles()) — sans ce garde-fou, relancer le
+    # script dupliquerait les lignes à chaque exécution (ex: redémarrage du
+    # service API).
+    total_existant = compter_enregistrements("stats_regionales")
+    if total_existant:
+        print(
+            f"\nstats_regionales déjà peuplée ({total_existant} ligne(s)) — ETL ignoré."
+        )
+        print("=" * 50)
+        return
+
     # Étape 1 : lookup region_id
     db = SessionLocal()
     try:
