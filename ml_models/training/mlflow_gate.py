@@ -83,6 +83,12 @@ def promouvoir_modele(nom_modele, model_id):
     Args:
         nom_modele (str): Nom du Registered Model (ex. "assuml-regression").
         model_id (str): Identifiant du Logged Model (mlflow.last_logged_model()).
+
+    Returns:
+        str: Le numéro de version attribué par le Registry (ex. "3"), à
+        reporter dans metadata.json pour garder le lien entre le modèle
+        servi et son entrée MLflow — sans quoi metadata.json ne permet pas
+        de savoir quelle version du Registry est réellement déployée.
     """
     model_uri = f"models:/{model_id}"
     version = mlflow.register_model(model_uri, nom_modele)
@@ -90,3 +96,4 @@ def promouvoir_modele(nom_modele, model_id):
     client = MlflowClient()
     client.set_registered_model_alias(nom_modele, "production", version.version)
     print(f"✅ {nom_modele} v{version.version} — alias 'production' assigné")
+    return version.version

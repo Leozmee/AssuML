@@ -159,7 +159,7 @@ def calculer_metriques_clf(y_true, y_pred):
     }
 
 
-def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params):
+def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params, version_mlflow):
     """Met à jour metadata.json — ajoute la section classification, passe à v1.1.0.
 
     Lit le fichier existant (v1.0.0), restructure la clé régression si nécessaire,
@@ -169,6 +169,8 @@ def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params):
         metriques_test (dict): Métriques sur le test set (accuracy, f1_macro, ...).
         metriques_cv (dict): Métriques cross-validation (accuracy_mean, accuracy_std).
         best_params (dict): Hyperparamètres du meilleur modèle.
+        version_mlflow (str): Numéro de version attribué par le Registry
+            MLflow (promouvoir_modele) pour ce modèle de classification.
     """
     chemin_abs = os.path.abspath(METADATA_PATH)
     with open(chemin_abs) as f:
@@ -198,7 +200,7 @@ def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params):
 
     # ── Ajout de la section classification ────────────────────────────────
     meta["classification"] = {
-        "version": "1.0.0",
+        "version": version_mlflow,
         "date_entrainement": date.today().isoformat(),
         "algorithme": "GradientBoostingClassifier",
         "hyperparametres": best_params,
@@ -338,10 +340,14 @@ def main():
             joblib.dump(pipeline, chemin_clf)
             print("✅ classification.pkl sauvegardé")
 
-            mettre_a_jour_metadata(metriques_test, metriques_cv, BEST_PARAMS)
-
             logged_model = mlflow.last_logged_model()
-            promouvoir_modele("assuml-classification", logged_model.model_id)
+            version_mlflow = promouvoir_modele(
+                "assuml-classification", logged_model.model_id
+            )
+
+            mettre_a_jour_metadata(
+                metriques_test, metriques_cv, BEST_PARAMS, version_mlflow
+            )
         else:
             print(
                 f"\n⚠️  Modèle non déployé — accuracy={metriques_test['accuracy']:.4f} "

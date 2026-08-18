@@ -171,7 +171,7 @@ def sauvegarder_pipeline(pipeline):
     print(f"✅ Pipeline sauvegardé : {MODEL_PATH}")
 
 
-def sauvegarder_metadata(metriques_test, metriques_cv, best_params):
+def sauvegarder_metadata(metriques_test, metriques_cv, best_params, version_mlflow):
     """Sauvegarde les métadonnées d'entraînement dans metadata.json.
 
     Champs sauvegardés : version, date, algorithme, hyperparamètres,
@@ -182,9 +182,12 @@ def sauvegarder_metadata(metriques_test, metriques_cv, best_params):
         metriques_test (dict): R², MAE, RMSE sur le test set.
         metriques_cv (dict): Moyenne et écart-type R² sur 5 folds.
         best_params (dict): Hyperparamètres du modèle final.
+        version_mlflow (str): Numéro de version attribué par le Registry
+            MLflow (promouvoir_modele) — garde le lien entre ce fichier et
+            l'entrée MLflow réellement promue "production".
     """
     metadata = {
-        "version": "1.0.0",
+        "version": version_mlflow,
         "date_entrainement": str(date.today()),
         "algorithme": "GradientBoostingRegressor",
         "hyperparametres": best_params,
@@ -324,9 +327,13 @@ def main():
         if est_meilleur_modele(metriques_test["r2"], metrique_actuelle):
             print()
             sauvegarder_pipeline(pipeline)
-            sauvegarder_metadata(metriques_test, metriques_cv, BEST_PARAMS)
             logged_model = mlflow.last_logged_model()
-            promouvoir_modele("assuml-regression", logged_model.model_id)
+            version_mlflow = promouvoir_modele(
+                "assuml-regression", logged_model.model_id
+            )
+            sauvegarder_metadata(
+                metriques_test, metriques_cv, BEST_PARAMS, version_mlflow
+            )
         else:
             print(
                 f"\n⚠️  Modèle non déployé — R²={metriques_test['r2']:.4f} "
