@@ -31,8 +31,9 @@ def _lire_metadata() -> dict:
 
 def _resume_modele(meta: dict, cle: str) -> str:
     """Résume un bloc modèle ("regression" ou "classification") en une ligne
-    lisible : "<Algorithme> (métrique clé)" — pas de numéro de version interne
-    (metadata.json), sans intérêt pour un dashboard de monitoring.
+    lisible : "<Algorithme> vN (métrique clé)" — N est le numéro de version
+    attribué par le Model Registry MLflow (cf. mlflow_gate.promouvoir_modele),
+    pas un numéro interne à metadata.json.
 
     Gère l'ancien format v1.0.0 (régression au niveau racine, avant l'ajout
     de la classification) autant que le format v1.1.0+ (blocs imbriqués).
@@ -44,13 +45,15 @@ def _resume_modele(meta: dict, cle: str) -> str:
         return "Non entraîné"
 
     algo = bloc.get("algorithme", "?")
+    version = bloc.get("version")
+    version_suffixe = f" v{version}" if version else ""
     metriques = bloc.get("metriques_test", {})
     if cle == "regression":
         detail = f"R²={metriques['r2']}" if "r2" in metriques else ""
     else:
         detail = f"Accuracy={metriques['accuracy']}" if "accuracy" in metriques else ""
 
-    return f"{algo}" + (f" ({detail})" if detail else "")
+    return f"{algo}{version_suffixe}" + (f" ({detail})" if detail else "")
 
 
 @router.get("/health")

@@ -179,7 +179,11 @@ def mettre_a_jour_metadata(metriques_test, metriques_cv, best_params, version_ml
     # ── Restructuration : migration v1.0.0 (flat) → v1.1.0 (nested) ──────
     if "regression" not in meta:
         meta_regression = {
-            "version": "1.0.0",
+            # meta["version"] est le numéro MLflow que train_regression.py vient
+            # d'écrire à la racine (format plat) — le lire ici plutôt que de le
+            # remettre en dur, sans quoi il est perdu dès que classification.py
+            # restructure le fichier juste après.
+            "version": meta.get("version", "1.0.0"),
             "date_entrainement": meta.get("date_entrainement", ""),
             "algorithme": meta.get("algorithme", "GradientBoostingRegressor"),
             "hyperparametres": meta.get("hyperparametres", {}),
