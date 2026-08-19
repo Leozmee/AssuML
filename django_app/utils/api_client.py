@@ -271,12 +271,20 @@ def get_articles(source: str = None, skip: int = 0, limit: int = 100):
 # ── Météo ──────────────────────────────────────────────────────────────────────
 
 
-def get_meteo(region: str = None, saison: str = None, skip: int = 0, limit: int = 100):
+def get_meteo(
+    region: str = None,
+    saison: str = None,
+    skip: int = 0,
+    limit: int = 100,
+    dernier_par_region: bool = False,
+):
     params = {"skip": skip, "limit": limit}
     if region:
         params["region"] = region
     if saison:
         params["saison"] = saison
+    if dernier_par_region:
+        params["dernier_par_region"] = "true"
     return _get("/meteo/", params=params)
 
 

@@ -155,7 +155,7 @@ def dashboard(request):
         # qu'une source externe manquante (météo/stats non encore chargées)
         # ne désactive pas le reste du tableau de bord.
         try:
-            meteo = api_client.get_meteo() or []
+            meteo = api_client.get_meteo(dernier_par_region=True) or []
             stats = api_client.get_stats_regionales() or []
             if meteo and stats:
                 df_meteo = pd.DataFrame(meteo)

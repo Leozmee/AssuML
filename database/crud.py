@@ -404,8 +404,15 @@ def get_donnees_meteo(
     saison: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
+    dernier_par_region: bool = False,
 ) -> list[DonneesMeteo]:
     """Retourne les données météo avec filtres optionnels.
+
+    La table donnees_meteo est un historique : le pipeline ETL y ajoute une
+    ligne par région à chaque collecte, sans ON CONFLICT ni contrainte
+    d'unicité. Un appelant qui veut l'état courant — et non la série — doit
+    donc passer dernier_par_region=True, faute de quoi il reçoit tous les
+    relevés accumulés.
 
     Args:
         db: Session SQLAlchemy active.
@@ -413,9 +420,14 @@ def get_donnees_meteo(
         saison: Filtre sur saison ('hiver', 'printemps', 'ete', 'automne').
         skip: Décalage pagination.
         limit: Nombre maximum de résultats.
+        dernier_par_region: Ne retourne que le relevé le plus récent de
+            chaque région (DISTINCT ON region_id).
 
     Returns:
-        Liste de DonneesMeteo.
+        Liste de DonneesMeteo, du plus récent au plus ancien. L'ordre est
+        explicite : sans ORDER BY, la clause LIMIT retournerait un
+        sous-ensemble arbitraire dès que l'historique dépasse la limite,
+        et une région pourrait disparaître du résultat sans erreur.
     """
     from database.models import Region
 
@@ -424,6 +436,21 @@ def get_donnees_meteo(
         query = query.join(Region).filter(Region.nom_region == region)
     if saison:
         query = query.filter(DonneesMeteo.saison == saison)
+
+    if dernier_par_region:
+        # DISTINCT ON impose que l'ORDER BY commence par l'expression
+        # distincte ; le tri sur date_collecte DESC qui suit désigne donc
+        # la ligne conservée pour chaque région.
+        query = query.distinct(DonneesMeteo.region_id).order_by(
+            DonneesMeteo.region_id,
+            DonneesMeteo.date_collecte.desc(),
+            DonneesMeteo.meteo_id.desc(),
+        )
+    else:
+        query = query.order_by(
+            DonneesMeteo.date_collecte.desc(), DonneesMeteo.meteo_id.desc()
+        )
+
     return query.offset(skip).limit(limit).all()
 
 

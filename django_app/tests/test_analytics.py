@@ -92,9 +92,11 @@ STATS_REGIONALES = [
 @pytest.mark.django_db
 def test_contexte_regional_affiche_avec_sources_peuplees(admin_client, monkeypatch):
     """La section Contexte régional s'affiche avec météo + stats régionales."""
-    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda: METEO)
+    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda **kw: METEO)
     monkeypatch.setattr(
-        analytics_views.api_client, "get_stats_regionales", lambda: STATS_REGIONALES
+        analytics_views.api_client,
+        "get_stats_regionales",
+        lambda **kw: STATS_REGIONALES,
     )
 
     resp = admin_client.get("/analytics/")
@@ -109,9 +111,11 @@ def test_contexte_regional_affiche_avec_sources_peuplees(admin_client, monkeypat
 @pytest.mark.django_db
 def test_contexte_regional_message_si_meteo_vide(admin_client, monkeypatch):
     """Page utilisable + message d'indisponibilité si la météo n'est pas chargée."""
-    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda: [])
+    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda **kw: [])
     monkeypatch.setattr(
-        analytics_views.api_client, "get_stats_regionales", lambda: STATS_REGIONALES
+        analytics_views.api_client,
+        "get_stats_regionales",
+        lambda **kw: STATS_REGIONALES,
     )
 
     resp = admin_client.get("/analytics/")
@@ -124,8 +128,10 @@ def test_contexte_regional_message_si_meteo_vide(admin_client, monkeypatch):
 @pytest.mark.django_db
 def test_contexte_regional_message_si_stats_regionales_vide(admin_client, monkeypatch):
     """Page utilisable + message d'indisponibilité si stats régionales vides."""
-    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda: METEO)
-    monkeypatch.setattr(analytics_views.api_client, "get_stats_regionales", lambda: [])
+    monkeypatch.setattr(analytics_views.api_client, "get_meteo", lambda **kw: METEO)
+    monkeypatch.setattr(
+        analytics_views.api_client, "get_stats_regionales", lambda **kw: []
+    )
 
     resp = admin_client.get("/analytics/")
     html = resp.content.decode()
