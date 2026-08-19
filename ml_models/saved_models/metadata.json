@@ -13,8 +13,8 @@
   "split": "80/20",
   "random_state": 42,
   "regression": {
-    "version": 5,
-    "date_entrainement": "2026-08-18",
+    "version": 6,
+    "date_entrainement": "2026-08-19",
     "algorithme": "GradientBoostingRegressor",
     "hyperparametres": {
       "n_estimators": 100,
@@ -35,8 +35,8 @@
     }
   },
   "classification": {
-    "version": 4,
-    "date_entrainement": "2026-08-18",
+    "version": 5,
+    "date_entrainement": "2026-08-19",
     "algorithme": "GradientBoostingClassifier",
     "hyperparametres": {
       "n_estimators": 100,
@@ -52,11 +52,11 @@
       "recall_macro": 0.8471
     },
     "metriques_cv": {
-      "accuracy_mean": 0.8894,
-      "accuracy_std": 0.0141
+      "accuracy_mean": 0.8901,
+      "accuracy_std": 0.0147
     }
   },
-  "date_mise_a_jour": "2026-08-18",
+  "date_mise_a_jour": "2026-08-19",
   "target_regression": "charges",
   "target_classification": "categorie_risque"
 }
