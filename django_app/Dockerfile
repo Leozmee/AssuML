@@ -3,11 +3,15 @@ FROM python:3.11-slim
 # Racine du dépôt montée dans le conteneur → import big_data.duckdb_analytics fonctionne
 WORKDIR /workspace
 
-# Copier tout le dépôt (le docker-compose mount le contexte depuis la racine)
-COPY . /workspace/
-
-# Dépendances Django uniquement
+# La liste des dépendances est copiée seule, avant le code : la couche pip qui suit
+# reste ainsi en cache tant que ce fichier ne change pas. Copier tout le dépôt avant
+# d'installer invaliderait cette couche à la moindre modification, et réinstallerait
+# les treize paquets à chaque construction (même motif que le Dockerfile racine).
+COPY django_app/requirements.txt django_app/
 RUN pip install --no-cache-dir -r django_app/requirements.txt
+
+# Le code ensuite (le docker-compose monte le contexte depuis la racine)
+COPY . /workspace/
 
 # SECRET_KEY factice pour permettre à collectstatic de charger settings.py au
 # moment du build (les variables `environment:` de docker-compose ne sont
