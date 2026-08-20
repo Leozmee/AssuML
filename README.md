@@ -189,7 +189,7 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db   # http://localhost:5000
 ## Accessibilité & RGPD
 
 - Audit **WCAG/RGAA** documenté dans [`docs/accessibilite.md`](./docs/accessibilite.md).
-- **RGPD** : suppression logique (soft delete, jamais de `DELETE` physique sur les clients), export des données personnelles depuis l'espace assuré, page dédiée `/rgpd/`.
+- **RGPD** : suppression logique (soft delete, jamais de `DELETE` physique sur les clients), export des données personnelles via    l'espace assuré, page dédiée `/rgpd/`.
 
 ## Structure du projet
 
