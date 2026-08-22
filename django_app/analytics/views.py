@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.shortcuts import render
 
 from accounts.decorators import admin_required
-from utils import api_client, region_id_to_nom
+from utils import api_client, region_id_to_nom, region_libelle_fr
 from utils.api_client import ApiError, ApiTimeoutError, ApiUnavailableError
 
 PARQUET_PATH = Path(settings.REPO_ROOT) / "data" / "big_data" / "insurance_big.parquet"
@@ -34,6 +34,8 @@ def dashboard(request):
             if df is None or df.empty:
                 return "[]"
             x_vals = [str(v) if isinstance(v, bool) else v for v in df[x_col].tolist()]
+            if x_col == "region":
+                x_vals = [region_libelle_fr(v) for v in x_vals]
             return json.dumps(
                 [{"type": chart_type, "x": x_vals, "y": df[y_col].tolist()}]
             )
@@ -43,6 +45,8 @@ def dashboard(request):
             if df is None or df.empty:
                 return []
             x_vals = [str(v) if isinstance(v, bool) else v for v in df[x_col].tolist()]
+            if x_col == "region":
+                x_vals = [region_libelle_fr(v) for v in x_vals]
             return [
                 {x_label: x, y_label: y} for x, y in zip(x_vals, df[y_col].tolist())
             ]

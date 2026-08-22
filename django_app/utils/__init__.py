@@ -26,6 +26,28 @@ def region_id_to_nom(region_id: int) -> str:
     return REGION_NOM_MAP.get(region_id, str(region_id))
 
 
+# Libellés français des régions, pour l'affichage seul : les identifiants
+# techniques (southeast, northwest…) restent ceux du jeu de données et de la
+# base, seule la restitution à l'écran est traduite.
+REGION_LIBELLE_FR = {
+    "northeast": "Nord-Est",
+    "northwest": "Nord-Ouest",
+    "southeast": "Sud-Est",
+    "southwest": "Sud-Ouest",
+}
+
+
+def region_libelle_fr(region: str) -> str:
+    """Retourne le libellé français d'une région, ou la valeur d'origine.
+
+    Une région inconnue est renvoyée telle quelle plutôt que masquée : un
+    graphique doit montrer une valeur inattendue, pas la faire disparaître.
+    """
+    if not isinstance(region, str):
+        return region
+    return REGION_LIBELLE_FR.get(region.strip().lower(), region)
+
+
 def capitaliser_nom(valeur: str) -> str:
     """Met en majuscule la première lettre d'un nom/prénom (reste inchangé)."""
     valeur = (valeur or "").strip()
