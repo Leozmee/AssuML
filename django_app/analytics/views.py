@@ -169,6 +169,8 @@ def dashboard(request):
                 contexte_regional = analytics.contexte_regional(
                     df_meteo, df_stats
                 ).to_dict(orient="records")
+                for ligne in contexte_regional:
+                    ligne["region"] = region_libelle_fr(ligne["region"])
         except (ApiUnavailableError, ApiTimeoutError, ApiError):
             contexte_regional = []
 
