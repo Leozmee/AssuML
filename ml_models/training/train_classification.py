@@ -336,9 +336,9 @@ def main():
 
         # Gate anti-régression : ne déployer que si strictement meilleur
         metrique_actuelle = lire_metrique_actuelle(
-            METADATA_PATH, "classification", "accuracy", model_path=CLF_PATH
+            METADATA_PATH, "classification", "f1_macro", model_path=CLF_PATH
         )
-        if est_meilleur_modele(metriques_test["accuracy"], metrique_actuelle):
+        if est_meilleur_modele(metriques_test["f1_macro"], metrique_actuelle):
             os.makedirs(os.path.abspath(MODEL_DIR), exist_ok=True)
             chemin_clf = os.path.abspath(CLF_PATH)
             joblib.dump(pipeline, chemin_clf)
@@ -354,8 +354,8 @@ def main():
             )
         else:
             print(
-                f"\n⚠️  Modèle non déployé — accuracy={metriques_test['accuracy']:.4f} "
-                f"≤ accuracy actuelle={metrique_actuelle:.4f}. "
+                f"\n⚠️  Modèle non déployé — f1_macro={metriques_test['f1_macro']:.4f} "
+                f"≤ f1_macro actuel={metrique_actuelle:.4f}. "
                 "classification.pkl conservé, run tracké dans MLflow."
             )
 
