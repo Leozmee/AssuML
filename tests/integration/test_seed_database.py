@@ -70,9 +70,9 @@ def test_region_id_valides(session):
     """Tous les clients doivent avoir un region_id référençant une région existante."""
     regions_ids = {row[0] for row in session.query(Region.region_id)}
     clients_region_ids = {row[0] for row in session.query(Client.region_id).distinct()}
-    assert clients_region_ids.issubset(
-        regions_ids
-    ), f"region_id orphelins : {clients_region_ids - regions_ids}"
+    assert clients_region_ids.issubset(regions_ids), (
+        f"region_id orphelins : {clients_region_ids - regions_ids}"
+    )
 
 
 # ── Tests tables vides (US3) ──────────────────────────────────────────────────

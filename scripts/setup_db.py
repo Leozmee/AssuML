@@ -60,7 +60,7 @@ def executer_schema(schema_path: Path) -> None:
     try:
         with conn.cursor() as cur:
             cur.execute(sql)
-        print("Schéma SQL exécuté : 7 tables créées, 21 index créés.")
+        print("Schéma SQL exécuté : 7 tables créées, 18 index créés.")
     finally:
         conn.close()
 

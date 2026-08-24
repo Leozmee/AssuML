@@ -115,7 +115,7 @@ import numpy as np  # noqa: E402
 
 np.random.seed(42)
 nb_semaines = 12
-semaines = [f"S{i+1}" for i in range(nb_semaines)]
+semaines = [f"S{i + 1}" for i in range(nb_semaines)]
 r2_drift = [0.853 - i * 0.003 + np.random.normal(0, 0.008) for i in range(nb_semaines)]
 accuracy_drift = [
     0.892 - i * 0.002 + np.random.normal(0, 0.006) for i in range(nb_semaines)

@@ -1,6 +1,6 @@
 -- ============================================================
 -- AssuML — Schéma PostgreSQL complet
--- 7 tables, 22 contraintes CHECK, 21 index, 5 FK CASCADE
+-- 7 tables, 22 contraintes CHECK, 18 index, 5 FK CASCADE
 -- Idempotent : DROP IF EXISTS dans l'ordre inverse des FK
 -- ============================================================
 

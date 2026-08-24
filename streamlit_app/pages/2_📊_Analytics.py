@@ -162,7 +162,7 @@ with st.expander("🚬 Impact du tabac"):
 
 with st.expander("📊 Distribution des coûts"):
     df_dist = get_distribution()
-    df_dist["label"] = df_dist["bin_min"].apply(lambda x: f"{x//1000}k$")
+    df_dist["label"] = df_dist["bin_min"].apply(lambda x: f"{x // 1000}k$")
 
     fig = px.bar(
         df_dist,

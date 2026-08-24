@@ -1,0 +1,13 @@
+# Configuration Ruff — remplace black (formatage) et flake8 (analyse statique).
+# Les règles sélectionnées reproduisent le périmètre de flake8 :
+#   E/W = pycodestyle · F = pyflakes
+# E203 est ignoré pour rester compatible avec le formatage.
+line-length = 88
+
+# Mêmes exclusions que la chaîne précédente : les notebooks n'étaient pas
+# analysés par flake8, et les migrations Django sont du code généré.
+extend-exclude = ["notebooks", "*/migrations/*"]
+
+[lint]
+select = ["E", "W", "F"]
+extend-ignore = ["E203"]

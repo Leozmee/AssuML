@@ -40,7 +40,6 @@ requests==2.34.2
 beautifulsoup4==4.15.0
 
 # --- Monitoring ---
-prometheus-client==0.26.0
 
 # --- Modèles statistiques ---
 statsmodels==0.14.6
@@ -57,10 +56,9 @@ pytest-asyncio==1.2.0
 httpx==0.28.1
 
 # --- Qualité du code ---
-# Versions figées (==) : Black/Flake8 changent parfois leurs règles de
+# Versions figées (==) : Ruff fait parfois évoluer ses règles de
 # formatage/lint entre versions majeures, ce qui désynchronise le hook
 # pre-commit local (utilise la version installée sur la machine) et la CI
 # (installerait sinon la dernière version disponible). Le figeage garantit
 # un résultat identique local/CI (cf. specs/010-cicd-github-actions, SC-005).
-flake8==7.3.0
-black==25.11.0
+ruff==0.16.4

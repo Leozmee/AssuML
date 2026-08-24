@@ -15,9 +15,8 @@ concurrency:
 
 jobs:
   # ──────────────────────────────────────────────────────────────
-  # Job 1 — Qualité : Black (formatage) + Flake8 (lint)
-  # Reproduit les mêmes contrôles que le hook pre-commit local,
-  # mais en mode "vérification" uniquement (--check, pas de reformatage).
+  # Job 1 — Qualité : Ruff (formatage + lint)
+  # Mode "vérification" uniquement : --check, aucun fichier n'est modifié.
   # ──────────────────────────────────────────────────────────────
   qualite:
     runs-on: ubuntu-latest
@@ -32,11 +31,11 @@ jobs:
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
-      - name: Black (vérification du formatage)
-        run: black --check .
+      - name: Ruff (vérification du formatage)
+        run: ruff format --check .
 
-      - name: Flake8 (lint)
-        run: flake8 --max-line-length=88
+      - name: Ruff (lint)
+        run: ruff check .
 
   # ──────────────────────────────────────────────────────────────
   # Job 2 — Tests unitaires et de contrat (sans base de données réelle)

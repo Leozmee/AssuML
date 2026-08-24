@@ -43,7 +43,7 @@ Ce document couvre la démarche d'accessibilité de l'application Django (`djang
 **Dernière vérification** (2026-08-16) : relecture indépendante de l'ensemble des 8 user stories sur le code réel de
 `django_app/` (landmarks de `base.html`, liaison erreur/champ via `AccessibleFormMixin`, `aria-live` du monitoring,
 absence d'`outline: none` dans `assuml.css`, structure des tableaux, `fieldset`/`legend`) — `manage.py check` clean,
-`pytest tests/` 42/42, `flake8` clean. Deux corrections supplémentaires apportées à cette occasion : masquage
+`pytest tests/` 42/42, `ruff` clean. Deux corrections supplémentaires apportées à cette occasion : masquage
 `aria-hidden` d'emoji décoratifs jusque-là non masqués (mesure 6bis ci-dessus), et mise à jour des couleurs de repli
 obsolètes dans `static/js/charts.js`. Détail dans `specs/015-accessibilite-wcag-rgaa/tasks.md` (T024a, T031a).
 

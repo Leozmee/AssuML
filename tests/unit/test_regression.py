@@ -28,9 +28,9 @@ def test_predict_cost_returns_float():
     """predict_cost() doit retourner un float positif dans une plage réaliste."""
     resultat = predict_cost(**PROFIL_BASE)
     assert isinstance(resultat, float), f"Attendu float, obtenu {type(resultat)}"
-    assert (
-        500 < resultat < 100_000
-    ), f"Prédiction hors plage réaliste : {resultat:.2f} USD"
+    assert 500 < resultat < 100_000, (
+        f"Prédiction hors plage réaliste : {resultat:.2f} USD"
+    )
 
 
 @requires_modele
@@ -38,9 +38,9 @@ def test_predict_cost_smoker_higher():
     """Un fumeur doit avoir un coût prédit supérieur à un non-fumeur."""
     cout_non_fumeur = predict_cost(**{**PROFIL_BASE, "fumeur": 0})
     cout_fumeur = predict_cost(**{**PROFIL_BASE, "fumeur": 1})
-    assert (
-        cout_fumeur > cout_non_fumeur
-    ), f"Fumeur ({cout_fumeur:.2f}) devrait être > non-fumeur ({cout_non_fumeur:.2f})"
+    assert cout_fumeur > cout_non_fumeur, (
+        f"Fumeur ({cout_fumeur:.2f}) devrait être > non-fumeur ({cout_non_fumeur:.2f})"
+    )
 
 
 @requires_modele

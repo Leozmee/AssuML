@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Point d'entrée Django pour les commandes d'administration."""
+
 import os
 import sys
 

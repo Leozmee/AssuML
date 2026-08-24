@@ -52,9 +52,9 @@ def test_predict_risk_smoker_eleve_or_critique():
         "eleve",
         "critique",
     }, f"Profil fumeur IMC=32 attendu 'eleve' ou 'critique', obtenu : {categorie}"
-    assert (
-        score > 0.5
-    ), f"Score de confiance trop faible pour un profil à risque : {score}"
+    assert score > 0.5, (
+        f"Score de confiance trop faible pour un profil à risque : {score}"
+    )
 
 
 @requires_modele

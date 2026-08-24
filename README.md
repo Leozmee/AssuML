@@ -73,7 +73,7 @@ Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directe
 | **MLOps** | MLflow (Tracking + Model Registry, alias `production`, gate anti-régression) |
 | **ETL** | Requests, BeautifulSoup4, OpenWeatherMap API, SQLite (source externe) |
 | **Tests** | pytest, pytest-django, pytest-asyncio, httpx |
-| **Qualité** | flake8, black |
+| **Qualité** | Ruff (formatage + lint) |
 | **CI/CD** | GitHub Actions (5 jobs), Docker, Docker Compose |
 | **Déploiement** | Railway |
 | **Monitoring** | Panneau Monitoring intégré à Django (santé API, métriques modèles, KPIs) + observabilité infra native Railway (logs, métriques CPU/RAM, historique de déploiement) |
@@ -154,13 +154,13 @@ cd django_app && pytest tests/ -v
 pytest --cov=. --cov-report=term-missing
 
 # Lint / formatage
-flake8 . --max-line-length=88
-black --check .
+ruff format --check .
+ruff check .
 ```
 
 ## CI/CD
 
-`.github/workflows/ci.yml` exécute à chaque push/PR : **qualite** (black + flake8), **tests** (unitaires + contrats, après entraînement des modèles), **tests-integration** (API + PostgreSQL réels), **tests-django** (suite Django, après génération du Parquet Big Data), **docker-build** (build des images + validation de `docker-compose.yml`).
+`.github/workflows/ci.yml` exécute à chaque push/PR : **qualite** (Ruff : formatage + lint), **tests** (unitaires + contrats, après entraînement des modèles), **tests-integration** (API + PostgreSQL réels), **tests-django** (suite Django, après génération du Parquet Big Data), **docker-build** (build des images + validation de `docker-compose.yml`).
 
 ## Modèles ML & MLflow
 
