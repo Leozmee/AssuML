@@ -85,8 +85,8 @@
         </div>
         <div class="col-md-4 text-center">
           <div class="text-muted small">Prime en cours</div>
-          <div class="fw-semibold">{{ contrat.prime_mensuelle|format_fr:2 }} €</div>
-          <div class="text-muted small">{{ contrat.prime_annuelle|format_fr:2 }} €/an</div>
+          <div class="fw-semibold">{{ contrat.prime_mensuelle|format_fr:2 }} $</div>
+          <div class="text-muted small">{{ contrat.prime_annuelle|format_fr:2 }} $/an</div>
         </div>
         <div class="col-md-4 text-center">
           <div class="text-muted small">Date de début</div>
@@ -122,15 +122,15 @@
             {% for pred in predictions %}
             <tr>
               <td class="text-muted small">{{ pred.date_prediction|slice:":10" }}</td>
-              <td>{{ pred.cout_predit|format_fr:2 }} €</td>
+              <td>{{ pred.cout_predit|format_fr:2 }} $</td>
               <td>{{ pred.score_risque|floatformat:3 }}</td>
               <td>
                 <span class="badge {% if pred.categorie_risque == 'faible' %}bg-success{% elif pred.categorie_risque == 'moyen' %}bg-warning text-dark{% elif pred.categorie_risque == 'eleve' %}bg-orange{% else %}bg-danger{% endif %}">
                   {{ pred.categorie_risque|capfirst }}
                 </span>
               </td>
-              <td class="fw-semibold">{{ pred.prime|format_fr:2 }} €</td>
-              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|format_fr:2 }} €</td>
+              <td class="fw-semibold">{{ pred.prime|format_fr:2 }} $</td>
+              <td class="fw-semibold text-primary">{{ pred.prime_mensuelle|format_fr:2 }} $</td>
             </tr>
             {% endfor %}
           </tbody>

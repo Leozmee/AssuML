@@ -54,3 +54,6 @@ data/external/*
 specs/
 .specify/
 CLAUDE.md
+
+# Traces de run Weights & Biases (POC comparaison MLOps)
+wandb/

@@ -18,9 +18,9 @@
 {% if user.is_authenticated %}
 <!-- Top bar -->
 <header class="topbar">
-  <div class="topbar-brand">
+  <a class="topbar-brand" href="{% url 'home' %}" aria-label="Actuavie — retour à l'accueil">
     <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="topbar-logo">
-  </div>
+  </a>
 
   <nav class="topbar-nav" aria-label="Navigation principale">
     <ul class="topbar-nav-list">
@@ -105,9 +105,20 @@
 </main>
 
 {% else %}
-<!-- Pages sans top bar (login, register) -->
-<main class="auth-wrap" id="main-content">
-  <div class="auth-wrap-inner">
+<!-- Pages publiques (accueil, connexion, inscription) -->
+{% block public_header %}
+<a href="{% url 'home' %}" class="btn-retour-accueil" aria-label="Retour à l'accueil">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg>
+  Retour
+</a>
+{% endblock %}
+{% block public_full %}
+<main class="auth-wrap {% block auth_wrap_extra %}{% endblock %}" id="main-content">
+  <div class="auth-wrap-inner {% block auth_wrap_class %}{% endblock %}">
     {% if messages %}
       {% for message in messages %}
         <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-3" role="alert">
@@ -119,10 +130,11 @@
     {% block main_content %}{% endblock %}
   </div>
 </main>
+{% endblock public_full %}
 {% endif %}
 
 <footer class="site-footer">
-  <span>&copy; {% now "Y" %} Actuavie — Tous droits réservés</span>
+  <span>&copy; Actuavie</span>
   <span class="site-footer-links">
     <a href="{% url 'rgpd' %}">RGPD</a>
     <a href="{% url 'contact' %}">Contact</a>

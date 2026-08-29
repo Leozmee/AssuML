@@ -28,7 +28,7 @@
             {{ form.prime_mensuelle }}
             {% if prime_initiale %}
             <div class="form-text text-success">
-              <span aria-hidden="true">💡</span> Pré-rempli depuis le scoring ML (prime annuelle {{ prime_initiale|format_fr:2 }} € ÷ 12)
+              <span aria-hidden="true">💡</span> Pré-rempli depuis le scoring ML (prime annuelle {{ prime_initiale|format_fr:2 }} $ ÷ 12)
             </div>
             {% else %}
             <div class="form-text">Montant suggéré par le scoring ML (scorer d'abord le client)</div>

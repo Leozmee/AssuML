@@ -1,0 +1,29 @@
+{
+  "outil": "MLflow",
+  "version": "3.15.1",
+  "run_id": "ab1fb616a8fd404196d5a2cc116f8958",
+  "experience": "poc-comparaison-mlops",
+  "parametres": {
+    "n_estimators": 100,
+    "max_depth": 2,
+    "min_samples_split": 5,
+    "min_samples_leaf": 1,
+    "learning_rate": 0.1,
+    "subsample": 0.8
+  },
+  "metriques": {
+    "r2": 0.8806,
+    "mae": 2441.96,
+    "rmse": 4305.06
+  },
+  "duree_fit_s": 0.04,
+  "surcout_journalisation_s": 0.193,
+  "lignes_integration": 7,
+  "compte_requis": false,
+  "hors_ligne": "complet — magasin SQLite local, interface servie en local",
+  "donnees_residentes": "sqlite:///mlflow.db",
+  "sortie_du_perimetre_local": false,
+  "taille_installee_mo": 57.5,
+  "dependances_directes": 59,
+  "exporte_le": "2026-08-29T09:13:57+00:00"
+}

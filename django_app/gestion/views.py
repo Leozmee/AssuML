@@ -421,7 +421,7 @@ def contrat_update_prime(request, contrat_id):
         api_client.update_contrat_prime(contrat_id, prime_mensuelle)
         messages.success(
             request,
-            f"Prime mise à jour : {prime_mensuelle} €/mois (dernière prédiction ML).",
+            f"Prime mise à jour : {prime_mensuelle} $/mois (dernière prédiction ML).",
         )
     except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
         messages.error(request, f"Erreur : {exc}")

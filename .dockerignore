@@ -54,3 +54,6 @@ CLAUDE.md
 
 # Logs
 *.log
+
+# Traces de run Weights & Biases (POC comparaison MLOps)
+wandb/

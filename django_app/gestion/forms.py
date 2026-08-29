@@ -206,7 +206,7 @@ class ContratForm(AccessibleFormMixin, forms.Form):
     prime_mensuelle = forms.DecimalField(
         min_value=0,
         decimal_places=2,
-        label="Prime mensuelle (€)",
+        label="Prime mensuelle ($)",
         widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
     )
     date_debut = forms.DateField(

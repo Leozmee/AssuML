@@ -1,0 +1,31 @@
+{
+  "outil": "Weights & Biases",
+  "version": "0.29.0",
+  "run_id": "5p1ki3k7",
+  "experience": "assuml-poc",
+  "url": null,
+  "parametres": {
+    "n_estimators": 100,
+    "max_depth": 2,
+    "min_samples_split": 5,
+    "min_samples_leaf": 1,
+    "learning_rate": 0.1,
+    "subsample": 0.8
+  },
+  "metriques": {
+    "r2": 0.8806,
+    "mae": 2441.96,
+    "rmse": 4305.06
+  },
+  "duree_fit_s": 0.04,
+  "surcout_journalisation_s": 1.027,
+  "lignes_integration": 5,
+  "compte_requis": true,
+  "hors_ligne": "partiel — l'entraînement aboutit, mais les runs ne sont consultables qu'après wandb sync",
+  "donnees_residentes": "serveurs W&B (cache local dans wandb/)",
+  "sortie_du_perimetre_local": false,
+  "taille_installee_mo": 85.3,
+  "dependances_directes": 58,
+  "mode": "offline",
+  "exporte_le": "2026-08-29T09:13:59+00:00"
+}

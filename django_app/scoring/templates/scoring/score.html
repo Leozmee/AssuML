@@ -78,8 +78,8 @@
       <div class="col-12">
         <div class="score-section">
           <div class="text-muted small text-uppercase mb-2">Estimation ML</div>
-          <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} € / an</div>
-          <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} € / mois</div>
+          <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} $ / an</div>
+          <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} $ / mois</div>
         </div>
       </div>
 
@@ -97,10 +97,10 @@
       <div class="col-12">
         <div class="score-section">
           <div class="text-muted small text-uppercase mb-2">Prime assureur (avec marge)</div>
-          <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} € / an</div>
+          <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} $ / an</div>
           <div class="text-muted small">
-            {{ resultat.prime_mensuelle|format_fr:2 }} € / mois
-            · Marge : {{ resultat.marge_annuelle|format_fr:2 }} €
+            {{ resultat.prime_mensuelle|format_fr:2 }} $ / mois
+            · Marge : {{ resultat.marge_annuelle|format_fr:2 }} $
           </div>
         </div>
       </div>
@@ -204,11 +204,9 @@
                     <div><span class="text-muted small text-uppercase d-block">Fumeur</span>{% if client.fumeur %}Oui{% else %}Non{% endif %}</div>
                     <div><span class="text-muted small text-uppercase d-block">Enfants</span>{{ client.enfants }}</div>
                     <div><span class="text-muted small text-uppercase d-block">Région</span>{{ client.region_nom }}</div>
-                    {% if client.contrat %}
-                      <div><span class="text-muted small text-uppercase d-block">Type de couverture</span>{{ client.contrat.type_couverture|capfirst }}</div>
-                      <div><span class="text-muted small text-uppercase d-block">Prime mensuelle</span>{{ client.contrat.prime_mensuelle|format_fr:2 }} €</div>
-                      <div><span class="text-muted small text-uppercase d-block">Début</span>{{ client.contrat.date_debut }}</div>
-                    {% endif %}
+                    <div><span class="text-muted small text-uppercase d-block">Couverture</span>{% if client.contrat %}{{ client.contrat.type_couverture|capfirst }}{% else %}<span class="valeur-absente" aria-hidden="true">&#10005;</span><span class="visually-hidden">Sans contrat</span>{% endif %}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Prime / mois</span>{% if client.contrat %}{{ client.contrat.prime_mensuelle|format_fr:2 }} ${% else %}<span class="valeur-absente" aria-hidden="true">&#10005;</span><span class="visually-hidden">Sans contrat</span>{% endif %}</div>
+                    <div><span class="text-muted small text-uppercase d-block">Début</span>{% if client.contrat %}{{ client.contrat.date_debut|date_fr }}{% else %}<span class="valeur-absente" aria-hidden="true">&#10005;</span><span class="visually-hidden">Sans contrat</span>{% endif %}</div>
                   </div>
                 </td>
               </tr>

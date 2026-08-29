@@ -1,5 +1,7 @@
-"""Filtres template de formatage numérique — partagés entre Analytics,
-Scoring et Gestion clients (chargés via `{% load format_extras %}`)."""
+"""Filtres template de formatage — partagés entre Analytics, Scoring et
+Gestion clients (chargés via `{% load format_extras %}`)."""
+
+from datetime import date, datetime
 
 from django import template
 
@@ -32,3 +34,21 @@ def format_fr(valeur, decimales=0):
         entier_espace = "-" + entier_espace
 
     return f"{entier_espace},{decimale}" if decimales else entier_espace
+
+
+@register.filter
+def date_fr(valeur):
+    """Formate une date en jj/mm/aaaa.
+
+    Le filtre `date` de Django n'accepte qu'un objet date ; or les dates
+    venues de l'API arrivent en chaîne ISO ("2026-08-12"). Ce filtre accepte
+    les deux, et rend la valeur inchangée s'il ne sait pas l'interpréter.
+    """
+    if isinstance(valeur, (datetime, date)):
+        return valeur.strftime("%d/%m/%Y")
+    if not valeur:
+        return valeur
+    try:
+        return datetime.fromisoformat(str(valeur)[:19]).strftime("%d/%m/%Y")
+    except ValueError:
+        return valeur

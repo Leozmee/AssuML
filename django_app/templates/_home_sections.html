@@ -1,0 +1,155 @@
+{% load static %}
+  {# Bandeau défilant : rotation automatique, sans commande manuelle. #}
+  <div id="homeBanner" class="carousel slide home-banner"
+       data-bs-ride="carousel" data-bs-interval="5000" data-bs-touch="false"
+       aria-roledescription="carrousel" aria-label="Visuels Actuavie">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <picture>
+          <source srcset="{% static 'img/carousel/slide-1.webp' %}" type="image/webp">
+          <img src="{% static 'img/carousel/slide-1.jpg' %}" class="d-block w-100"
+               width="1536" height="1024"
+               alt="Une famille avec deux jeunes enfants, réunie sur un canapé.">
+        </picture>
+      </div>
+      <div class="carousel-item">
+        <picture>
+          <source srcset="{% static 'img/carousel/slide-2.webp' %}" type="image/webp">
+          <img src="{% static 'img/carousel/slide-2.jpg' %}" class="d-block w-100"
+               width="1536" height="1024" loading="lazy"
+               alt="Un couple de retraités à bord d'un voilier, au coucher du soleil.">
+        </picture>
+      </div>
+      <div class="carousel-item">
+        <picture>
+          <source srcset="{% static 'img/carousel/slide-3.webp' %}" type="image/webp">
+          <img src="{% static 'img/carousel/slide-3.jpg' %}" class="d-block w-100"
+               width="1536" height="1024" loading="lazy"
+               alt="Deux randonneurs en montagne, face à un panorama de vallées.">
+        </picture>
+      </div>
+      <div class="carousel-item">
+        <picture>
+          <source srcset="{% static 'img/carousel/slide-4.webp' %}" type="image/webp">
+          <img src="{% static 'img/carousel/slide-4.jpg' %}" class="d-block w-100"
+               width="1536" height="1024" loading="lazy"
+               alt="Une famille assise dans l'herbe, regardant un lac entouré de montagnes.">
+        </picture>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accroche -->
+  <section class="home-band home-band--hero">
+    <div class="home-inner">
+      <h1 class="home-title">Votre complémentaire santé,<br>estimée en quelques secondes</h1>
+      <p class="home-lead">
+        Six informations suffisent. Deux modèles calculent votre cotisation
+        prévisionnelle et situent votre niveau de risque, sans questionnaire
+        médical ni délai d'attente.
+      </p>
+      <div class="home-actions">
+      {% if user.is_authenticated %}
+        <a href="{% if user.profil.role == 'admin' %}{% url 'gestion:list' %}{% else %}{% url 'accounts:mon_compte' %}{% endif %}" class="btn btn-primary home-btn">Accéder à mon espace</a>
+      {% else %}
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary home-btn">Obtenir mon estimation</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary home-btn">J'ai déjà un compte</a>
+      {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Repères chiffrés -->
+  <section class="home-band home-band--figures" aria-label="Chiffres clés">
+    <div class="home-inner home-figures">
+      <div class="home-figure">
+        <span class="home-figure-value">6</span>
+        <span class="home-figure-label">informations demandées</span>
+      </div>
+      <div class="home-figure">
+        <span class="home-figure-value">2</span>
+        <span class="home-figure-label">modèles, coût et risque</span>
+      </div>
+      <div class="home-figure">
+        <span class="home-figure-value">4</span>
+        <span class="home-figure-label">régions couvertes</span>
+      </div>
+      <div class="home-figure">
+        <span class="home-figure-value">0</span>
+        <span class="home-figure-label">refus prononcé automatiquement</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Parcours -->
+  <section class="home-band home-band--steps">
+    <div class="home-inner">
+      <h2 class="home-h2">Comment ça marche</h2>
+      <ol class="home-steps">
+        <li class="home-step">
+          <span class="home-step-num" aria-hidden="true">1</span>
+          <h3 class="home-step-title">Vous créez votre compte</h3>
+          <p class="home-step-text">Une adresse électronique et un mot de passe suffisent pour commencer.</p>
+        </li>
+        <li class="home-step">
+          <span class="home-step-num" aria-hidden="true">2</span>
+          <h3 class="home-step-title">Vous renseignez votre profil</h3>
+          <p class="home-step-text">Âge, taille et poids, nombre d'enfants, statut fumeur et région de résidence.</p>
+        </li>
+        <li class="home-step">
+          <span class="home-step-num" aria-hidden="true">3</span>
+          <h3 class="home-step-title">Vous recevez votre estimation</h3>
+          <p class="home-step-text">Cotisation annuelle prévisionnelle, niveau de risque, et suite donnée à votre demande.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Questions fréquentes -->
+  <section class="home-band home-band--faq">
+    <div class="home-inner">
+      <h2 class="home-h2">Questions fréquentes</h2>
+      <dl class="home-faq">
+        <div class="home-faq-item">
+          <dt>Faut-il remplir un questionnaire médical&nbsp;?</dt>
+          <dd>Non. Six informations suffisent : votre âge, votre taille et votre poids,
+              le nombre d'enfants à charge, votre statut fumeur et votre région de résidence.
+              Aucun antécédent ni examen n'est demandé.</dd>
+        </div>
+        <div class="home-faq-item">
+          <dt>Comment ma cotisation est-elle calculée&nbsp;?</dt>
+          <dd>Un premier modèle estime votre coût médical annuel prévisionnel. Un second
+              situe votre niveau de risque, qui ajuste ensuite le montant. Les deux
+              s'appuient sur des profils comparables au vôtre.</dd>
+        </div>
+        <div class="home-faq-item">
+          <dt>Une machine peut-elle refuser mon dossier&nbsp;?</dt>
+          <dd>Non. Un dossier classé à risque élevé est orienté vers un conseiller pour
+              examen. La décision finale revient toujours à une personne.</dd>
+        </div>
+        <div class="home-faq-item">
+          <dt>Puis-je faire supprimer mes données&nbsp;?</dt>
+          <dd>Oui, à tout moment depuis votre espace personnel. Votre dossier est alors
+              retiré de nos traitements, puis vos données identifiantes sont
+              définitivement effacées. <a href="{% url 'rgpd' %}">En savoir plus</a></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Dernier appel -->
+  <section class="home-band home-band--cta">
+    <div class="home-inner home-cta">
+    {% if user.is_authenticated %}
+      {% if user.profil.role == 'admin' %}
+      <h2 class="home-cta-title">Où en est le portefeuille&nbsp;?</h2>
+      <p class="home-cta-text">Répartition des risques, volumes souscrits et santé des modèles en service.</p>
+      <a href="{% url 'analytics:dashboard' %}" class="btn home-cta-btn">Voir les tableaux de bord</a>
+      {% else %}
+      <h2 class="home-cta-title">Votre situation a changé&nbsp;?</h2>
+      <p class="home-cta-text">Un déménagement, un enfant, un statut fumeur qui évolue : refaites une simulation.</p>
+      <a href="{% url 'accounts:simulation' %}" class="btn home-cta-btn">Refaire une simulation</a>
+      {% endif %}
+    {% else %}    {% endif %}
+    </div>
+  </section>

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block public_header %}
+<header class="topbar topbar--public">
+  <div class="topbar-brand">
+    <img src="{% static 'img/Actuavie2.png' %}" alt="Actuavie" class="topbar-logo">
+  </div>
+  <div class="topbar-actions">
+    <a href="{% url 'accounts:register' %}" class="btn-topbar btn-topbar--ghost">Créer un compte</a>
+    <a href="{% url 'accounts:login' %}" class="btn-topbar">Se connecter</a>
+  </div>
+</header>
+<div class="topbar-spacer"></div>
+{% endblock public_header %}
+
+{# Visiteur : la page occupe toute la largeur, sous sa propre barre publique. #}
+{% block public_full %}
+<main id="main-content">
+{% include "_home_sections.html" %}
+</main>
+{% endblock public_full %}
+
+{# Connecté : même contenu, sous la barre de l'application. #}
+{% block content %}
+{% include "_home_sections.html" %}
+{% endblock content %}

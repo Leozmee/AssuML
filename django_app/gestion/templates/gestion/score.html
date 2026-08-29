@@ -36,8 +36,8 @@
   <!-- Section 1 — Estimation ML -->
   <div class="score-section">
     <div class="text-muted small text-uppercase mb-2">Estimation ML</div>
-    <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} € / an</div>
-    <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} € / mois</div>
+    <div class="fs-4 fw-bold text-primary">{{ resultat.cout_predit|format_fr:2 }} $ / an</div>
+    <div class="text-muted small">{{ resultat.cout_mensuel|format_fr:2 }} $ / mois</div>
   </div>
 
   <!-- Section 2 — Profil de risque -->
@@ -51,10 +51,10 @@
   <!-- Section 3 — Prime assureur -->
   <div class="score-section">
     <div class="text-muted small text-uppercase mb-2">Prime assureur (avec marge)</div>
-    <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} € / an</div>
+    <div class="fs-4 fw-bold text-success">{{ resultat.prime_annuelle|format_fr:2 }} $ / an</div>
     <div class="text-muted small">
-      {{ resultat.prime_mensuelle|format_fr:2 }} € / mois
-      · Marge : {{ resultat.marge_annuelle|format_fr:2 }} €
+      {{ resultat.prime_mensuelle|format_fr:2 }} $ / mois
+      · Marge : {{ resultat.marge_annuelle|format_fr:2 }} $
     </div>
   </div>
 
