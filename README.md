@@ -59,7 +59,7 @@ flowchart LR
     DJ -. "DuckDB direct\n" .-> PQ
 ```
 
-Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directement à la base de données** — tout passe par l'API FastAPI (`django_app/utils/api_client.py` est la seule couche HTTP côté Django). Seule exception assumée : le module Analytics interroge DuckDB directement sur le fichier Parquet Big Data (lecture seule, 5M lignes), pour des raisons de performance.
+Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directement à la base de données**, tout passe par l'API FastAPI (`django_app/utils/api_client.py` est la seule couche HTTP côté Django). Seule exception assumée : le module Analytics interroge DuckDB directement sur le fichier Parquet Big Data (lecture seule, 5M lignes), pour des raisons de performance.
 
 ## Stack technique
 
