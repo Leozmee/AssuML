@@ -111,7 +111,7 @@ Au démarrage, les conteneurs s'enchaînent dans cet ordre de dépendance (`depe
 | API FastAPI (docs Swagger) | <http://localhost:8000/docs> |
 | Streamlit (POC) | <http://localhost:8501> |
 
-> La table `predictions` démarre volontairement vide : les modèles ML doivent tourner en direct depuis l'interface (aucune prédiction n'est pré-calculée par un script).
+> La table `predictions` démarre volontairement vide : les modèles ML doivent tourner en direct depuis l'interface.
 
 ## Démarrage en local (dev)
 
