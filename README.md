@@ -1,6 +1,6 @@
 # AssuML
 
-**Plateforme de scoring assurance santé pilotée par Machine Learning** — prédiction du coût médical annuel, catégorisation du risque et calcul de prime, avec une interface de gestion complète pour l'assureur et l'assuré.
+**Plateforme de scoring assurance santé pilotée par Machine Learning**, prédiction du coût médical annuel, catégorisation du risque et calcul de prime, avec une interface de gestion complète pour l'assureur et l'assuré.
 
 Projet réalisé dans le cadre de la certification RNCP37827 *Développeur en Intelligence Artificielle* (Simplon).
 
