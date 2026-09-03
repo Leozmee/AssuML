@@ -103,7 +103,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Au démarrage, les conteneurs s'enchaînent dans cet ordre de dépendance (`depends_on` dans `docker-compose.yml`) : `postgres` → `seed` (peuple `regions`/`clients` depuis `data/small_data/insurance.csv`) → `train` (entraîne les 2 modèles ML, car les `.pkl` ne sont jamais commités) → `api` / `django` / `streamlit` / `etl_scheduler`.
+Au démarrage, les conteneurs s'enchaînent dans cet ordre de dépendance (`depends_on` dans `docker-compose.yml`) : `postgres` → `seed` (peuple `regions`/`clients` depuis `data/small_data/insurance.csv`) → `train` (entraîne les 2 modèles ML) → `api` / `django` / `streamlit` / `etl_scheduler`.
 
 | Service | URL |
 | --- | --- |
