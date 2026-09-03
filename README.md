@@ -44,19 +44,19 @@ flowchart LR
 
     subgraph Backend
         API["FastAPI (port 8000)\nAPI REST"]
-        ML["Modèles ML\nrégression + classification\n(singletons, chargés au démarrage)"]
+        ML["Modèles ML\nrégression + classification\n"]
     end
 
     subgraph Data
         PG[(PostgreSQL\nassuml_db)]
-        PQ[["Parquet Big Data\n(lecture seule)"]]
+        PQ[["Parquet Big Data\n"]]
     end
 
     DJ -- HTTP --> API
     ST -- HTTP --> API
     API --> ML
     API --> PG
-    DJ -. "DuckDB direct\n(exception Analytics)" .-> PQ
+    DJ -. "DuckDB direct\n" .-> PQ
 ```
 
 Règle d'architecture centrale : **Django et Streamlit ne parlent jamais directement à la base de données** — tout passe par l'API FastAPI (`django_app/utils/api_client.py` est la seule couche HTTP côté Django). Seule exception assumée : le module Analytics interroge DuckDB directement sur le fichier Parquet Big Data (lecture seule, 5M lignes), pour des raisons de performance.
