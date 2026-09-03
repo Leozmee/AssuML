@@ -190,8 +190,8 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db   # http://localhost:5000
 ```text
 AssuML/
 ├── api/                # FastAPI — routers, schémas Pydantic, ORM
-├── business/            # Règles métier (calcul de prime, scoring risque)
-├── data_pipeline/        # ETL — extract / transform / load (4 sources)
+├── business/           # Règles métier (calcul de prime, scoring risque)
+├── data_pipeline/       # ETL — extract / transform / load (4 sources)
 ├── data/                # Datasets (small_data committé, big_data généré)
 ├── database/           # DDL PostgreSQL, seed
 ├── django_app/         # Frontend principal (accounts, scoring, gestion, analytics, monitoring, actualites)
@@ -200,8 +200,8 @@ AssuML/
 ├── streamlit_app/      # Frontend POC
 ├── big_data/           # Génération du dataset synthétique 5M lignes
 ├── scripts/             # Scripts d'exploitation (ETL hebdo, setup BDD)
-├── docs/                 # Documentation complémentaire (audit accessibilité)
-├── tests/               # Tests unitaires / intégration / contrats
+├── docs/                # Documentation complémentaire (audit accessibilité)
+├── tests/              # Tests unitaires / intégration / contrats
 ├── specs/              # Spécifications par feature (spec-driven development)
 └── docker-compose.yml
 ```
