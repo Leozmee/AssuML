@@ -126,8 +126,6 @@ python django_app/manage.py runserver 8001
 streamlit run streamlit_app/app.py --server.port 8501
 ```
 
-Voir [`CLAUDE.md`](./CLAUDE.md) pour l'ensemble des commandes (entraînement des modèles, ETL, Big Data, MLflow UI, qualité de code).
-
 ## Variables d'environnement
 
 Copier [`.env.example`](./.env.example) en `.env` :
