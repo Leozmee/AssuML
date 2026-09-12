@@ -10,8 +10,12 @@
   <span style="font-size:.78rem;color:var(--success);"><span aria-hidden="true">●</span> Auto-refresh 10s</span>
 </div>
 
-<!-- Santé API -->
-<div class="row g-3 mb-4" aria-live="polite" aria-atomic="true">
+<!-- Partie 1 : état applicatif, alimenté par /health et les KPIs de l'API.
+     Les éléments hors grille (étiquettes, pied de section) portent ps-2 pour
+     compenser la gouttière des colonnes et s'aligner sur le bord des cartes. -->
+<div class="text-muted small text-uppercase mb-2 ps-2">État de l'application</div>
+
+<div class="row g-3 mb-3" aria-live="polite" aria-atomic="true">
   <div class="col-md-4">
     <div class="card h-100 {% if health and health.status == 'ok' %}border-success{% else %}border-danger{% endif %}">
       <div class="card-body text-center h-100 d-flex flex-column justify-content-center align-items-center">
@@ -62,5 +66,44 @@
       <div class="kpi-label">Prédictions totales</div>
     </div>
   </div>
+</div>
+
+<!-- Partie 2 : métriques d'infrastructure (Railway) — la page reste
+     utilisable sans elles. Le filet et l'étiquette marquent le changement de
+     source : au-dessus l'application s'observe elle-même, en dessous c'est
+     l'hébergeur qui rapporte. -->
+<div class="border-top pt-4 mt-4">
+  <div class="text-muted small text-uppercase mb-2 ps-2">Infrastructure</div>
+
+{% if railway.disponible %}
+<div class="row g-3">
+  <div class="col-lg-6">
+    {% include 'components/plotly_chart.html' with div_id="rw_latence" chart_data=railway.charts.latence layout=railway.layouts.latence title="Temps de réponse de l'API" %}
+  </div>
+  <div class="col-lg-6">
+    {% include 'components/plotly_chart.html' with div_id="rw_requetes" chart_data=railway.charts.requetes layout=railway.layouts.requetes title="Trafic reçu par l'API" %}
+  </div>
+  <div class="col-lg-6">
+    {% include 'components/plotly_chart.html' with div_id="rw_statuts" chart_data=railway.charts.statuts layout=railway.layouts.statuts title="Réponses réussies et en erreur" %}
+  </div>
+  <div class="col-lg-6">
+    {% include 'components/plotly_chart.html' with div_id="rw_memoire" chart_data=railway.charts.memoire layout=railway.layouts.memoire title="Mémoire du conteneur" %}
+  </div>
+</div>
+<p class="text-muted small mb-0 ps-2">
+  Source : API Railway.
+</p>
+{% elif railway.configure %}
+<div class="alert alert-info">
+  Métriques d'infrastructure momentanément indisponibles — l'API Railway n'a rien renvoyé
+  pour la dernière heure. Le reste du panneau reste à jour.
+</div>
+{% else %}
+<div class="alert alert-secondary">
+  Métriques d'infrastructure non configurées — renseigner <code>RAILWAY_API_TOKEN</code>,
+  <code>RAILWAY_MONITORED_SERVICE_ID</code> et <code>RAILWAY_MONITORED_ENVIRONMENT_ID</code>
+  pour les afficher.
+</div>
+{% endif %}
 </div>
 {% endblock %}

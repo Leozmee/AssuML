@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from accounts.decorators import admin_required
+from monitoring import railway
 from utils.api_client import (
     ApiError,
     ApiTimeoutError,
@@ -29,10 +30,19 @@ def dashboard(request):
     except (ApiUnavailableError, ApiTimeoutError, ApiError):
         pass
 
+    # Métriques d'infrastructure Railway. Le module ne lève jamais : si le
+    # jeton est absent ou Railway injoignable, on obtient des graphiques vides
+    # et la page s'affiche quand même — c'est celle de la démonstration.
+    metriques = railway.graphiques()
+
     return render(
         request,
         "monitoring/dashboard.html",
-        {"health": health, "kpis": kpis},
+        {
+            "health": health,
+            "kpis": kpis,
+            "railway": metriques,
+        },
     )
 
 
