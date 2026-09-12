@@ -63,6 +63,15 @@ jobs:
           python -m ml_models.training.train_regression
           python -m ml_models.training.train_classification
 
+      # Le garde-fou de mlflow_gate.py compare le nouveau modèle à celui
+      # physiquement déployé. Sur un runner neuf aucun .pkl n'existe : il n'a
+      # donc pas de référence et laisse tout passer. Cette étape rétablit le
+      # contrôle en comparant les métriques produites à celles du
+      # metadata.json commité — une recette dégradée poussée sans
+      # entraînement local échoue ici, avant d'atteindre le déploiement.
+      - name: Vérifier la non-régression des modèles
+        run: python -m ml_models.training.verifier_non_regression
+
       - name: Pytest (unitaires + contrats)
         run: pytest -m "not integration" -v
 

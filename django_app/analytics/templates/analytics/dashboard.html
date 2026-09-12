@@ -65,7 +65,7 @@
   <div class="card-body p-0">
     <div class="table-responsive table-responsive-no-y">
       <table class="table table-sm mb-0">
-        <caption class="visually-hidden">Contexte régional du portefeuille : volumétrie Big Data, météo actuelle et statistiques de santé publique par région</caption>
+        <caption class="visually-hidden">Contexte régional du portefeuille : volumétrie Big Data, météo actuelle, indice annuel de qualité de l'air et statistiques de santé publique par région</caption>
         <thead class="table-light">
           <tr>
             <th scope="col" rowspan="2">Région</th>
@@ -79,9 +79,10 @@
             <th scope="col" rowspan="2">Taux de diabète (%)</th>
             <th scope="col" rowspan="2">Médecins / 100k hab.</th>
             <th scope="col" rowspan="2">Taux de non-assurés (%)</th>
-            <th scope="colgroup" colspan="4" class="col-meteo text-center">Météo</th>
+            <th scope="colgroup" colspan="5" class="col-meteo text-center">Météo et qualité de l'air</th>
           </tr>
           <tr>
+            <th scope="col" class="col-meteo">Indice qualité de l'air annuel</th>
             <th scope="col" class="col-meteo">Température (°C)</th>
             <th scope="col" class="col-meteo">Humidité (%)</th>
             <th scope="col" class="col-meteo">Précipitations (mm/h)</th>
@@ -102,6 +103,7 @@
             <td>{{ r.taux_diabete|floatformat:1 }}</td>
             <td>{{ r.medecins_pour_100k|floatformat:1 }}</td>
             <td>{{ r.taux_non_assures|floatformat:1 }}</td>
+            <td class="col-meteo">{{ r.qualite_air_moy|floatformat:2|default:"—" }}</td>
             <td class="col-meteo">{{ r.temperature_moy|floatformat:1|default:"—" }}</td>
             <td class="col-meteo">{{ r.humidite_moy|floatformat:1|default:"—" }}</td>
             <td class="col-meteo">{{ r.precipitations|floatformat:1|default:"—" }}</td>
@@ -113,7 +115,8 @@
     </div>
   </div>
   <div class="card-footer text-muted small">
-    Sources : CDC, NCHS, KFF, Census/ACS.
+    Sources : CDC, NCHS, KFF, Census/ACS. Indice de qualité de l'air : OpenWeatherMap,
+    moyenne annuelle sur douze mois.
   </div>
 </div>
   {% else %}

@@ -1,34 +1,168 @@
 <p>
-  Conformément au Règlement Général sur la Protection des Données (RGPD), Actuavie
-  s'engage à protéger les données personnelles des utilisateurs de la plateforme.
+  Conformément au <a href="https://www.cnil.fr/fr/reglement-europeen-protection-donnees"
+  target="_blank" rel="noopener">Règlement Général sur la Protection des Données
+  (RGPD)<span class="visually-hidden"> — nouvelle fenêtre</span></a>, Actuavie s'engage à
+  protéger les données personnelles des utilisateurs de la plateforme. Cette page décrit
+  les traitements réalisés, leur fondement juridique et les moyens dont vous disposez
+  pour les maîtriser.
 </p>
 
-<h6 class="fw-semibold mt-4">Données collectées</h6>
-<p>
-  Lors de la création d'un compte assuré, nous collectons : votre adresse email,
-  votre âge, votre sexe, votre taille et votre poids (utilisés pour calculer votre
-  IMC), votre nombre d'enfants, votre statut fumeur et votre région de résidence.
-</p>
+<nav aria-label="Sommaire de la page RGPD" class="my-4">
+  <ul class="list-unstyled mb-0">
+    <li class="mb-1"><a href="#responsable">Responsable de traitement</a></li>
+    <li class="mb-1"><a href="#donnees">Données collectées</a></li>
+    <li class="mb-1"><a href="#finalite">Finalité et base légale</a></li>
+    <li class="mb-1"><a href="#decision">Décision automatisée et profilage</a></li>
+    <li class="mb-1"><a href="#destinataires">Destinataires</a></li>
+    <li class="mb-1"><a href="#conservation">Durée de conservation</a></li>
+    <li class="mb-1"><a href="#securite">Sécurité</a></li>
+    <li class="mb-1"><a href="#droits">Vos droits et comment les exercer</a></li>
+    <li><a href="#reclamation">Réclamation auprès de la CNIL</a></li>
+  </ul>
+</nav>
 
-<h6 class="fw-semibold mt-4">Finalité du traitement</h6>
+<h2 id="responsable" class="fw-semibold mt-4">Responsable de traitement</h2>
 <p>
-  Ces données sont utilisées exclusivement pour calculer une estimation de risque
-  et une prime d'assurance santé personnalisée, via nos modèles d'apprentissage
-  automatique. Elles ne sont jamais revendues ni partagées avec des tiers à des
-  fins commerciales.
-</p>
-
-<h6 class="fw-semibold mt-4">Durée de conservation</h6>
-<p>
-  Vos données sont conservées tant que votre compte est actif. En cas de
-  suppression de compte, vos données sont désactivées (suppression douce) et ne
-  sont plus utilisées pour aucun traitement.
-</p>
-
-<h6 class="fw-semibold mt-4">Vos droits</h6>
-<p>
-  Conformément aux articles 15 à 22 du RGPD, vous disposez d'un droit d'accès, de
-  rectification, d'effacement, de limitation et d'opposition sur vos données
-  personnelles. Pour exercer ces droits, contactez-nous via la
+  Actuavie, 3 rue Dharma, 99000 Actuaville, est responsable des traitements décrits sur
+  cette page. Pour toute question relative à vos données, passez par la
   <a href="{% url 'contact' %}">page Contact</a>.
+</p>
+
+<h2 id="donnees" class="fw-semibold mt-4">Données collectées</h2>
+<p>
+  Lors de la création d'un compte assuré, nous collectons :
+</p>
+<ul>
+  <li>
+    <strong>Données d'identification</strong> : adresse email, nom, prénom et numéro de
+    téléphone.
+  </li>
+  <li>
+    <strong>Données de profil</strong> : âge, sexe, taille et poids (utilisés pour
+    calculer votre indice de masse corporelle), nombre d'enfants à charge, statut fumeur
+    et région de résidence.
+  </li>
+  <li>
+    <strong>Données de connexion</strong> : votre mot de passe, conservé sous forme
+    chiffrée et jamais lisible par nos équipes, ainsi que la session qui vous maintient
+    connecté.
+  </li>
+</ul>
+<p>
+  L'indice de masse corporelle et le statut fumeur constituent des données relatives à la
+  santé. Elles sont traitées uniquement pour établir votre estimation et ne sont utilisées
+  à aucune autre fin. Aucune donnée ne vous est demandée sans être nécessaire au calcul de
+  votre prime ou à la gestion de votre contrat.
+</p>
+
+<h2 id="finalite" class="fw-semibold mt-4">Finalité et base légale</h2>
+<p>
+  Vos données servent exclusivement à calculer une estimation de risque et une prime
+  d'assurance santé personnalisée, puis à gérer le contrat qui en découle. Elles ne sont
+  jamais revendues ni partagées avec des tiers à des fins commerciales, et ne servent ni à
+  de la publicité ni à du démarchage.
+</p>
+<p>
+  Le traitement repose sur l'exécution de mesures précontractuelles prises à votre demande,
+  au sens de l'article 6.1.b du RGPD : vous nous transmettez ces informations pour obtenir
+  un devis, nous les traitons pour vous le fournir.
+</p>
+
+<h2 id="decision" class="fw-semibold mt-4">Décision automatisée et profilage</h2>
+<p>
+  Votre estimation est produite par deux modèles d'apprentissage automatique qui évaluent
+  un coût prévisionnel et un niveau de risque à partir des données ci-dessus. Ce traitement
+  constitue un profilage au sens du RGPD, et vous en êtes informé avant toute souscription.
+</p>
+<p>
+  Un dossier classé à risque élevé n'est jamais tranché par la machine : il est orienté
+  vers un conseiller pour examen. Conformément à l'article 22 du RGPD, vous pouvez dans
+  tous les cas demander l'intervention d'une personne, exprimer votre point de vue et
+  contester le résultat obtenu, en nous écrivant depuis la
+  <a href="{% url 'contact' %}">page Contact</a>. Chaque évaluation est horodatée et
+  conservée avec la version du modèle qui l'a produite, ce qui nous permet de vous
+  expliquer sur quelle base elle a été rendue.
+</p>
+
+<h2 id="destinataires" class="fw-semibold mt-4">Destinataires</h2>
+<p>
+  Vos données sont accessibles aux seuls personnels d'Actuavie habilités à la gestion des
+  contrats, dans la limite de ce que leur fonction exige. Elles sont hébergées par un
+  prestataire d'infrastructure agissant en qualité de sous-traitant au sens de l'article 28
+  du RGPD, lié par contrat et sans droit d'usage pour son propre compte. Aucun autre
+  destinataire n'y a accès.
+</p>
+
+<h2 id="conservation" class="fw-semibold mt-4">Durée de conservation</h2>
+<p>
+  Vos données sont conservées tant que votre compte est actif. À la suppression de votre
+  compte, votre dossier est immédiatement retiré de tous nos traitements : il n'apparaît
+  plus dans nos outils de gestion et n'alimente plus aucun calcul.
+</p>
+<p>
+  Six mois après cette désactivation, vos données identifiantes — nom, prénom, email,
+  téléphone — sont effacées de façon définitive et irréversible, et votre compte de
+  connexion est supprimé. Seules subsistent des informations devenues anonymes, qui ne
+  permettent plus de vous identifier et servent uniquement à nos statistiques agrégées.
+</p>
+
+<h2 id="securite" class="fw-semibold mt-4">Sécurité</h2>
+<p>
+  Les échanges entre votre navigateur et la plateforme sont chiffrés. Les mots de passe
+  sont stockés sous forme de condensats et ne peuvent pas être reconstitués. L'accès aux
+  données est cloisonné par profil : un assuré ne voit que son propre dossier, et les
+  traitements internes sont protégés par authentification de service.
+</p>
+
+<h2 id="droits" class="fw-semibold mt-4">Vos droits et comment les exercer</h2>
+<p>
+  Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants. Plusieurs
+  s'exercent directement en autonomie depuis votre espace :
+</p>
+<ul>
+  <li class="mb-2">
+    <strong>Droit d'accès</strong> — consulter l'intégralité des données vous concernant
+    depuis <a href="{% url 'accounts:mon_compte' %}">votre espace personnel</a>.
+  </li>
+  <li class="mb-2">
+    <strong>Droit de rectification</strong> — corriger vous-même vos informations à tout
+    moment depuis <a href="{% url 'accounts:mon_compte_edit' %}">la modification de votre
+    profil</a>.
+  </li>
+  <li class="mb-2">
+    <strong>Droit à la portabilité</strong> — récupérer vos données dans un format
+    réutilisable grâce à
+    <a href="{% url 'accounts:export_donnees' %}">l'export de votre dossier</a>, livré en
+    JSON et en CSV.
+  </li>
+  <li class="mb-2">
+    <strong>Droit à l'effacement</strong> — demander la suppression de votre compte, suivie
+    de l'effacement définitif décrit plus haut.
+  </li>
+  <li class="mb-2">
+    <strong>Droit à la limitation et droit d'opposition</strong> — demander la suspension
+    d'un traitement ou vous y opposer.
+  </li>
+  <li>
+    <strong>Droit à l'intervention humaine</strong> — faire réexaminer par une personne
+    toute évaluation produite automatiquement.
+  </li>
+</ul>
+<p>
+  Pour les droits qui ne s'exercent pas en autonomie, écrivez-nous via la
+  <a href="{% url 'contact' %}">page Contact</a>. Nous vous répondons dans un délai
+  d'un mois, conformément à l'article 12.3 du RGPD.
+</p>
+
+<h2 id="reclamation" class="fw-semibold mt-4">Réclamation auprès de la CNIL</h2>
+<p>
+  Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous
+  pouvez introduire une réclamation auprès de la Commission Nationale de l'Informatique et
+  des Libertés, autorité de contrôle compétente en France :
+  <a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener">déposer une
+  plainte sur cnil.fr<span class="visually-hidden"> — nouvelle fenêtre</span></a>.
+</p>
+
+<p class="text-muted small mt-4 mb-0">
+  Dernière mise à jour : septembre 2026.
 </p>

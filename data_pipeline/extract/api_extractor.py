@@ -36,6 +36,7 @@ from data_pipeline.load.db_loader import (  # noqa: E402
     insert_donnees_meteo,
 )
 from data_pipeline.transform.transform_meteo import (  # noqa: E402
+    transformer_qualite_air,
     transformer_reponse_api,
 )
 from database.connection import SessionLocal  # noqa: E402
@@ -50,6 +51,9 @@ VILLES_REGIONS: dict[str, str] = {
 }
 
 API_BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
+API_POLLUTION_URL = "https://api.openweathermap.org/data/2.5/air_pollution/history"
+# Profondeur d'historique de pollution agrégée, en jours (12 mois glissants)
+FENETRE_POLLUTION_JOURS = 365
 DOSSIER_BACKUP = ROOT / "data" / "external" / "api_data"
 
 
@@ -85,6 +89,45 @@ def appeler_api(ville: str, api_key: str) -> dict:
     if response.status_code != 200:
         raise ValueError(
             f"Erreur API OpenWeatherMap pour '{ville}' : "
+            f"HTTP {response.status_code} — {response.text[:200]}"
+        )
+    return response.json()
+
+
+def appeler_api_qualite_air(lat: float, lon: float, api_key: str) -> dict:
+    """Appelle l'historique de pollution d'OpenWeatherMap pour un point donné.
+
+    L'endpoint /air_pollution/history attend des coordonnées, pas un nom de
+    ville : la latitude et la longitude sont reprises du champ `coord` de la
+    réponse météo déjà obtenue pour la même ville, ce qui évite un appel de
+    géocodage supplémentaire. La fenêtre demandée couvre les douze derniers
+    mois, soit environ 8 600 relevés horaires.
+
+    Args:
+        lat: Latitude décimale.
+        lon: Longitude décimale.
+        api_key: Clé API OpenWeatherMap (même clé que l'endpoint météo).
+
+    Returns:
+        dict: Réponse JSON brute de l'API.
+
+    Raises:
+        ValueError: Si la réponse HTTP n'est pas 200.
+        requests.exceptions.RequestException: En cas d'erreur réseau.
+    """
+    fin = int(datetime.now().timestamp())
+    debut = fin - FENETRE_POLLUTION_JOURS * 24 * 3600
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "start": debut,
+        "end": fin,
+        "appid": api_key,
+    }
+    response = requests.get(API_POLLUTION_URL, params=params, timeout=90)
+    if response.status_code != 200:
+        raise ValueError(
+            f"Erreur API pollution ({lat}, {lon}) : "
             f"HTTP {response.status_code} — {response.text[:200]}"
         )
     return response.json()
@@ -155,12 +198,31 @@ def main() -> None:
             reponses_brutes.append({"nom_region": nom_region, "donnees": reponse})
             region_id = region_lookup[nom_region]
             record = transformer_reponse_api(reponse, region_id)
+
+            # Qualité de l'air : non bloquante. Si l'historique de pollution
+            # échoue, la ligne météo est tout de même insérée, les trois
+            # colonnes restant à NULL — une indisponibilité de cet endpoint
+            # ne doit pas faire perdre la collecte météo.
+            coord = reponse.get("coord", {})
+            try:
+                historique = appeler_api_qualite_air(
+                    coord["lat"], coord["lon"], api_key
+                )
+                record.update(transformer_qualite_air(historique))
+            except (KeyError, ValueError, requests.exceptions.RequestException) as e:
+                erreurs.append(f"{ville} (qualité de l'air): {e}")
+                record.update(
+                    {"qualite_air_moy": None, "pm25_moy": None, "ozone_moy": None}
+                )
+
             records_transformes.append(record)
+            pm25 = record["pm25_moy"]
             print(
                 f"  {nom_region:<12} ({ville:<12}) → "
                 f"{record['temperature_moy']}°C, "
                 f"{record['humidite_moy']}% humidité, "
-                f"saison: {record['saison']}"
+                f"saison: {record['saison']}, "
+                f"PM2.5 12 mois: {pm25 if pm25 is not None else 'n/d'}"
             )
         except (ValueError, requests.exceptions.RequestException) as e:
             erreurs.append(f"{ville}: {e}")

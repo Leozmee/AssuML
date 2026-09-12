@@ -41,6 +41,8 @@ from ml_models.training.mlflow_gate import (
     est_meilleur_modele,
     lire_metrique_actuelle,
     promouvoir_modele,
+    registre_actif,
+    version_publiee,
 )
 
 # --- Constantes ---
@@ -198,6 +200,20 @@ def sauvegarder_metadata(metriques_test, metriques_cv, best_params, version_mlfl
         "split": "80/20",
         "random_state": RANDOM_STATE,
     }
+    # Ce fichier est réécrit intégralement, au format plat que
+    # train_classification.py restructurera ensuite. Le bloc classification
+    # éventuellement présent est reporté tel quel : sans cela, la version du
+    # modèle de classification serait perdue entre les deux entraînements, et
+    # /health afficherait un modèle sans numéro le temps de la bascule.
+    bloc_classification = None
+    try:
+        with open(METADATA_PATH, encoding="utf-8") as f:
+            bloc_classification = json.load(f).get("classification")
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    if bloc_classification is not None:
+        metadata["classification"] = bloc_classification
+
     os.makedirs(MODEL_DIR, exist_ok=True)
     with open(METADATA_PATH, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
@@ -327,10 +343,20 @@ def main():
         if est_meilleur_modele(metriques_test["r2"], metrique_actuelle):
             print()
             sauvegarder_pipeline(pipeline)
-            logged_model = mlflow.last_logged_model()
-            version_mlflow = promouvoir_modele(
-                "assuml-regression", logged_model.model_id
-            )
+            if registre_actif():
+                logged_model = mlflow.last_logged_model()
+                version_mlflow = promouvoir_modele(
+                    "assuml-regression", logged_model.model_id
+                )
+            else:
+                # Registre éphémère (environnement reconstruit) : on conserve le
+                # numéro déjà inscrit dans metadata.json plutôt que d'y écrire le
+                # "1" qu'un registre vide attribuerait.
+                version_mlflow = version_publiee(METADATA_PATH, "regression")
+                print(
+                    f"ℹ️  Model Registry désactivé — version conservée : "
+                    f"v{version_mlflow}"
+                )
             sauvegarder_metadata(
                 metriques_test, metriques_cv, BEST_PARAMS, version_mlflow
             )

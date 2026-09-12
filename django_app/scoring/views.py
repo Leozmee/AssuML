@@ -101,6 +101,12 @@ def scoring_view(request):
         client["identite"] = client_identite(client)
 
     if resultat and resultat.get("client_id"):
+        # Contrat éventuel du client simulé : conditionne les actions proposées
+        # sous le résultat — ouvrir un contrat, ou aligner la prime du contrat
+        # existant sur cette simulation. Une simulation libre, sans client, n'est
+        # rattachée à aucun dossier : aucune action n'a alors de sens.
+        resultat["contrat"] = contrats_map.get(resultat["client_id"])
+
         client_selectionne = next(
             (c for c in clients if c["client_id"] == resultat["client_id"]), None
         )
@@ -111,6 +117,7 @@ def scoring_view(request):
             identite = client_selectionne["identite"]
             sujet = identite if identite.startswith("client ") else f"client {identite}"
             resultat["client_banner"] = f"Simulation basée sur le profil du {sujet}"
+            resultat["client_identite"] = identite
 
     contrat_filtre = request.GET.get("contrat", "")
     sort = request.GET.get("sort", "id_asc")

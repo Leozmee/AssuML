@@ -34,6 +34,8 @@ from ml_models.training.mlflow_gate import (
     est_meilleur_modele,
     lire_metrique_actuelle,
     promouvoir_modele,
+    registre_actif,
+    version_publiee,
 )
 
 # ── Chemins ────────────────────────────────────────────────────────────────
@@ -344,10 +346,19 @@ def main():
             joblib.dump(pipeline, chemin_clf)
             print("✅ classification.pkl sauvegardé")
 
-            logged_model = mlflow.last_logged_model()
-            version_mlflow = promouvoir_modele(
-                "assuml-classification", logged_model.model_id
-            )
+            if registre_actif():
+                logged_model = mlflow.last_logged_model()
+                version_mlflow = promouvoir_modele(
+                    "assuml-classification", logged_model.model_id
+                )
+            else:
+                # Voir train_regression.py : metadata.json fait foi lorsque le
+                # registre local est vide.
+                version_mlflow = version_publiee(METADATA_PATH, "classification")
+                print(
+                    f"ℹ️  Model Registry désactivé — version conservée : "
+                    f"v{version_mlflow}"
+                )
 
             mettre_a_jour_metadata(
                 metriques_test, metriques_cv, BEST_PARAMS, version_mlflow

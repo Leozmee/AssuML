@@ -178,6 +178,11 @@ class DonneesMeteo(Base):
         CheckConstraint("humidite_moy BETWEEN 0 AND 100", name="chk_meteo_humidite"),
         CheckConstraint("precipitations >= 0", name="chk_meteo_precipitations"),
         CheckConstraint(
+            "qualite_air_moy BETWEEN 1 AND 5", name="chk_meteo_qualite_air"
+        ),
+        CheckConstraint("pm25_moy >= 0", name="chk_meteo_pm25"),
+        CheckConstraint("ozone_moy >= 0", name="chk_meteo_ozone"),
+        CheckConstraint(
             "saison IN ('printemps', 'ete', 'automne', 'hiver')",
             name="chk_meteo_saison",
         ),
@@ -191,6 +196,10 @@ class DonneesMeteo(Base):
     humidite_moy: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
     precipitations: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
     saison: Mapped[str] = mapped_column(String(20), nullable=False)
+    # Moyennes glissantes sur 12 mois (cf. schema.sql), pas des relevés ponctuels
+    qualite_air_moy: Mapped[Optional[float]] = mapped_column(Numeric(3, 2))
+    pm25_moy: Mapped[Optional[float]] = mapped_column(Numeric(6, 2))
+    ozone_moy: Mapped[Optional[float]] = mapped_column(Numeric(6, 2))
     date_collecte: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )

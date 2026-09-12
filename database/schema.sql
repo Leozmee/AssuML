@@ -111,6 +111,17 @@ CREATE TABLE donnees_meteo (
                     CHECK (precipitations >= 0),
     saison          VARCHAR(20) NOT NULL
                     CHECK (saison IN ('printemps', 'ete', 'automne', 'hiver')),
+    -- Qualite de l'air : moyennes glissantes sur 12 mois (endpoint
+    -- /air_pollution/history d'OpenWeatherMap, ~8 600 releves horaires par
+    -- region). Contrairement aux trois mesures ci-dessus, instantanees, ces
+    -- valeurs sont des moyennes annuelles : c'est l'exposition longue duree
+    -- qui est documentee comme facteur de cout de sante, pas un releve ponctuel.
+    qualite_air_moy DECIMAL(3, 2)
+                    CHECK (qualite_air_moy BETWEEN 1 AND 5),
+    pm25_moy        DECIMAL(6, 2)
+                    CHECK (pm25_moy >= 0),
+    ozone_moy       DECIMAL(6, 2)
+                    CHECK (ozone_moy >= 0),
     date_collecte   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

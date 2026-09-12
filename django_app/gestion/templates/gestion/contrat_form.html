@@ -6,7 +6,11 @@
 {% block content %}
 <div class="page-header">
   <h1>Nouveau contrat — Client {{ client.client_id }}</h1>
+  {% if origine == 'scoring' %}
+  <a href="{% url 'scoring:index' %}" class="btn btn-outline-secondary btn-sm">← Retour à la simulation</a>
+  {% else %}
   <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary btn-sm">← Retour</a>
+  {% endif %}
 </div>
 
 <div class="row">
@@ -15,6 +19,7 @@
       <div class="card-body p-4">
         <form method="post" novalidate>
           {% csrf_token %}
+          <input type="hidden" name="origine" value="{{ origine }}">
 
           <p class="form-text">Les champs marqués <span aria-hidden="true">*</span> sont obligatoires.</p>
 
@@ -43,7 +48,11 @@
 
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-success">Créer le contrat</button>
+            {% if origine == 'scoring' %}
+            <a href="{% url 'scoring:index' %}" class="btn btn-outline-secondary">Annuler</a>
+            {% else %}
             <a href="{% url 'gestion:detail' client.client_id %}" class="btn btn-outline-secondary">Annuler</a>
+            {% endif %}
           </div>
         </form>
       </div>

@@ -18,6 +18,10 @@ METEO = [
         "humidite_moy": 41.0,
         "precipitations": 0.0,
         "saison": "ete",
+        # Moyennes 12 mois OpenWeatherMap (valeurs réelles relevées)
+        "qualite_air_moy": 2.29,
+        "pm25_moy": 8.46,
+        "ozone_moy": 79.4,
     },
     {
         "meteo_id": 2,
@@ -26,6 +30,10 @@ METEO = [
         "humidite_moy": 43.0,
         "precipitations": 0.0,
         "saison": "ete",
+        # Moyennes 12 mois OpenWeatherMap (valeurs réelles relevées)
+        "qualite_air_moy": 1.61,
+        "pm25_moy": 5.06,
+        "ozone_moy": 58.9,
     },
     {
         "meteo_id": 3,
@@ -34,6 +42,10 @@ METEO = [
         "humidite_moy": 74.0,
         "precipitations": 0.0,
         "saison": "ete",
+        # Moyennes 12 mois OpenWeatherMap (valeurs réelles relevées)
+        "qualite_air_moy": 1.54,
+        "pm25_moy": 3.75,
+        "ozone_moy": 56.6,
     },
     {
         "meteo_id": 4,
@@ -42,6 +54,10 @@ METEO = [
         "humidite_moy": 34.0,
         "precipitations": 0.0,
         "saison": "ete",
+        # Moyennes 12 mois OpenWeatherMap (valeurs réelles relevées)
+        "qualite_air_moy": 2.03,
+        "pm25_moy": 5.94,
+        "ozone_moy": 78.5,
     },
 ]
 

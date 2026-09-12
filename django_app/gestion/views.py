@@ -305,6 +305,27 @@ def client_score(request, client_id):
     )
 
 
+def _retour_apres_contrat(request, client_id):
+    """Destination après une action sur un contrat, selon le point de départ.
+
+    Les actions sur les contrats sont atteignables depuis la fiche client et
+    depuis l'onglet Simulation ML. `origine` est un mot-clé, jamais une URL
+    fournie par le client : aucune redirection arbitraire n'est possible.
+
+    Args:
+        request: Requête courante (POST ou GET).
+        client_id: Client concerné, pour le retour vers sa fiche.
+
+    Returns:
+        HttpResponseRedirect: vers l'onglet Simulation ML si l'action vient de
+        là, vers la fiche client sinon.
+    """
+    origine = request.POST.get("origine") or request.GET.get("origine")
+    if origine == "scoring":
+        return redirect("scoring:index")
+    return redirect("gestion:detail", client_id=client_id)
+
+
 @admin_required
 def contrat_create(request, client_id):
     """Créer un contrat pour un client (uniquement si pas de contrat existant)."""
@@ -351,14 +372,23 @@ def contrat_create(request, client_id):
                 }
             )
             messages.success(request, "Contrat créé avec succès.")
-            return redirect("gestion:detail", client_id=client_id)
+            return _retour_apres_contrat(request, client_id)
         except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
             messages.error(request, f"Erreur lors de la création du contrat : {exc}")
+
+    # Conservée d'un aller-retour à l'autre du formulaire pour ramener
+    # l'assureur là d'où il est parti (cf. _retour_apres_contrat).
+    origine = request.POST.get("origine") or request.GET.get("origine", "")
 
     return render(
         request,
         "gestion/contrat_form.html",
-        {"form": form, "client": client, "prime_initiale": prime_initiale},
+        {
+            "form": form,
+            "client": client,
+            "prime_initiale": prime_initiale,
+            "origine": origine,
+        },
     )
 
 
@@ -415,7 +445,7 @@ def contrat_update_prime(request, contrat_id):
         predictions = api_client.get_predictions_client(client_id) or []
         if not predictions:
             messages.warning(request, "Aucune prédiction disponible pour ce client.")
-            return redirect("gestion:detail", client_id=client_id)
+            return _retour_apres_contrat(request, client_id)
         prime_annuelle = predictions[0]["prime"]
         prime_mensuelle = round(prime_annuelle / 12, 2)
         api_client.update_contrat_prime(contrat_id, prime_mensuelle)
@@ -425,7 +455,7 @@ def contrat_update_prime(request, contrat_id):
         )
     except (ApiUnavailableError, ApiTimeoutError, ApiError) as exc:
         messages.error(request, f"Erreur : {exc}")
-    return redirect("gestion:detail", client_id=client_id)
+    return _retour_apres_contrat(request, client_id)
 
 
 @admin_required

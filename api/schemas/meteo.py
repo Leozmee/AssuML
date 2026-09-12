@@ -5,6 +5,7 @@ MeteoRead : données météo d'une collecte retournées par l'API.
 """
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -20,4 +21,9 @@ class MeteoRead(BaseModel):
     humidite_moy: float
     precipitations: float
     saison: str
+    # Moyennes glissantes sur 12 mois — None pour les collectes antérieures
+    # à l'ajout de la qualité de l'air, ou si l'endpoint était indisponible.
+    qualite_air_moy: Optional[float] = None
+    pm25_moy: Optional[float] = None
+    ozone_moy: Optional[float] = None
     date_collecte: datetime

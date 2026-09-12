@@ -16,6 +16,61 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 
+def registre_actif() -> bool:
+    """Indique si le Model Registry MLflow doit être sollicité.
+
+    Le registre vit dans un SQLite local (mlflow.db, gitignoré). Sur un
+    environnement reconstruit à chaque déploiement, ce fichier repart vide :
+    register_model() y attribuerait alors la version 1 à un modèle qui porte
+    déjà un numéro bien plus élevé dans le registre de référence, et
+    metadata.json — committé, donc source de vérité — serait écrasé par ce 1.
+
+    Poser MLFLOW_ENABLED=false sur un tel environnement laisse le tracking
+    fonctionner mais neutralise la promotion au Registry : le numéro de
+    version déjà inscrit dans metadata.json est conservé tel quel.
+
+    Returns:
+        bool: False si MLFLOW_ENABLED vaut false/0/no (insensible à la
+        casse), True par défaut.
+    """
+    return os.getenv("MLFLOW_ENABLED", "true").strip().lower() not in (
+        "false",
+        "0",
+        "no",
+    )
+
+
+def version_publiee(metadata_path, cle_modele):
+    """Relit le numéro de version déjà inscrit dans metadata.json.
+
+    Utilisé lorsque le Registry est neutralisé (cf. registre_actif) : le
+    numéro conservé est celui de l'exécution de référence, versionnée dans
+    Git, et non celui qu'un registre éphémère viendrait d'inventer.
+
+    Gère l'ancien format plat (régression à la racine) autant que le format
+    imbriqué actuel.
+
+    Args:
+        metadata_path (str): Chemin vers metadata.json.
+        cle_modele (str): "regression" ou "classification".
+
+    Returns:
+        str | None: Le numéro de version, ou None si le fichier est absent,
+        illisible, ou ne contient pas encore ce modèle.
+    """
+    try:
+        with open(metadata_path, encoding="utf-8") as f:
+            meta = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    bloc = meta.get(cle_modele)
+    if bloc is None and cle_modele == "regression" and "algorithme" in meta:
+        bloc = meta  # ancien format plat, régression uniquement
+    if not isinstance(bloc, dict):
+        return None
+    return bloc.get("version")
+
+
 def lire_metrique_actuelle(metadata_path, cle_modele, cle_metrique, model_path=None):
     """Lit la métrique principale du modèle actuellement déployé.
 

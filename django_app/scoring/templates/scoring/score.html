@@ -113,6 +113,50 @@
         </div>
       </div>
 
+      {% if resultat.client_id %}
+      <!-- Section 5 — Suite à donner : uniquement pour une simulation rattachée
+           à un client, la seule qui soit enregistrée dans son historique. -->
+      <div class="col-12">
+        <div class="score-section">
+          <div class="text-muted small text-uppercase mb-2">Suite à donner</div>
+          {% if resultat.contrat %}
+            <div class="text-muted small mb-2">
+              Contrat en cours · {{ resultat.contrat.type_couverture|capfirst }} ·
+              prime actuelle {{ resultat.contrat.prime_mensuelle|format_fr:2 }} $/mois
+            </div>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+              <form method="post" action="{% url 'gestion:contrat_prime' resultat.contrat.contrat_id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="client_id" value="{{ resultat.client_id }}">
+                <input type="hidden" name="origine" value="scoring">
+                <button type="submit" class="btn btn-outline-primary btn-sm"
+                        title="Aligne la prime du contrat sur cette simulation ({{ resultat.prime_mensuelle|format_fr:2 }} $/mois)"
+                        aria-label="Mettre à jour la prime du contrat du client {{ resultat.client_identite }} depuis cette simulation">
+                  Mettre à jour la prime
+                </button>
+              </form>
+              <a href="{% url 'gestion:detail' resultat.client_id %}" class="btn btn-outline-secondary btn-sm"
+                 aria-label="Ouvrir la fiche du client {{ resultat.client_identite }}">Voir la fiche client</a>
+            </div>
+            <div class="text-muted small mt-2">
+              Nouvelle prime proposée : {{ resultat.prime_mensuelle|format_fr:2 }} $/mois
+            </div>
+          {% else %}
+            <div class="text-muted small mb-2">Aucun contrat pour ce client.</div>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+              <a href="{% url 'gestion:contrat_create' resultat.client_id %}?origine=scoring" class="btn btn-success btn-sm"
+                 aria-label="Ouvrir un contrat pour le client {{ resultat.client_identite }}">Ouvrir un contrat</a>
+              <a href="{% url 'gestion:detail' resultat.client_id %}" class="btn btn-outline-secondary btn-sm"
+                 aria-label="Ouvrir la fiche du client {{ resultat.client_identite }}">Voir la fiche client</a>
+            </div>
+            <div class="text-muted small mt-2">
+              La prime sera pré-remplie à {{ resultat.prime_mensuelle|format_fr:2 }} $/mois depuis cette simulation.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
     </div>
     {% endif %}
   </div>

@@ -320,8 +320,11 @@ class DuckDBAnalytics:
         Returns:
             DataFrame avec colonnes : region, nb, cout_moy, imc_moy,
             taux_fumeurs, temperature_moy, humidite_moy, precipitations,
-            saison, taux_obesite, taux_tabagisme, esperance_vie,
-            taux_diabete, medecins_pour_100k, taux_non_assures. Une ligne
+            saison, qualite_air_moy, pm25_moy, ozone_moy, taux_obesite,
+            taux_tabagisme, esperance_vie, taux_diabete, medecins_pour_100k,
+            taux_non_assures. Les trois colonnes de qualité de l'air sont des
+            moyennes sur 12 mois, les trois colonnes météo des relevés
+            instantanés. Une ligne
             par région présente dans les trois sources (jointure interne —
             une région absente d'une des sources externes n'apparaît pas
             plutôt que d'inventer une valeur de remplacement).
@@ -340,6 +343,9 @@ class DuckDBAnalytics:
                 m.humidite_moy,
                 m.precipitations,
                 m.saison,
+                m.qualite_air_moy,
+                m.pm25_moy,
+                m.ozone_moy,
                 s.taux_obesite,
                 s.taux_tabagisme,
                 s.esperance_vie,
@@ -350,7 +356,8 @@ class DuckDBAnalytics:
             JOIN meteo_df m ON p.region = m.nom_region
             JOIN stats_df s ON p.region = s.nom_region
             GROUP BY p.region, m.temperature_moy, m.humidite_moy,
-                     m.precipitations, m.saison, s.taux_obesite,
+                     m.precipitations, m.saison, m.qualite_air_moy,
+                     m.pm25_moy, m.ozone_moy, s.taux_obesite,
                      s.taux_tabagisme, s.esperance_vie, s.taux_diabete,
                      s.medecins_pour_100k, s.taux_non_assures
             ORDER BY p.region

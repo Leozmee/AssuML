@@ -683,7 +683,7 @@ a:hover { text-decoration: underline; color: var(--primary-dark); }
 .main-content .page-header ~ .card.legal-card--wide,
 .legal-card--wide { max-width: 880px; }
 .legal-card .card-body { padding: 28px 32px; }
-.legal-card h6 {
+.legal-card h2 {
   font-size: 1rem;
   font-weight: 600;
   color: var(--primary-dark);

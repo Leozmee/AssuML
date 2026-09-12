@@ -27,6 +27,10 @@ def insert_donnees_meteo(records: list[dict]) -> int:
       region_id (int), temperature_moy (float), humidite_moy (float),
       precipitations (float), saison (str)
 
+    Clés optionnelles (moyennes glissantes sur 12 mois, None si l'historique
+    de pollution n'a pas pu être récupéré) :
+      qualite_air_moy (float), pm25_moy (float), ozone_moy (float)
+
     La date_collecte est générée automatiquement (server_default).
 
     Args:
@@ -47,6 +51,9 @@ def insert_donnees_meteo(records: list[dict]) -> int:
                 humidite_moy=r["humidite_moy"],
                 precipitations=r["precipitations"],
                 saison=r["saison"],
+                qualite_air_moy=r.get("qualite_air_moy"),
+                pm25_moy=r.get("pm25_moy"),
+                ozone_moy=r.get("ozone_moy"),
             )
             for r in records
         ]
