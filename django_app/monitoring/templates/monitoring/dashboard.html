@@ -68,12 +68,21 @@
   </div>
 </div>
 
-<!-- Partie 2 : métriques d'infrastructure (Railway) — la page reste
-     utilisable sans elles. Le filet et l'étiquette marquent le changement de
-     source : au-dessus l'application s'observe elle-même, en dessous c'est
-     l'hébergeur qui rapporte. -->
-<div class="border-top pt-4 mt-4">
-  <div class="text-muted small text-uppercase mb-2 ps-2">Infrastructure</div>
+<!-- Partie 2 : métriques d'infrastructure (Railway) — la page reste utilisable
+     sans elles. Le filet et l'étiquette marquent le changement de source :
+     au-dessus l'application s'observe elle-même, en dessous c'est l'hébergeur
+     qui rapporte.
+
+     Tout passe par la grille, y compris le filet et les messages de repli.
+     assuml.css pose une marge de 32 px sur les FRÈRES de .page-header : un
+     conteneur intermédiaire romprait cette filiation et décalerait le bloc de
+     8 px par rapport aux cartes du haut. Un <hr> dans une colonne hérite en
+     revanche de la gouttière et s'aligne exactement sur leur bord. -->
+<div class="row g-3 mt-1">
+  <div class="col-12"><hr class="my-0"></div>
+</div>
+
+<div class="text-muted small text-uppercase mb-2 mt-4 ps-2">Infrastructure</div>
 
 {% if railway.disponible %}
 <div class="row g-3">
@@ -90,20 +99,27 @@
     {% include 'components/plotly_chart.html' with div_id="rw_memoire" chart_data=railway.charts.memoire layout=railway.layouts.memoire title="Mémoire du conteneur" %}
   </div>
 </div>
-<p class="text-muted small mb-0 ps-2">
-  Source : API Railway.
-</p>
-{% elif railway.configure %}
-<div class="alert alert-info">
-  Métriques d'infrastructure momentanément indisponibles — l'API Railway n'a rien renvoyé
-  pour la dernière heure. Le reste du panneau reste à jour.
+<div class="row g-3">
+  <div class="col-12">
+    <p class="text-muted small mb-0">Source : API Railway.</p>
+  </div>
 </div>
 {% else %}
-<div class="alert alert-secondary">
-  Métriques d'infrastructure non configurées — renseigner <code>RAILWAY_API_TOKEN</code>,
-  <code>RAILWAY_MONITORED_SERVICE_ID</code> et <code>RAILWAY_MONITORED_ENVIRONMENT_ID</code>
-  pour les afficher.
+<div class="row g-3">
+  <div class="col-12">
+    {% if railway.configure %}
+    <div class="alert alert-info mb-0">
+      Métriques d'infrastructure momentanément indisponibles — l'API Railway n'a rien renvoyé
+      pour la dernière heure. Le reste du panneau reste à jour.
+    </div>
+    {% else %}
+    <div class="alert alert-secondary mb-0">
+      Métriques d'infrastructure non configurées — renseigner <code>RAILWAY_API_TOKEN</code>,
+      <code>RAILWAY_MONITORED_SERVICE_ID</code> et <code>RAILWAY_MONITORED_ENVIRONMENT_ID</code>
+      pour les afficher.
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endif %}
-</div>
 {% endblock %}
