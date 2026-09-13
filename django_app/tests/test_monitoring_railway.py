@@ -73,6 +73,54 @@ def test_configuration_partielle_compte_comme_absente(configure, monkeypatch):
     assert railway.est_configure() is False
 
 
+# ── Répartition entre les deux services observés ──────────────────────────────
+
+
+def _capturer_services(monkeypatch):
+    """Enregistre le serviceId envoyé à chaque requête GraphQL."""
+    vus = []
+
+    def faux_post(*args, **kwargs):
+        vus.append(kwargs["json"]["variables"]["s"])
+
+        class Fausse:
+            def json(self):
+                return {"data": {}}
+
+        return Fausse()
+
+    monkeypatch.setattr(railway.requests, "post", faux_post)
+    return vus
+
+
+def test_les_metriques_http_visent_le_service_web(configure, monkeypatch):
+    """Railway ne compte le trafic qu'au proxy public : c'est le service web
+    qui le reçoit, pas l'API appelée par le réseau privé."""
+    monkeypatch.setenv("RAILWAY_MONITORED_WEB_SERVICE_ID", "svc-web")
+    vus = _capturer_services(monkeypatch)
+    railway.latence()
+    railway.requetes()
+    railway.codes_statut()
+    assert set(vus) == {"svc-web"}
+
+
+def test_la_memoire_vise_le_conteneur_declare(configure, monkeypatch):
+    """La mémoire reste celle du conteneur qui sert les modèles."""
+    monkeypatch.setenv("RAILWAY_MONITORED_WEB_SERVICE_ID", "svc-web")
+    vus = _capturer_services(monkeypatch)
+    railway.memoire()
+    assert vus == [CONFIG["RAILWAY_MONITORED_SERVICE_ID"]]
+
+
+def test_sans_service_web_un_seul_service_est_observe(configure, monkeypatch):
+    """Configuration antérieure : le service déclaré sert aux deux usages."""
+    monkeypatch.delenv("RAILWAY_MONITORED_WEB_SERVICE_ID", raising=False)
+    vus = _capturer_services(monkeypatch)
+    railway.latence()
+    railway.memoire()
+    assert set(vus) == {CONFIG["RAILWAY_MONITORED_SERVICE_ID"]}
+
+
 # ── Dégradation ───────────────────────────────────────────────────────────────
 
 

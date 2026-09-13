@@ -42,14 +42,30 @@ FENETRE_MINUTES = 60
 PAS_SECONDES = 60
 
 
-def _config() -> tuple[str, str, str] | None:
-    """Retourne (jeton, service_id, environment_id), ou None si incomplet."""
+def _config() -> tuple[str, str, str, str] | None:
+    """Retourne (jeton, service conteneur, service web, environnement).
+
+    Deux services sont observés, pour une raison de mesure et non de goût.
+    Railway ne comptabilise le trafic HTTP qu'au passage de son proxy public :
+    les appels de Django vers l'API empruntent le réseau privé et n'y
+    apparaissent jamais. Les graphiques de latence, de trafic et de codes de
+    statut portent donc sur le service web, seul destinataire de requêtes
+    publiques, tandis que la mémoire reste celle du conteneur qui sert les
+    modèles — c'est là que se voit le pic d'entraînement au démarrage.
+
+    À défaut de service web déclaré, le service conteneur sert aux deux, ce qui
+    préserve le comportement d'une configuration existante.
+
+    Returns:
+        tuple | None: None si l'un des trois réglages obligatoires manque.
+    """
     jeton = os.getenv("RAILWAY_API_TOKEN", "").strip()
     service = os.getenv("RAILWAY_MONITORED_SERVICE_ID", "").strip()
     environnement = os.getenv("RAILWAY_MONITORED_ENVIRONMENT_ID", "").strip()
+    web = os.getenv("RAILWAY_MONITORED_WEB_SERVICE_ID", "").strip() or service
     if not (jeton and service and environnement):
         return None
-    return jeton, service, environnement
+    return jeton, service, web, environnement
 
 
 def est_configure() -> bool:
@@ -106,7 +122,7 @@ def _interroger(requete: str, variables: dict) -> dict | None:
     config = _config()
     if config is None:
         return None
-    jeton, _, _ = config
+    jeton = config[0]
 
     if _entete_retenu is not None:
         return _tenter(requete, variables, jeton, _entete_retenu)
@@ -204,13 +220,23 @@ query($s:String!,$e:String!,$d:DateTime!,$f:DateTime!,$p:Int){
 """
 
 
-def _variables() -> dict | None:
-    """Assemble les variables communes aux quatre requêtes."""
+def _variables(web: bool = False) -> dict | None:
+    """Assemble les variables d'une requête.
+
+    Args:
+        web: True pour interroger le service qui reçoit le trafic public,
+            False pour celui dont on mesure la consommation du conteneur.
+    """
     config = _config()
     if config is None:
         return None
-    _, service, environnement = config
-    return {"s": service, "e": environnement, "p": PAS_SECONDES, **_fenetre()}
+    jeton, service, service_web, environnement = config
+    return {
+        "s": service_web if web else service,
+        "e": environnement,
+        "p": PAS_SECONDES,
+        **_fenetre(),
+    }
 
 
 def latence() -> list[dict]:
@@ -223,7 +249,7 @@ def latence() -> list[dict]:
     Returns:
         list[dict]: Trois traces Plotly (p50, p95, p99), ou liste vide.
     """
-    variables = _variables()
+    variables = _variables(web=True)
     if variables is None:
         return []
     data = _interroger(_REQ_LATENCE, variables)
@@ -264,7 +290,7 @@ def requetes() -> list[dict]:
     Returns:
         list[dict]: Une trace Plotly en barres, ou liste vide.
     """
-    variables = _variables()
+    variables = _variables(web=True)
     if variables is None:
         return []
     data = _interroger(_REQ_REQUETES, variables)
@@ -294,7 +320,7 @@ def codes_statut() -> list[dict]:
     Returns:
         list[dict]: Une trace Plotly par famille rencontrée, ou liste vide.
     """
-    variables = _variables()
+    variables = _variables(web=True)
     if variables is None:
         return []
     data = _interroger(_REQ_STATUTS, variables)
